@@ -1,0 +1,10 @@
+backend/.venv
+backend/__pycache__
+backend/seo_crm.db
+backend/.env
+frontend/node_modules
+frontend/dist
+.git
+.env
+*.md
+reference-phase1-prototype.html

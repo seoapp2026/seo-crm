@@ -1,0 +1,87 @@
+import { useEffect, useState } from 'react'
+import { api } from '../api/client'
+import { Badge } from '../components/Badge'
+import { Modal } from '../components/Modal'
+import { ScopeBar } from '../components/ScopeBar'
+import { INTENTS } from '../constants'
+import { useApp } from '../context/AppContext'
+import { useProjects } from '../hooks/useProjects'
+import type { Intent, Keyword, Niche, Page } from '../types'
+
+export function KeywordsPage() {
+  const { scopeProject, setScopeProject, setTopbarAction, toast } = useApp()
+  const { projects } = useProjects()
+  const [items, setItems] = useState<Keyword[]>([])
+  const [pages, setPages] = useState<Page[]>([])
+  const [, setNiches] = useState<Niche[]>([])
+  const [editing, setEditing] = useState<Keyword | null>(null)
+  const [open, setOpen] = useState(false)
+  const [form, setForm] = useState({ term: '', page_id: 0, niche_id: 0, project_id: 0, intent: 'informacional' as Intent, note: '' })
+
+  const reload = async () => {
+    const [kws, pgs, ncs] = await Promise.all([
+      api.keywords.list(scopeProject),
+      api.pages.list(scopeProject),
+      api.niches.list(scopeProject),
+    ])
+    setItems(kws); setPages(pgs); setNiches(ncs)
+  }
+
+  useEffect(() => { reload() }, [scopeProject])
+  useEffect(() => {
+    setTopbarAction(<button className="btn btn-primary" onClick={() => {
+      const pg = pages[0]
+      setEditing(null)
+      setForm({ term: '', page_id: pg?.id || 0, niche_id: pg?.niche_id || 0, project_id: pg?.project_id || 0, intent: 'informacional', note: '' })
+      setOpen(true)
+    }}>+ Nueva keyword</button>)
+    return () => setTopbarAction(null)
+  }, [pages, setTopbarAction])
+
+  const save = async () => {
+    if (!form.term.trim()) return toast('El término es obligatorio')
+    try {
+      if (editing) await api.keywords.update(editing.id, form)
+      else await api.keywords.create(form)
+      setOpen(false); reload(); toast('Keyword guardada')
+    } catch (e) { toast(e instanceof Error ? e.message : 'Error') }
+  }
+
+  const pageTitle = (id: number) => pages.find((p) => p.id === id)?.title || '—'
+
+  return (
+    <>
+      <ScopeBar projects={projects} value={scopeProject} onChange={setScopeProject} />
+      <div className="card">
+        <table>
+          <thead><tr><th>Término</th><th>Página</th><th>Intención</th><th>Canibalización</th><th></th></tr></thead>
+          <tbody>
+            {items.map((k) => (
+              <tr key={k.id}>
+                <td className="t-title">{k.term}</td>
+                <td>{pageTitle(k.page_id)}</td>
+                <td><Badge label={INTENTS[k.intent].label} cls={INTENTS[k.intent].cls} /></td>
+                <td>{k.cannibalized ? <Badge label="Canibalización" cls="b-amber" /> : '—'}</td>
+                <td><div className="row-actions">
+                  <button className="btn btn-sm btn-ghost" onClick={() => { setEditing(k); setForm({ term: k.term, page_id: k.page_id, niche_id: k.niche_id, project_id: k.project_id, intent: k.intent, note: k.note || '' }); setOpen(true) }}>Editar</button>
+                  <button className="btn btn-sm btn-danger" onClick={async () => { await api.keywords.remove(k.id); reload(); toast('Eliminado') }}>Eliminar</button>
+                </div></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <Modal title={editing ? 'Editar keyword' : 'Nueva keyword'} open={open} onClose={() => setOpen(false)}
+        footer={<><button className="btn" onClick={() => setOpen(false)}>Cancelar</button><button className="btn btn-primary" onClick={save}>Guardar</button></>}>
+        <div className="field"><label>Término</label><input value={form.term} onChange={(e) => setForm({ ...form, term: e.target.value })} /></div>
+        <div className="field"><label>Página</label><select value={form.page_id} onChange={(e) => {
+          const pg = pages.find((p) => p.id === Number(e.target.value))
+          setForm({ ...form, page_id: Number(e.target.value), niche_id: pg?.niche_id || 0, project_id: pg?.project_id || 0 })
+        }}>{pages.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select></div>
+        <div className="field"><label>Intención</label><select value={form.intent} onChange={(e) => setForm({ ...form, intent: e.target.value as Intent })}>{Object.entries(INTENTS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></div>
+        <div className="field"><label>Nota</label><input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} /></div>
+      </Modal>
+    </>
+  )
+}

@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM SEO — Sistema de Gestión de Nichos</title>
+<style>
+  :root {
+    --bg: #f6f7f5;
+    --panel: #ffffff;
+    --ink: #1c2321;
+    --ink-soft: #5b6360;
+    --line: #e2e6e1;
+    --line-strong: #cfd4cd;
+    --accent: #2f6f4e;
+    --accent-soft: #e8f1ec;
+    --accent-ink: #1d4d35;
+    --warn: #b4612a;
+    --warn-soft: #f6ebe1;
+    --danger: #a23b3b;
+    --sidebar: #1f2723;
+    --sidebar-ink: #c4ccc6;
+    --sidebar-ink-soft: #8a948e;
+    --sidebar-active: #2f6f4e;
+    --radius: 8px;
+    --shadow: 0 1px 2px rgba(28,35,33,.06), 0 4px 12px rgba(28,35,33,.04);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+  button { font-family: inherit; cursor: pointer; }
+  input, select, textarea { font-family: inherit; font-size: 14px; }
+
+  /* Layout */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 230px; background: var(--sidebar); color: var(--sidebar-ink);
+    display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 20;
+  }
+  .sidebar-brand { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,.07); }
+  .sidebar-brand h1 { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: .2px; }
+  .sidebar-brand span { font-size: 11px; color: var(--sidebar-ink-soft); text-transform: uppercase; letter-spacing: 1px; }
+  .nav { flex: 1; padding: 10px 0; overflow-y: auto; }
+  .nav-group-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--sidebar-ink-soft); padding: 14px 18px 6px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 11px; padding: 9px 18px; color: var(--sidebar-ink);
+    border: none; background: none; width: 100%; text-align: left; font-size: 13.5px; transition: background .12s;
+  }
+  .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; opacity: .85; }
+  .nav-item:hover { background: rgba(255,255,255,.05); color: #fff; }
+  .nav-item.active { background: var(--sidebar-active); color: #fff; font-weight: 600; }
+  .nav-item.active svg { opacity: 1; }
+  .sidebar-foot { padding: 12px 18px; border-top: 1px solid rgba(255,255,255,.07); font-size: 11px; color: var(--sidebar-ink-soft); }
+
+  .main { flex: 1; margin-left: 230px; display: flex; flex-direction: column; min-width: 0; }
+  .topbar {
+    height: 60px; background: var(--panel); border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: sticky; top: 0; z-index: 10;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .crumb { font-size: 18px; font-weight: 650; }
+  .crumb-sub { font-size: 13px; color: var(--ink-soft); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  .content { padding: 28px; max-width: 1180px; width: 100%; }
+
+  /* Project selector */
+  .scope-bar {
+    display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 8px 14px; margin-bottom: 22px; box-shadow: var(--shadow);
+  }
+  .scope-bar label { font-size: 12px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .5px; }
+  .scope-bar select { padding: 7px 10px; border: 1px solid var(--line-strong); border-radius: 6px; background: #fff; min-width: 200px; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 6px;
+    border: 1px solid var(--line-strong); background: #fff; color: var(--ink); font-size: 13px; font-weight: 550; transition: all .12s;
+  }
+  .btn:hover { border-color: var(--ink-soft); }
+  .btn svg { width: 15px; height: 15px; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+  .btn-ghost { border-color: transparent; background: transparent; }
+  .btn-ghost:hover { background: var(--bg); border-color: var(--line); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-danger { color: var(--danger); border-color: transparent; }
+  .btn-danger:hover { background: #fbeeee; }
+
+  /* Cards & panels */
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .card-pad { padding: 18px 20px; }
+  .grid { display: grid; gap: 16px; }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); }
+  .stat-label { font-size: 12px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .5px; }
+  .stat-value { font-size: 30px; font-weight: 700; margin-top: 6px; letter-spacing: -.5px; }
+  .stat-foot { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .section-head h2 { font-size: 16px; font-weight: 650; }
+  .section-head .hint { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--ink-soft);
+    padding: 11px 14px; border-bottom: 1px solid var(--line); font-weight: 600; background: #fbfcfb;
+  }
+  tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #fbfcfb; }
+  .t-title { font-weight: 600; }
+  .t-sub { font-size: 12px; color: var(--ink-soft); }
+  .row-actions { display: flex; gap: 4px; justify-content: flex-end; }
+
+  /* Badges */
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .b-green { background: var(--accent-soft); color: var(--accent-ink); }
+  .b-green .badge-dot { background: var(--accent); }
+  .b-amber { background: var(--warn-soft); color: var(--warn); }
+  .b-amber .badge-dot { background: var(--warn); }
+  .b-gray { background: #eef0ee; color: var(--ink-soft); }
+  .b-gray .badge-dot { background: var(--ink-soft); }
+  .b-blue { background: #e6eef5; color: #2c5d86; }
+  .b-blue .badge-dot { background: #2c5d86; }
+  .b-purple { background: #efe9f5; color: #6b4a91; }
+  .b-purple .badge-dot { background: #6b4a91; }
+
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 5px; background: #eef0ee; font-size: 11.5px; color: var(--ink-soft); margin: 2px 3px 2px 0; }
+  .pill-type { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
+  .pt-TSG { background: #e6eef5; color: #2c5d86; }
+  .pt-TSR { background: var(--warn-soft); color: var(--warn); }
+  .pt-TSA { background: #efe9f5; color: #6b4a91; }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 50px 20px; color: var(--ink-soft); }
+  .empty svg { width: 38px; height: 38px; opacity: .3; margin-bottom: 12px; }
+  .empty h3 { font-size: 15px; color: var(--ink); margin-bottom: 4px; }
+  .empty p { font-size: 13px; max-width: 340px; margin: 0 auto 16px; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(28,35,33,.42); display: none; align-items: flex-start;
+    justify-content: center; z-index: 100; padding: 40px 16px; overflow-y: auto;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--panel); border-radius: 10px; width: 100%; max-width: 560px;
+    box-shadow: 0 12px 48px rgba(28,35,33,.24); animation: pop .16s ease;
+  }
+  .modal.wide { max-width: 760px; }
+  @keyframes pop { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid var(--line); }
+  .modal-head h3 { font-size: 16px; font-weight: 650; }
+  .modal-body { padding: 22px; max-height: 64vh; overflow-y: auto; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 22px; border-top: 1px solid var(--line); }
+  .x-btn { border: none; background: none; color: var(--ink-soft); padding: 4px; border-radius: 5px; line-height: 0; }
+  .x-btn:hover { background: var(--bg); }
+
+  /* Forms */
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
+  .field .desc { font-size: 12px; color: var(--ink-soft); font-weight: 400; margin-top: -2px; margin-bottom: 6px; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 9px 11px; border: 1px solid var(--line-strong); border-radius: 6px; background: #fff;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .field-row { display: flex; gap: 14px; }
+  .field-row .field { flex: 1; }
+
+  /* AI panel */
+  .ai-zone { display: grid; grid-template-columns: 320px 1fr; gap: 0; min-height: 480px; }
+  .ai-config { border-right: 1px solid var(--line); padding: 20px; }
+  .ai-output { padding: 20px; display: flex; flex-direction: column; }
+  .ai-result {
+    flex: 1; background: #fbfcfb; border: 1px solid var(--line); border-radius: 6px; padding: 16px;
+    font-size: 13.5px; line-height: 1.65; overflow-y: auto; white-space: pre-wrap; min-height: 320px;
+  }
+  .ai-result.empty-state { display: flex; align-items: center; justify-content: center; text-align: center; color: var(--ink-soft); }
+  .key-status { font-size: 12px; padding: 8px 11px; border-radius: 6px; margin-top: 8px; display: flex; align-items: center; gap: 7px; }
+  .key-status.ok { background: var(--accent-soft); color: var(--accent-ink); }
+  .key-status.no { background: var(--warn-soft); color: var(--warn); }
+  .spinner { width: 16px; height: 16px; border: 2px solid var(--line-strong); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .link-cell { color: var(--accent); cursor: pointer; font-weight: 600; }
+  .link-cell:hover { text-decoration: underline; }
+  .muted { color: var(--ink-soft); }
+  .nowrap { white-space: nowrap; }
+  .mono { font-family: var(--mono); font-size: 12.5px; }
+  .banner {
+    background: #fff8ef; border: 1px solid #ecd9bf; border-radius: var(--radius); padding: 12px 16px;
+    font-size: 13px; color: #7a5a2a; margin-bottom: 20px; display: flex; gap: 10px; align-items: flex-start;
+  }
+  .banner svg { width: 17px; height: 17px; flex-shrink: 0; margin-top: 1px; }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: #fff; padding: 12px 18px;
+    border-radius: 8px; font-size: 13.5px; box-shadow: 0 8px 24px rgba(0,0,0,.2); z-index: 200;
+    transform: translateY(80px); opacity: 0; transition: all .25s; display: flex; align-items: center; gap: 9px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 820px) {
+    .sidebar { transform: translateX(-100%); transition: transform .2s; }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+    .ai-zone { grid-template-columns: 1fr; }
+    .ai-config { border-right: none; border-bottom: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <h1>CRM SEO</h1>
+      <span>Gestión de Nichos</span>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidebar-foot">
+      Fase 1 · Sistema base<br>Project → Niche → Page → Keyword → URL
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="crumb" id="crumb">Panel</div>
+          <div class="crumb-sub" id="crumb-sub">Resumen general</div>
+        </div>
+      </div>
+      <div class="topbar-right" id="topbar-actions"></div>
+    </header>
+    <div class="content" id="view"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal">
+    <div class="modal-head"><h3 id="modal-title"></h3><button class="x-btn" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CRM SEO — Fase 1
+   Sistema de gestión de nichos SEO (supervisado, no automático)
+   Jerarquía: Project → Niche → Page → Keyword → URL
+   ============================================================ */
+
+/* ---------- Persistencia (sesión del navegador) ---------- */
+const DB = {
+  data: { projects: [], niches: [], pages: [], keywords: [], urls: [], notes: [], links: [] },
+  load() {
+    try {
+      const raw = window.__crm_store;
+      if (raw) this.data = JSON.parse(raw);
+    } catch (e) {}
+    if (!this.data.projects.length) this.seed();
+  },
+  save() { window.__crm_store = JSON.stringify(this.data); },
+  seed() {
+    // Datos de ejemplo para que el cliente vea cómo funciona
+    const p1 = uid(), p2 = uid();
+    const n1 = uid(), n2 = uid(), n3 = uid();
+    const pg1 = uid(), pg2 = uid(), pg3 = uid();
+    this.data.projects = [
+      { id: p1, name: "Afiliación Hogar", desc: "Webs de afiliación sobre productos para el hogar", created: now() },
+      { id: p2, name: "Proyectos Locales", desc: "Negocios locales y servicios", created: now() }
+    ];
+    this.data.niches = [
+      { id: n1, project: p1, name: "Cafeteras", topic: "Cafeteras domésticas y de oficina", state: "escalando", monetization: "afiliacion", notes: "Nicho principal, buena conversión en comparativas.", created: now() },
+      { id: n2, project: p1, name: "Aspiradoras", topic: "Aspiradoras y robots de limpieza", state: "señales", monetization: "afiliacion", notes: "Primeras impresiones en Search Console.", created: now() },
+      { id: n3, project: p2, name: "Fontaneros Madrid", topic: "Servicios de fontanería en Madrid", state: "nuevo", monetization: "leads", notes: "", created: now() }
+    ];
+    this.data.pages = [
+      { id: pg1, niche: n1, project: p1, title: "Mejores cafeteras de oficina 2026", type: "TSR", state: "publicado", objective: "Comparativa para captar tráfico transaccional", created: now() },
+      { id: pg2, niche: n1, project: p1, title: "Guía completa: cómo elegir una cafetera", type: "TSG", state: "borrador", objective: "Guía pilar del cluster de cafeteras", created: now() },
+      { id: pg3, niche: n2, project: p1, title: "Reseña Roomba J7+", type: "TSA", state: "en_revision", objective: "Reseña de producto con enlace de afiliado", created: now() }
+    ];
+    this.data.keywords = [
+      { id: uid(), page: pg1, niche: n1, project: p1, term: "mejores cafeteras de oficina", intent: "transaccional", note: "KW principal", created: now() },
+      { id: uid(), page: pg1, niche: n1, project: p1, term: "cafetera para oficina pequeña", intent: "comercial", note: "", created: now() },
+      { id: uid(), page: pg2, niche: n1, project: p1, term: "cómo elegir cafetera", intent: "informacional", note: "", created: now() },
+      { id: uid(), page: pg3, niche: n2, project: p1, term: "roomba j7+ opiniones", intent: "comercial", note: "", created: now() }
+    ];
+    this.data.urls = [
+      { id: uid(), page: pg1, niche: n1, project: p1, slug: "/mejores-cafeteras-oficina", indexed: "indexada", status: "publicado", created: now() },
+      { id: uid(), page: pg3, niche: n2, project: p1, slug: "/resena-roomba-j7-plus", indexed: "pendiente", status: "borrador", created: now() }
+    ];
+    this.data.notes = [
+      { id: uid(), project: p1, title: "Estrategia Q1", body: "Reforzar el cluster de cafeteras antes de atacar aspiradoras a fondo.", created: now() }
+    ];
+    this.data.links = [
+      { id: uid(), project: p1, from: pg2, to: pg1, anchor: "mejores cafeteras de oficina", created: now() }
+    ];
+    this.save();
+  }
+};
+
+function uid() { return 'id' + Math.random().toString(36).slice(2, 10); }
+function now() { return new Date().toISOString(); }
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+/* ---------- Estado de la app ---------- */
+const State = {
+  route: 'dashboard',
+  scopeProject: 'all',   // proyecto activo en el selector
+  aiKey: '',             // API key OpenAI (introducida en runtime, NO guardada en código)
+};
+
+/* ---------- Catálogos / etiquetas ---------- */
+const NICHE_STATES = {
+  nuevo:     { label: 'Nuevo', cls: 'b-gray' },
+  prueba:    { label: 'En prueba', cls: 'b-blue' },
+  señales:   { label: 'Con señales', cls: 'b-amber' },
+  escalando: { label: 'Escalando', cls: 'b-green' },
+  dormido:   { label: 'Dormido', cls: 'b-gray' }
+};
+const MONETIZATION = {
+  afiliacion: 'Afiliación', adsense: 'AdSense', mixto: 'Mixto', leads: 'Leads'
+};
+const PAGE_TYPES = {
+  TSG: { label: 'Guía (TSG)', desc: 'Contenido informacional / guía pilar' },
+  TSR: { label: 'Comparativa (TSR)', desc: 'Comparativa / contenido comercial' },
+  TSA: { label: 'Reseña (TSA)', desc: 'Reseña de producto individual' }
+};
+const PAGE_STATES = {
+  borrador:    { label: 'Borrador', cls: 'b-gray' },
+  en_revision: { label: 'En revisión', cls: 'b-amber' },
+  publicado:   { label: 'Publicado', cls: 'b-green' },
+  optimizado:  { label: 'Optimizado', cls: 'b-blue' }
+};
+const INTENTS = {
+  informacional: { label: 'Informacional', cls: 'b-blue' },
+  comercial:     { label: 'Comercial', cls: 'b-amber' },
+  transaccional: { label: 'Transaccional', cls: 'b-green' }
+};
+const INDEX_STATES = {
+  indexada:  { label: 'Indexada', cls: 'b-green' },
+  pendiente: { label: 'Pendiente', cls: 'b-amber' },
+  noindex:   { label: 'No index', cls: 'b-gray' }
+};
+
+/* ---------- Helpers de consulta con scope ---------- */
+function inScope(item) { return State.scopeProject === 'all' || item.project === State.scopeProject; }
+function projectsList() { return DB.data.projects; }
+function nichesList() { return DB.data.niches.filter(inScope); }
+function pagesList() { return DB.data.pages.filter(inScope); }
+function keywordsList() { return DB.data.keywords.filter(inScope); }
+function urlsList() { return DB.data.urls.filter(inScope); }
+function notesList() { return DB.data.notes.filter(inScope); }
+function linksList() { return DB.data.links.filter(inScope); }
+
+function projectName(id) { const p = DB.data.projects.find(x => x.id === id); return p ? p.name : '—'; }
+function nicheName(id) { const n = DB.data.niches.find(x => x.id === id); return n ? n.name : '—'; }
+function pageTitle(id) { const p = DB.data.pages.find(x => x.id === id); return p ? p.title : '—'; }
+function keywordsForPage(id) { return DB.data.keywords.filter(k => k.page === id); }
+
+function badge(map, key) {
+  const m = map[key]; if (!m) return `<span class="badge b-gray">${key||'—'}</span>`;
+  return `<span class="badge ${m.cls}"><span class="badge-dot"></span>${m.label}</span>`;
+}
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg> ${msg}`;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ---------- Modal ---------- */
+function openModal(title, bodyHTML, footHTML, wide) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = bodyHTML;
+  document.getElementById('modal-foot').innerHTML = footHTML || '';
+  document.getElementById('modal').classList.toggle('wide', !!wide);
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target.id === 'modal-overlay') closeModal();
+});
+
+function val(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+/* ============================================================
+   NAVEGACIÓN + ROUTING
+   ============================================================ */
+const ICONS = {
+  dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+  projects: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+  niches: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/></svg>',
+  pages: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  keywords: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>',
+  urls: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+  links: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg>',
+  notes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>',
+  ai: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v1a3 3 0 0 0-3 3 3 3 0 0 0 0 6 3 3 0 0 0 3 3v1a3 3 0 0 0 6 0v-1a3 3 0 0 0 3-3 3 3 0 0 0 0-6 3 3 0 0 0-3-3V5a3 3 0 0 0-3-3z"/></svg>',
+};
+
+const ROUTES = [
+  { group: 'Trabajo' },
+  { id: 'dashboard', label: 'Panel', icon: 'dashboard', crumb: 'Panel', sub: 'Resumen general' },
+  { id: 'projects', label: 'Proyectos', icon: 'projects', crumb: 'Proyectos', sub: 'Agrupación de nichos y webs' },
+  { id: 'niches', label: 'Nichos', icon: 'niches', crumb: 'Nichos', sub: 'Unidad estratégica principal' },
+  { id: 'pages', label: 'Páginas', icon: 'pages', crumb: 'Páginas', sub: 'Contenido planificado (TSG / TSR / TSA)' },
+  { id: 'keywords', label: 'Palabras clave', icon: 'keywords', crumb: 'Palabras clave', sub: 'Asignación e intención de búsqueda' },
+  { id: 'urls', label: 'URLs', icon: 'urls', crumb: 'URLs', sub: 'Ejecución publicada e indexación' },
+  { group: 'SEO' },
+  { id: 'links', label: 'Enlazado interno', icon: 'links', crumb: 'Enlazado interno', sub: 'Enlaces internos y páginas huérfanas' },
+  { id: 'notes', label: 'Notas', icon: 'notes', crumb: 'Notas', sub: 'Notas estratégicas' },
+  { group: 'Asistente' },
+  { id: 'ai', label: 'Generador IA', icon: 'ai', crumb: 'Generador de contenido IA', sub: 'Borradores con ChatGPT · siempre revisión manual' },
+];
+
+function buildNav() {
+  const nav = document.getElementById('nav');
+  nav.innerHTML = ROUTES.map(r => {
+    if (r.group) return `<div class="nav-group-label">${r.group}</div>`;
+    return `<button class="nav-item ${State.route === r.id ? 'active' : ''}" onclick="go('${r.id}')">${ICONS[r.icon]}<span>${r.label}</span></button>`;
+  }).join('');
+}
+
+function go(route) {
+  State.route = route;
+  const r = ROUTES.find(x => x.id === route);
+  document.getElementById('crumb').textContent = r.crumb;
+  document.getElementById('crumb-sub').textContent = r.sub;
+  buildNav();
+  render();
+  document.getElementById('view').scrollTo(0, 0);
+}
+
+/* ---------- Selector de proyecto (scope) ---------- */
+function scopeBar() {
+  if (State.route === 'projects' || State.route === 'dashboard') return '';
+  const opts = `<option value="all">Todos los proyectos</option>` +
+    projectsList().map(p => `<option value="${p.id}" ${State.scopeProject===p.id?'selected':''}>${p.name}</option>`).join('');
+  return `<div class="scope-bar">
+    <label>Proyecto</label>
+    <select onchange="State.scopeProject=this.value; render();">${opts}</select>
+    <span class="muted" style="margin-left:auto;font-size:12px;">Filtra todo el sistema por proyecto</span>
+  </div>`;
+}
+
+/* ---------- Acciones del topbar por vista ---------- */
+function topbarActions() {
+  const box = document.getElementById('topbar-actions');
+  const map = {
+    projects: `<button class="btn btn-primary" onclick="editProject()">${plusIcon()} Nuevo proyecto</button>`,
+    niches: `<button class="btn btn-primary" onclick="editNiche()">${plusIcon()} Nuevo nicho</button>`,
+    pages: `<button class="btn btn-primary" onclick="editPage()">${plusIcon()} Nueva página</button>`,
+    keywords: `<button class="btn btn-primary" onclick="editKeyword()">${plusIcon()} Nueva keyword</button>`,
+    urls: `<button class="btn btn-primary" onclick="editUrl()">${plusIcon()} Nueva URL</button>`,
+    links: `<button class="btn btn-primary" onclick="editLink()">${plusIcon()} Nuevo enlace</button>`,
+    notes: `<button class="btn btn-primary" onclick="editNote()">${plusIcon()} Nueva nota</button>`,
+  };
+  box.innerHTML = map[State.route] || '';
+}
+function plusIcon() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'; }
+function editIcon() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>'; }
+function trashIcon() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>'; }
+
+/* ---------- Render principal ---------- */
+function render() {
+  topbarActions();
+  const view = document.getElementById('view');
+  const scope = scopeBar();
+  let html = '';
+  switch (State.route) {
+    case 'dashboard': html = viewDashboard(); break;
+    case 'projects': html = viewProjects(); break;
+    case 'niches': html = viewNiches(); break;
+    case 'pages': html = viewPages(); break;
+    case 'keywords': html = viewKeywords(); break;
+    case 'urls': html = viewUrls(); break;
+    case 'links': html = viewLinks(); break;
+    case 'notes': html = viewNotes(); break;
+    case 'ai': html = viewAI(); break;
+  }
+  view.innerHTML = scope + html;
+  if (State.route === 'ai') initAIView();
+}
+
+/* ============================================================
+   VISTA: DASHBOARD
+   ============================================================ */
+function viewDashboard() {
+  const ns = DB.data.niches, ps = DB.data.pages, ks = DB.data.keywords, us = DB.data.urls;
+  const published = ps.filter(p => p.state === 'publicado').length;
+  const drafts = ps.filter(p => p.state === 'borrador' || p.state === 'en_revision').length;
+  const scaling = ns.filter(n => n.state === 'escalando').length;
+
+  const byState = Object.keys(NICHE_STATES).map(s => ({
+    s, n: ns.filter(x => x.state === s).length
+  })).filter(x => x.n > 0);
+  const maxN = Math.max(1, ...byState.map(x => x.n));
+
+  const recentPages = [...ps].reverse().slice(0, 5);
+
+  return `
+  <div class="grid grid-4" style="margin-bottom:22px;">
+    <div class="stat"><div class="stat-label">Proyectos</div><div class="stat-value">${DB.data.projects.length}</div><div class="stat-foot">activos</div></div>
+    <div class="stat"><div class="stat-label">Nichos</div><div class="stat-value">${ns.length}</div><div class="stat-foot">${scaling} escalando</div></div>
+    <div class="stat"><div class="stat-label">Páginas</div><div class="stat-value">${ps.length}</div><div class="stat-foot">${published} publicadas · ${drafts} en proceso</div></div>
+    <div class="stat"><div class="stat-label">Palabras clave</div><div class="stat-value">${ks.length}</div><div class="stat-foot">${us.length} URLs registradas</div></div>
+  </div>
+
+  <div class="grid grid-2" style="align-items:start;">
+    <div class="card card-pad">
+      <div class="section-head"><div><h2>Nichos por estado</h2><div class="hint">El CRM organiza, tú decides cuándo escalar o pausar</div></div></div>
+      ${byState.length ? byState.map(x => `
+        <div style="display:flex;align-items:center;gap:12px;margin:10px 0;">
+          <div style="width:110px;font-size:13px;">${NICHE_STATES[x.s].label}</div>
+          <div style="flex:1;background:#eef0ee;border-radius:6px;height:22px;position:relative;">
+            <div style="width:${(x.n/maxN)*100}%;background:var(--accent);height:100%;border-radius:6px;min-width:24px;"></div>
+          </div>
+          <div style="width:24px;text-align:right;font-weight:600;">${x.n}</div>
+        </div>`).join('') : '<p class="muted">Aún no hay nichos.</p>'}
+    </div>
+
+    <div class="card card-pad">
+      <div class="section-head"><div><h2>Páginas recientes</h2><div class="hint">Último contenido planificado</div></div></div>
+      ${recentPages.length ? `<table><tbody>
+        ${recentPages.map(p => `<tr>
+          <td><div class="t-title">${p.title}</div><div class="t-sub">${nicheName(p.niche)}</div></td>
+          <td class="nowrap"><span class="pill-type pt-${p.type}">${p.type}</span></td>
+          <td class="nowrap">${badge(PAGE_STATES, p.state)}</td>
+        </tr>`).join('')}
+      </tbody></table>` : '<p class="muted">Aún no hay páginas.</p>'}
+    </div>
+  </div>
+
+  <div class="banner" style="margin-top:22px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <div><strong>Sistema supervisado.</strong> Este CRM organiza tu trabajo SEO y genera borradores con IA, pero nunca publica ni decide por sí solo. Tú revisas todo y publicas manualmente en WordPress.</div>
+  </div>`;
+}
+
+/* ============================================================
+   VISTA: PROYECTOS
+   ============================================================ */
+function viewProjects() {
+  const list = projectsList();
+  if (!list.length) return emptyState('projects', 'Sin proyectos todavía', 'Un proyecto agrupa varios nichos o webs. Empieza creando el primero.', 'editProject()');
+  return `<div class="card"><table>
+    <thead><tr><th>Proyecto</th><th>Nichos</th><th>Páginas</th><th>Creado</th><th></th></tr></thead>
+    <tbody>${list.map(p => {
+      const nN = DB.data.niches.filter(n => n.project === p.id).length;
+      const nP = DB.data.pages.filter(x => x.project === p.id).length;
+      return `<tr>
+        <td><div class="t-title">${p.name}</div><div class="t-sub">${p.desc || 'Sin descripción'}</div></td>
+        <td>${nN}</td><td>${nP}</td><td class="nowrap muted">${fmtDate(p.created)}</td>
+        <td><div class="row-actions">
+          <button class="btn btn-sm btn-ghost" onclick="editProject('${p.id}')">${editIcon()}</button>
+          <button class="btn btn-sm btn-danger" onclick="delRecord('projects','${p.id}')">${trashIcon()}</button>
+        </div></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+function editProject(id) {
+  const p = id ? DB.data.projects.find(x => x.id === id) : null;
+  openModal(p ? 'Editar proyecto' : 'Nuevo proyecto', `
+    <div class="field"><label>Nombre del proyecto</label><input id="f-name" value="${p?p.name:''}" placeholder="Ej. Afiliación Hogar"></div>
+    <div class="field"><label>Descripción</label><div class="desc">Solo para organización. El proyecto no tiene lógica SEO propia.</div>
+      <textarea id="f-desc" placeholder="¿Qué agrupa este proyecto?">${p?p.desc:''}</textarea></div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProject('${id||''}')">Guardar</button>`);
+}
+function saveProject(id) {
+  const name = val('f-name'); if (!name) return toast('El nombre es obligatorio');
+  if (id) { const p = DB.data.projects.find(x => x.id === id); p.name = name; p.desc = val('f-desc'); }
+  else DB.data.projects.push({ id: uid(), name, desc: val('f-desc'), created: now() });
+  DB.save(); closeModal(); render(); toast('Proyecto guardado');
+}
+
+/* ============================================================
+   VISTA: NICHOS
+   ============================================================ */
+function viewNiches() {
+  const list = nichesList();
+  if (!list.length) return emptyState('niches', 'Sin nichos todavía', 'El nicho es tu unidad estratégica principal. Defínelo con su temática, estado y tipo de monetización.', 'editNiche()');
+  return `<div class="card"><table>
+    <thead><tr><th>Nicho</th><th>Proyecto</th><th>Estado</th><th>Monetización</th><th>Páginas</th><th></th></tr></thead>
+    <tbody>${list.map(n => {
+      const nP = DB.data.pages.filter(p => p.niche === n.id).length;
+      return `<tr>
+        <td><div class="t-title">${n.name}</div><div class="t-sub">${n.topic || ''}</div></td>
+        <td class="muted">${projectName(n.project)}</td>
+        <td>${badge(NICHE_STATES, n.state)}</td>
+        <td class="muted">${MONETIZATION[n.monetization]||'—'}</td>
+        <td>${nP}</td>
+        <td><div class="row-actions">
+          <button class="btn btn-sm btn-ghost" onclick="editNiche('${n.id}')">${editIcon()}</button>
+          <button class="btn btn-sm btn-danger" onclick="delRecord('niches','${n.id}')">${trashIcon()}</button>
+        </div></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+function editNiche(id) {
+  const n = id ? DB.data.niches.find(x => x.id === id) : null;
+  if (!projectsList().length) return toast('Crea un proyecto primero');
+  const projOpts = projectsList().map(p => `<option value="${p.id}" ${n&&n.project===p.id?'selected':''}>${p.name}</option>`).join('');
+  const stateOpts = Object.entries(NICHE_STATES).map(([k,v]) => `<option value="${k}" ${n&&n.state===k?'selected':''}>${v.label}</option>`).join('');
+  const monOpts = Object.entries(MONETIZATION).map(([k,v]) => `<option value="${k}" ${n&&n.monetization===k?'selected':''}>${v}</option>`).join('');
+  openModal(n ? 'Editar nicho' : 'Nuevo nicho', `
+    <div class="field"><label>Nombre del nicho</label><input id="f-name" value="${n?n.name:''}" placeholder="Ej. Cafeteras"></div>
+    <div class="field"><label>Temática</label><input id="f-topic" value="${n?n.topic:''}" placeholder="¿De qué trata este nicho?"></div>
+    <div class="field"><label>Proyecto</label><select id="f-project">${projOpts}</select></div>
+    <div class="field-row">
+      <div class="field"><label>Estado</label><select id="f-state">${stateOpts}</select></div>
+      <div class="field"><label>Monetización</label><select id="f-mon">${monOpts}</select></div>
+    </div>
+    <div class="field"><label>Notas estratégicas</label><textarea id="f-notes" placeholder="Decisiones, observaciones...">${n?n.notes||'':''}</textarea></div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveNiche('${id||''}')">Guardar</button>`);
+}
+function saveNiche(id) {
+  const name = val('f-name'); if (!name) return toast('El nombre es obligatorio');
+  const rec = { name, topic: val('f-topic'), project: val('f-project'), state: val('f-state'), monetization: val('f-mon'), notes: val('f-notes') };
+  if (id) Object.assign(DB.data.niches.find(x => x.id === id), rec);
+  else DB.data.niches.push({ id: uid(), ...rec, created: now() });
+  DB.save(); closeModal(); render(); toast('Nicho guardado');
+}
+
+/* ============================================================
+   VISTA: PÁGINAS
+   ============================================================ */
+function viewPages() {
+  const list = pagesList();
+  if (!list.length) return emptyState('pages', 'Sin páginas todavía', 'Una página es una pieza de contenido planificada. Clasifícala como Guía (TSG), Comparativa (TSR) o Reseña (TSA).', 'editPage()');
+  return `<div class="card"><table>
+    <thead><tr><th>Página</th><th>Tipo</th><th>Nicho</th><th>Keywords</th><th>Estado</th><th></th></tr></thead>
+    <tbody>${list.map(p => {
+      const kc = keywordsForPage(p.id).length;
+      return `<tr>
+        <td><div class="t-title">${p.title}</div><div class="t-sub">${p.objective || ''}</div></td>
+        <td class="nowrap"><span class="pill-type pt-${p.type}">${p.type}</span></td>
+        <td class="muted">${nicheName(p.niche)}</td>
+        <td>${kc}</td>
+        <td>${badge(PAGE_STATES, p.state)}</td>
+        <td><div class="row-actions">
+          <button class="btn btn-sm btn-ghost" title="Generar contenido con IA" onclick="aiForPage('${p.id}')">${ICONS.ai}</button>
+          <button class="btn btn-sm btn-ghost" onclick="editPage('${p.id}')">${editIcon()}</button>
+          <button class="btn btn-sm btn-danger" onclick="delRecord('pages','${p.id}')">${trashIcon()}</button>
+        </div></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+function editPage(id) {
+  const p = id ? DB.data.pages.find(x => x.id === id) : null;
+  if (!nichesList().length) return toast('Crea un nicho primero');
+  const nicheOpts = DB.data.niches.map(n => `<option value="${n.id}" ${p&&p.niche===n.id?'selected':''}>${n.name} · ${projectName(n.project)}</option>`).join('');
+  const typeOpts = Object.entries(PAGE_TYPES).map(([k,v]) => `<option value="${k}" ${p&&p.type===k?'selected':''}>${v.label}</option>`).join('');
+  const stateOpts = Object.entries(PAGE_STATES).map(([k,v]) => `<option value="${k}" ${p&&p.state===k?'selected':''}>${v.label}</option>`).join('');
+  openModal(p ? 'Editar página' : 'Nueva página', `
+    <div class="field"><label>Título de la página</label><input id="f-title" value="${p?p.title:''}" placeholder="Ej. Mejores cafeteras de oficina 2026"></div>
+    <div class="field"><label>Nicho</label><select id="f-niche">${nicheOpts}</select></div>
+    <div class="field-row">
+      <div class="field"><label>Tipo de página</label><select id="f-type">${typeOpts}</select></div>
+      <div class="field"><label>Estado</label><select id="f-state">${stateOpts}</select></div>
+    </div>
+    <div class="field"><label>Objetivo del contenido</label><textarea id="f-obj" placeholder="¿Qué buscas conseguir con esta página?">${p?p.objective||'':''}</textarea></div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePage('${id||''}')">Guardar</button>`);
+}
+function savePage(id) {
+  const title = val('f-title'); if (!title) return toast('El título es obligatorio');
+  const niche = val('f-niche');
+  const project = DB.data.niches.find(n => n.id === niche).project;
+  const rec = { title, niche, project, type: val('f-type'), state: val('f-state'), objective: val('f-obj') };
+  if (id) Object.assign(DB.data.pages.find(x => x.id === id), rec);
+  else DB.data.pages.push({ id: uid(), ...rec, created: now() });
+  DB.save(); closeModal(); render(); toast('Página guardada');
+}
+
+/* ============================================================
+   VISTA: PALABRAS CLAVE
+   ============================================================ */
+function viewKeywords() {
+  const list = keywordsList();
+  // Detección simple de canibalización: misma keyword en >1 página dentro del scope
+  const counts = {};
+  list.forEach(k => { const t = k.term.toLowerCase().trim(); counts[t] = (counts[t]||0)+1; });
+  if (!list.length) return emptyState('keywords', 'Sin palabras clave todavía', 'Asigna keywords a tus páginas, registra su intención de búsqueda y evita canibalizaciones.', 'editKeyword()');
+  return `<div class="card"><table>
+    <thead><tr><th>Palabra clave</th><th>Intención</th><th>Página asignada</th><th>Nicho</th><th></th></tr></thead>
+    <tbody>${list.map(k => {
+      const canib = counts[k.term.toLowerCase().trim()] > 1;
+      return `<tr>
+        <td><div class="t-title">${k.term} ${canib?'<span class="badge b-amber" title="Esta keyword aparece en más de una página"><span class="badge-dot"></span>Posible canibalización</span>':''}</div>${k.note?`<div class="t-sub">${k.note}</div>`:''}</td>
+        <td>${badge(INTENTS, k.intent)}</td>
+        <td class="muted">${pageTitle(k.page)}</td>
+        <td class="muted">${nicheName(k.niche)}</td>
+        <td><div class="row-actions">
+          <button class="btn btn-sm btn-ghost" onclick="editKeyword('${k.id}')">${editIcon()}</button>
+          <button class="btn btn-sm btn-danger" onclick="delRecord('keywords','${k.id}')">${trashIcon()}</button>
+        </div></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+function editKeyword(id) {
+  const k = id ? DB.data.keywords.find(x => x.id === id) : null;
+  if (!pagesList().length) return toast('Crea una página primero');
+  const pageOpts = DB.data.pages.map(p => `<option value="${p.id}" ${k&&k.page===p.id?'selected':''}>${p.title}</option>`).join('');
+  const intentOpts = Object.entries(INTENTS).map(([key,v]) => `<option value="${key}" ${k&&k.intent===key?'selected':''}>${v.label}</option>`).join('');
+  openModal(k ? 'Editar keyword' : 'Nueva keyword', `
+    <div class="field"><label>Palabra clave</label><input id="f-term" value="${k?k.term:''}" placeholder="Ej. mejores cafeteras de oficina"></div>
+    <div class="field"><label>Página asignada</label><select id="f-page">${pageOpts}</select></div>
+    <div class="field"><label>Intención de búsqueda</label><select id="f-intent">${intentOpts}</select></div>
+    <div class="field"><label>Nota</label><input id="f-note" value="${k?k.note||'':''}" placeholder="Opcional"></div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveKeyword('${id||''}')">Guardar</button>`);
+}
+function saveKeyword(id) {
+  const term = val('f-term'); if (!term) return toast('La palabra clave es obligatoria');
+  const page = val('f-page');
+  const pg = DB.data.pages.find(p => p.id === page);
+  const rec = { term, page, niche: pg.niche, project: pg.project, intent: val('f-intent'), note: val('f-note') };
+  if (id) Object.assign(DB.data.keywords.find(x => x.id === id), rec);
+  else DB.data.keywords.push({ id: uid(), ...rec, created: now() });
+  DB.save(); closeModal(); render(); toast('Keyword guardada');
+}
+
+/* ============================================================
+   VISTA: URLs
+   ============================================================ */
+function viewUrls() {
+  const list = urlsList();
+  if (!list.length) return emptyState('urls', 'Sin URLs todavía', 'La URL representa la ejecución real publicada. Registra su slug, estado de indexación y página asociada.', 'editUrl()');
+  return `<div class="card"><table>
+    <thead><tr><th>Slug</th><th>Página</th><th>Indexación</th><th>Estado</th><th></th></tr></thead>
+    <tbody>${list.map(u => `<tr>
+      <td><span class="mono">${u.slug}</span></td>
+      <td class="muted">${pageTitle(u.page)}</td>
+      <td>${badge(INDEX_STATES, u.indexed)}</td>
+      <td>${badge(PAGE_STATES, u.status)}</td>
+      <td><div class="row-actions">
+        <button class="btn btn-sm btn-ghost" onclick="editUrl('${u.id}')">${editIcon()}</button>
+        <button class="btn btn-sm btn-danger" onclick="delRecord('urls','${u.id}')">${trashIcon()}</button>
+      </div></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function editUrl(id) {
+  const u = id ? DB.data.urls.find(x => x.id === id) : null;
+  if (!pagesList().length) return toast('Crea una página primero');
+  const pageOpts = DB.data.pages.map(p => `<option value="${p.id}" ${u&&u.page===p.id?'selected':''}>${p.title}</option>`).join('');
+  const idxOpts = Object.entries(INDEX_STATES).map(([k,v]) => `<option value="${k}" ${u&&u.indexed===k?'selected':''}>${v.label}</option>`).join('');
+  const stOpts = Object.entries(PAGE_STATES).map(([k,v]) => `<option value="${k}" ${u&&u.status===k?'selected':''}>${v.label}</option>`).join('');
+  openModal(u ? 'Editar URL' : 'Nueva URL', `
+    <div class="field"><label>Slug / ruta</label><input id="f-slug" value="${u?u.slug:''}" placeholder="/mejores-cafeteras-oficina"></div>
+    <div class="field"><label>Página asociada</label><select id="f-page">${pageOpts}</select></div>
+    <div class="field-row">
+      <div class="field"><label>Indexación</label><select id="f-idx">${idxOpts}</select></div>
+      <div class="field"><label>Estado</label><select id="f-status">${stOpts}</select></div>
+    </div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveUrl('${id||''}')">Guardar</button>`);
+}
+function saveUrl(id) {
+  const slug = val('f-slug'); if (!slug) return toast('El slug es obligatorio');
+  const page = val('f-page');
+  const pg = DB.data.pages.find(p => p.id === page);
+  const rec = { slug, page, niche: pg.niche, project: pg.project, indexed: val('f-idx'), status: val('f-status') };
+  if (id) Object.assign(DB.data.urls.find(x => x.id === id), rec);
+  else DB.data.urls.push({ id: uid(), ...rec, created: now() });
+  DB.save(); closeModal(); render(); toast('URL guardada');
+}
+
+/* ============================================================
+   VISTA: ENLAZADO INTERNO (+ páginas huérfanas)
+   ============================================================ */
+function viewLinks() {
+  const list = linksList();
+  const pages = pagesList();
+  // Páginas huérfanas: no reciben ningún enlace interno (no son destino)
+  const targets = new Set(list.map(l => l.to));
+  const orphans = pages.filter(p => !targets.has(p.id));
+
+  let html = '';
+
+  html += `<div class="card" style="margin-bottom:18px;"><div class="card-pad section-head"><div><h2>Enlaces internos</h2><div class="hint">Relaciones entre páginas del mismo proyecto</div></div></div>`;
+  if (list.length) {
+    html += `<table>
+      <thead><tr><th>Desde</th><th>Hacia</th><th>Texto ancla</th><th></th></tr></thead>
+      <tbody>${list.map(l => `<tr>
+        <td class="t-title">${pageTitle(l.from)}</td>
+        <td>${pageTitle(l.to)}</td>
+        <td class="muted">${l.anchor || '—'}</td>
+        <td><div class="row-actions">
+          <button class="btn btn-sm btn-ghost" onclick="editLink('${l.id}')">${editIcon()}</button>
+          <button class="btn btn-sm btn-danger" onclick="delRecord('links','${l.id}')">${trashIcon()}</button>
+        </div></td>
+      </tr>`).join('')}</tbody></table>`;
+  } else {
+    html += `<div class="card-pad"><p class="muted">Aún no hay enlaces internos registrados.</p></div>`;
+  }
+  html += `</div>`;
+
+  html += `<div class="card"><div class="card-pad section-head"><div><h2>Páginas huérfanas</h2><div class="hint">Páginas que no reciben ningún enlace interno — conviene enlazarlas</div></div></div>`;
+  if (orphans.length) {
+    html += `<table><tbody>${orphans.map(p => `<tr>
+      <td><div class="t-title">${p.title}</div><div class="t-sub">${nicheName(p.niche)}</div></td>
+      <td class="nowrap"><span class="pill-type pt-${p.type}">${p.type}</span></td>
+      <td class="nowrap">${badge(PAGE_STATES, p.state)}</td>
+      <td><div class="row-actions"><button class="btn btn-sm btn-ghost" onclick="editLink(null,'${p.id}')">Enlazar</button></div></td>
+    </tr>`).join('')}</tbody></table>`;
+  } else {
+    html += `<div class="card-pad"><p class="muted">Ninguna página huérfana. Todas reciben al menos un enlace interno.</p></div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function editLink(id, presetTo) {
+  const l = id ? DB.data.links.find(x => x.id === id) : null;
+  if (pagesList().length < 2) return toast('Necesitas al menos 2 páginas');
+  const opt = (sel) => DB.data.pages.map(p => `<option value="${p.id}" ${sel===p.id?'selected':''}>${p.title}</option>`).join('');
+  openModal(l ? 'Editar enlace' : 'Nuevo enlace interno', `
+    <div class="field"><label>Desde (página origen)</label><select id="f-from">${opt(l?l.from:'')}</select></div>
+    <div class="field"><label>Hacia (página destino)</label><select id="f-to">${opt(l?l.to:(presetTo||''))}</select></div>
+    <div class="field"><label>Texto ancla</label><input id="f-anchor" value="${l?l.anchor||'':''}" placeholder="Texto del enlace"></div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveLink('${id||''}')">Guardar</button>`);
+}
+function saveLink(id) {
+  const from = val('f-from'), to = val('f-to');
+  if (from === to) return toast('Origen y destino deben ser distintos');
+  const project = DB.data.pages.find(p => p.id === from).project;
+  const rec = { from, to, anchor: val('f-anchor'), project };
+  if (id) Object.assign(DB.data.links.find(x => x.id === id), rec);
+  else DB.data.links.push({ id: uid(), ...rec, created: now() });
+  DB.save(); closeModal(); render(); toast('Enlace guardado');
+}
+
+/* ============================================================
+   VISTA: NOTAS
+   ============================================================ */
+function viewNotes() {
+  const list = notesList();
+  if (!list.length) return emptyState('notes', 'Sin notas todavía', 'Guarda notas estratégicas por proyecto: decisiones, ideas, recordatorios.', 'editNote()');
+  return `<div class="grid grid-2">${list.map(n => `
+    <div class="card card-pad">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+        <div><div class="t-title" style="font-size:15px;">${n.title}</div><div class="t-sub">${projectName(n.project)} · ${fmtDate(n.created)}</div></div>
+        <div class="row-actions">
+          <button class="btn btn-sm btn-ghost" onclick="editNote('${n.id}')">${editIcon()}</button>
+          <button class="btn btn-sm btn-danger" onclick="delRecord('notes','${n.id}')">${trashIcon()}</button>
+        </div>
+      </div>
+      <p style="margin-top:10px;color:var(--ink-soft);white-space:pre-wrap;">${n.body || ''}</p>
+    </div>`).join('')}</div>`;
+}
+
+function editNote(id) {
+  const n = id ? DB.data.notes.find(x => x.id === id) : null;
+  if (!projectsList().length) return toast('Crea un proyecto primero');
+  const projOpts = projectsList().map(p => `<option value="${p.id}" ${n&&n.project===p.id?'selected':''}>${p.name}</option>`).join('');
+  openModal(n ? 'Editar nota' : 'Nueva nota', `
+    <div class="field"><label>Título</label><input id="f-title" value="${n?n.title:''}" placeholder="Ej. Estrategia Q1"></div>
+    <div class="field"><label>Proyecto</label><select id="f-project">${projOpts}</select></div>
+    <div class="field"><label>Contenido</label><textarea id="f-body" style="min-height:140px;" placeholder="Escribe tu nota...">${n?n.body||'':''}</textarea></div>
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveNote('${id||''}')">Guardar</button>`);
+}
+function saveNote(id) {
+  const title = val('f-title'); if (!title) return toast('El título es obligatorio');
+  const rec = { title, project: val('f-project'), body: val('f-body') };
+  if (id) Object.assign(DB.data.notes.find(x => x.id === id), rec);
+  else DB.data.notes.push({ id: uid(), ...rec, created: now() });
+  DB.save(); closeModal(); render(); toast('Nota guardada');
+}
+
+/* ---------- Borrado genérico ---------- */
+function delRecord(type, id) {
+  openModal('Confirmar borrado', `<p>¿Seguro que quieres eliminar este registro? Esta acción no se puede deshacer.</p>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+     <button class="btn btn-primary" style="background:var(--danger);border-color:var(--danger);" onclick="confirmDel('${type}','${id}')">Eliminar</button>`);
+}
+function confirmDel(type, id) {
+  DB.data[type] = DB.data[type].filter(x => x.id !== id);
+  DB.save(); closeModal(); render(); toast('Registro eliminado');
+}
+
+/* ---------- Empty state helper ---------- */
+function emptyState(icon, title, text, action) {
+  return `<div class="card"><div class="empty">
+    ${ICONS[icon]}
+    <h3>${title}</h3><p>${text}</p>
+    <button class="btn btn-primary" onclick="${action}">${plusIcon()} Crear ahora</button>
+  </div></div>`;
+}
+
+/* ============================================================
+   VISTA: GENERADOR DE CONTENIDO IA
+   Integración OpenAI · borradores · NUNCA publica
+   La API key se introduce en runtime y NO se guarda en el código
+   ============================================================ */
+let AI_TARGET_PAGE = null;
+
+function viewAI() {
+  const keyOk = !!State.aiKey;
+  const pages = pagesList();
+  const pageOpts = pages.length
+    ? pages.map(p => `<option value="${p.id}" ${AI_TARGET_PAGE===p.id?'selected':''}>${p.title} · ${p.type}</option>`).join('')
+    : '';
+
+  return `
+  <div class="banner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+    <div><strong>Seguridad de la API key.</strong> Tu clave de OpenAI se introduce aquí solo para esta sesión y no se guarda en el código de la aplicación. Por seguridad, nunca compartas tu clave por chat o correo.</div>
+  </div>
+
+  <div class="card"><div class="ai-zone">
+    <div class="ai-config">
+      <div class="field">
+        <label>API Key de OpenAI</label>
+        <div class="desc">Se crea en platform.openai.com → API keys (es distinta de ChatGPT Plus)</div>
+        <input id="ai-key" type="password" placeholder="sk-..." value="${State.aiKey}" oninput="State.aiKey=this.value; refreshKeyStatus();">
+        <div id="key-status" class="key-status ${keyOk?'ok':'no'}">
+          ${keyOk ? 'Clave introducida' : 'Sin clave — introduce tu API key para generar'}
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Página de destino</label>
+        <div class="desc">El borrador se generará según el tipo y las keywords de la página</div>
+        ${pages.length ? `<select id="ai-page" onchange="AI_TARGET_PAGE=this.value; refreshAIMeta();">${pageOpts}</select>`
+          : `<p class="muted" style="font-size:13px;">No hay páginas. Crea una página primero.</p>`}
+      </div>
+
+      <div id="ai-meta" style="font-size:12.5px;color:var(--ink-soft);"></div>
+
+      <div class="field" style="margin-top:14px;">
+        <label>Modelo</label>
+        <select id="ai-model">
+          <option value="gpt-4o-mini">gpt-4o-mini (rápido y económico)</option>
+          <option value="gpt-4o">gpt-4o (mayor calidad)</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" id="ai-gen-btn" onclick="generateContent()" ${pages.length?'':'disabled'}>
+        ${ICONS.ai} Generar borrador
+      </button>
+    </div>
+
+    <div class="ai-output">
+      <div class="section-head">
+        <div><h2 style="font-size:15px;">Borrador generado</h2><div class="hint">Revisa y edita antes de publicar manualmente en WordPress</div></div>
+        <button class="btn btn-sm btn-ghost" onclick="copyDraft()" id="copy-btn" style="display:none;">Copiar</button>
+      </div>
+      <div class="ai-result empty-state" id="ai-result">El borrador aparecerá aquí. La IA genera contenido de apoyo — tú siempre revisas, editas y publicas.</div>
+    </div>
+  </div></div>`;
+}
+
+function initAIView() { refreshAIMeta(); refreshKeyStatus(); }
+
+function refreshKeyStatus() {
+  const el = document.getElementById('key-status'); if (!el) return;
+  const ok = !!State.aiKey;
+  el.className = 'key-status ' + (ok ? 'ok' : 'no');
+  el.textContent = ok ? 'Clave introducida' : 'Sin clave — introduce tu API key para generar';
+}
+
+function refreshAIMeta() {
+  const el = document.getElementById('ai-meta'); if (!el) return;
+  const sel = document.getElementById('ai-page');
+  if (!sel) { el.innerHTML = ''; return; }
+  AI_TARGET_PAGE = AI_TARGET_PAGE || sel.value;
+  const p = DB.data.pages.find(x => x.id === AI_TARGET_PAGE);
+  if (!p) { el.innerHTML = ''; return; }
+  const kws = keywordsForPage(p.id);
+  el.innerHTML = `
+    <div style="background:#fbfcfb;border:1px solid var(--line);border-radius:6px;padding:10px 12px;">
+      <div><strong>Tipo:</strong> ${PAGE_TYPES[p.type].label}</div>
+      <div><strong>Nicho:</strong> ${nicheName(p.niche)}</div>
+      <div style="margin-top:6px;"><strong>Keywords (${kws.length}):</strong><br>${kws.length ? kws.map(k => `<span class="tag">${k.term}</span>`).join('') : '<span class="muted">Sin keywords asignadas</span>'}</div>
+    </div>`;
+}
+
+function aiForPage(pageId) { AI_TARGET_PAGE = pageId; go('ai'); }
+
+/* ---------- Construcción del prompt según tipo de página ---------- */
+function buildPrompt(page, keywords) {
+  const kwList = keywords.map(k => `- ${k.term} (intención: ${INTENTS[k.intent]?.label || k.intent})`).join('\n') || '(sin keywords asignadas)';
+  const typeGuide = {
+    TSG: 'una GUÍA informacional completa (Topical Guide). Estructura pedagógica, responde dudas, cubre el tema en profundidad.',
+    TSR: 'una COMPARATIVA / contenido comercial (TSR). Compara opciones, incluye tabla comparativa, pros y contras, recomendaciones.',
+    TSA: 'una RESEÑA de producto individual (TSA). Análisis detallado de un producto, características, ventajas, desventajas y veredicto.'
+  };
+  return `Eres un asistente SEO que genera BORRADORES de contenido para revisión humana. No publicas nada; solo propones un borrador editable.
+
+Genera un borrador de contenido para la siguiente página:
+
+TÍTULO: ${page.title}
+TIPO: ${typeGuide[page.type]}
+NICHO: ${nicheName(page.niche)}
+OBJETIVO: ${page.objective || 'No especificado'}
+
+PALABRAS CLAVE A CUBRIR:
+${kwList}
+
+Devuelve el borrador en este formato:
+
+META TITLE: (máximo 60 caracteres)
+META DESCRIPTION: (máximo 155 caracteres)
+H1: (titular principal)
+
+Luego el cuerpo del artículo estructurado con encabezados H2 y H3, párrafos desarrollados, y al final una sección de PREGUNTAS FRECUENTES (FAQ) con 3-4 preguntas.
+
+Escribe en español, tono profesional y natural. Recuerda: esto es un BORRADOR para que un humano lo revise y edite antes de publicar.`;
+}
+
+/* ---------- Llamada a la API de OpenAI ---------- */
+async function generateContent() {
+  if (!State.aiKey) { toast('Introduce tu API key de OpenAI'); refreshKeyStatus(); return; }
+  const sel = document.getElementById('ai-page');
+  if (!sel) { toast('No hay página seleccionada'); return; }
+  const page = DB.data.pages.find(p => p.id === sel.value);
+  const keywords = keywordsForPage(page.id);
+  const model = document.getElementById('ai-model').value;
+
+  const result = document.getElementById('ai-result');
+  const btn = document.getElementById('ai-gen-btn');
+  result.className = 'ai-result empty-state';
+  result.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:12px;"><div class="spinner"></div><div>Generando borrador con ${model}...</div></div>`;
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + State.aiKey
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          { role: 'system', content: 'Eres un asistente de redacción SEO. Generas borradores para revisión humana. Nunca publicas.' },
+          { role: 'user', content: buildPrompt(page, keywords) }
+        ],
+        temperature: 0.7
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      let msg = `Error ${res.status}`;
+      if (res.status === 401) msg = 'API key inválida. Revisa que la clave sea correcta.';
+      else if (res.status === 429) msg = 'Sin saldo o límite alcanzado. Añade saldo en platform.openai.com → Billing.';
+      else if (err.error && err.error.message) msg = err.error.message;
+      result.className = 'ai-result empty-state';
+      result.innerHTML = `<div style="color:var(--danger);"><strong>No se pudo generar</strong><br>${msg}</div>`;
+      btn.disabled = false;
+      return;
+    }
+
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || 'Sin respuesta.';
+    result.className = 'ai-result';
+    result.textContent = text;
+    document.getElementById('copy-btn').style.display = 'inline-flex';
+    document.getElementById('copy-btn').onclick = () => { navigator.clipboard.writeText(text); toast('Borrador copiado'); };
+    toast('Borrador generado · revísalo antes de publicar');
+  } catch (e) {
+    result.className = 'ai-result empty-state';
+    result.innerHTML = `<div style="color:var(--danger);"><strong>Error de conexión</strong><br>${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function copyDraft() {
+  const t = document.getElementById('ai-result').textContent;
+  navigator.clipboard.writeText(t); toast('Borrador copiado');
+}
+
+/* ============================================================
+   ARRANQUE
+   ============================================================ */
+DB.load();
+buildNav();
+go('dashboard');
+
+</script>
+</body>
+</html>
