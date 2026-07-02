@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { ROUTES } from '../constants'
+import { APP, ROUTES } from '../constants'
 import { useApp } from '../context/AppContext'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 export function Layout() {
   const { topbarAction } = useApp()
@@ -9,12 +10,14 @@ export function Layout() {
   const routeMeta = ROUTES.find((r) => 'id' in r && r.id === routeId) as { crumb?: string; sub?: string } | undefined
   const isKnown = Boolean(routeMeta)
 
+  useDocumentTitle(isKnown ? routeMeta!.crumb : 'Página no encontrada')
+
   return (
     <div className="app">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <h1>CRM SEO</h1>
-          <span>Gestión de Nichos</span>
+          <h1>{APP.name}</h1>
+          <span>{APP.tagline}</span>
         </div>
         <nav className="nav">
           {ROUTES.map((r, i) =>
@@ -28,8 +31,8 @@ export function Layout() {
           )}
         </nav>
         <div className="sidebar-foot">
-          Fase 2 · Datos + IA<br />
-          GSC · GA4 · Sync · Asistentes
+          Datos · Integraciones · IA<br />
+          GSC · GA4 · Sincronización
         </div>
       </aside>
 

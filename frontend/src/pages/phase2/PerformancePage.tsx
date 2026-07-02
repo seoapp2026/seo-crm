@@ -26,7 +26,7 @@ export function PerformancePage() {
       <ScopeBar projects={projects} value={scopeProject} onChange={setScopeProject} />
 
       <div className="banner">
-        <strong>Panel de rendimiento (Fase 2).</strong> Datos históricos de GSC y Analytics sincronizados en segundo plano. Las páginas ganadoras, en caída y las que necesitan trabajo se calculan sobre los últimos 28 días.
+        <strong>Panel de rendimiento.</strong> Datos históricos de GSC y Analytics sincronizados en segundo plano. Las páginas ganadoras, en caída y las que necesitan trabajo se calculan sobre los últimos 28 días.
       </div>
 
       <div className="grid grid-4" style={{ marginBottom: 22 }}>

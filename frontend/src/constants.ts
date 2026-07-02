@@ -1,3 +1,12 @@
+export const APP = {
+  name: 'CRM SEO',
+  tagline: 'Nichos, datos e IA supervisada',
+  description:
+    'CRM para equipos SEO: proyectos, nichos, páginas, keywords, Search Console, Analytics e IA supervisada.',
+  themeColor: '#1f2723',
+  locale: 'es',
+} as const
+
 export const NICHE_STATES: Record<string, { label: string; cls: string }> = {
   nuevo: { label: 'Nuevo', cls: 'b-gray' },
   prueba: { label: 'En prueba', cls: 'b-blue' },
@@ -51,18 +60,18 @@ export const ROUTES = [
   { id: 'notes', label: 'Notas', crumb: 'Notas', sub: 'Notas estratégicas' },
   { group: 'Asistente' },
   { id: 'ai', label: 'Generador IA', crumb: 'Generador de contenido IA', sub: 'Borradores con ChatGPT · siempre revisión manual' },
-  { group: 'Datos (Fase 2)' },
+  { group: 'Datos' },
   { id: 'performance', label: 'Rendimiento', crumb: 'Panel de rendimiento', sub: 'Páginas ganadoras, en caída y prioridades' },
   { id: 'gsc-data', label: 'Search Console', crumb: 'Datos Search Console', sub: 'Impresiones, clicks, CTR y posición por URL' },
   { id: 'analytics-data', label: 'Analytics', crumb: 'Datos Google Analytics', sub: 'Sesiones, usuarios, rebote y engagement' },
   { id: 'ads-keywords', label: 'Keywords Ads', crumb: 'Google Ads Keyword Planner', sub: 'Volumen, competencia y CPC' },
-  { group: 'Integraciones (Fase 2)' },
+  { group: 'Integraciones' },
   { id: 'integrations', label: 'Google OAuth', crumb: 'Integraciones Google', sub: 'Search Console, Analytics y Ads' },
   { id: 'sync', label: 'Sincronización', crumb: 'Sincronización en segundo plano', sub: 'Trabajos programados e histórico' },
   { id: 'competitors', label: 'Competidores', crumb: 'Competidores', sub: 'Dominios rivales por nicho' },
-  { group: 'IA avanzada (Fase 2)' },
+  { group: 'IA avanzada' },
   { id: 'assistants', label: 'Asistentes IA', crumb: 'Asistentes IA especializados', sub: '5 asistentes con prompts editables' },
-  { id: 'prompts', label: 'Editor prompts', crumb: 'Editor de prompts IA', sub: 'Prompts en base de datos · nunca hardcodeados' },
-  { group: 'Publicación (Fase 2)' },
+  { id: 'prompts', label: 'Editor de prompts', crumb: 'Editor de prompts IA', sub: 'Prompts en base de datos · nunca hardcodeados' },
+  { group: 'Publicación' },
   { id: 'wordpress', label: 'WordPress', crumb: 'Puente WordPress', sub: 'Exportar estructura · publicación manual' },
 ] as const

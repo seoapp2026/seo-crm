@@ -33,7 +33,7 @@ input, select, textarea { font-family: inherit; font-size: 14px; }
 }
 .sidebar-brand { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.07); }
 .sidebar-brand h1 { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 0.2px; }
-.sidebar-brand span { font-size: 11px; color: var(--sidebar-ink-soft); text-transform: uppercase; letter-spacing: 1px; }
+.sidebar-brand span { font-size: 11px; color: var(--sidebar-ink-soft); letter-spacing: 0.2px; line-height: 1.35; }
 .nav { flex: 1; padding: 10px 0; overflow-y: auto; }
 .nav-group-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--sidebar-ink-soft); padding: 14px 18px 6px; }
 .nav-item {

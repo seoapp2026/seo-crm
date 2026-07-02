@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
+import { APP } from '../constants'
 
 export function NotFoundPage() {
   const { pathname } = useLocation()
@@ -8,7 +9,7 @@ export function NotFoundPage() {
       <div className="not-found-code">404</div>
       <h1>Página no encontrada</h1>
       <p className="muted">
-        No existe ninguna ruta para <code className="mono">{pathname}</code> en el CRM.
+        No existe ninguna ruta para <code className="mono">{pathname}</code> en {APP.name}.
       </p>
       <div className="not-found-actions">
         <Link to="/dashboard" className="btn btn-primary">Ir al panel</Link>
