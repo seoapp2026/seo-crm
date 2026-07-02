@@ -15,8 +15,6 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173"
     secret_key: str = "change-me-in-production"
     app_env: str = "development"
-    serve_frontend: bool = True
-    frontend_url: str = ""
 
     # ── Server (Railway sets PORT automatically) ────────────────────────────
     port: int = 8000
@@ -54,18 +52,9 @@ class Settings(BaseSettings):
             return False
         return self.app_env != "production"
 
-    @field_validator("serve_frontend", mode="before")
-    @classmethod
-    def parse_serve_frontend(cls, v):
-        if isinstance(v, str):
-            return v.lower() in ("1", "true", "yes")
-        return bool(v) if v is not None else True
-
     @property
     def cors_origin_list(self) -> list[str]:
         origins = [o.strip() for o in self.cors_origins.split(",") if o.strip()]
-        if self.frontend_url:
-            origins.append(self.frontend_url.rstrip("/"))
         railway_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN")
         if railway_domain:
             origins.append(f"https://{railway_domain}")
