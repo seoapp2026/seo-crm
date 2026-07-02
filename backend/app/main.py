@@ -49,7 +49,22 @@ def health():
     return {"status": "ok", "env": settings.app_env}
 
 
+if not settings.serve_frontend:
+
+    @app.get("/", include_in_schema=False)
+    def api_root():
+        return {
+            "service": "seo-crm-api",
+            "prefix": API_PREFIX,
+            "health": f"{API_PREFIX}/health",
+            "docs": settings.docs_url,
+        }
+
+
 def _mount_frontend():
+    if not settings.serve_frontend:
+        return
+
     static_root = Path(settings.resolved_static_dir).resolve()
     if not static_root.is_dir():
         return

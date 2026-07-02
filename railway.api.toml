@@ -1,0 +1,13 @@
+# Railway config for the API service (separate domain, e.g. api-seo-crm.up.railway.app)
+# Dashboard → API service → Settings → set Config file path: railway.api.toml
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.api"
+watchPatterns = ["backend/**", "Dockerfile.api", "railway.api.toml"]
+
+[deploy]
+healthcheckPath = "/api/seo-crm/health"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
