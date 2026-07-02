@@ -29,6 +29,7 @@ from app.routers import (
     urls,
     wordpress,
 )
+from app.migrate import run_light_migrations
 from app.seed import seed_if_empty
 from app.seed_phase2 import seed_phase2
 from app.services.sync_scheduler import start_scheduler
@@ -80,6 +81,7 @@ for r in [
 @app.on_event("startup")
 def on_startup():
     Base.metadata.create_all(bind=engine)
+    run_light_migrations()
     seed_if_empty()
     from app.database import SessionLocal
 

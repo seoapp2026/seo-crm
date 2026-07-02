@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { phase2Api } from '../../api/phase2-client'
 import { ScopeBar } from '../../components/ScopeBar'
 import { ConnectionCard } from '../../components/phase2/ConnectionCard'
@@ -29,6 +29,7 @@ export function IntegrationsPage() {
   }, [searchParams, setSearchParams, toast, reload])
 
   const effectiveProject = scopeProject === 'all' ? projects[0]?.id : scopeProject
+  const activeProject = projects.find((p) => p.id === effectiveProject)
 
   const connect = async (service: GoogleAuth['service']) => {
     if (!effectiveProject) return toast('Selecciona un proyecto')
@@ -63,6 +64,23 @@ export function IntegrationsPage() {
         <p className="muted" style={{ marginBottom: 16 }}>
           Mostrando integraciones del primer proyecto. Filtra por proyecto para gestionar cada web.
         </p>
+      )}
+
+      {activeProject && (
+        <div className="card card-pad" style={{ marginBottom: 16 }}>
+          <div className="section-head">
+            <h2 style={{ fontSize: 15 }}>Objetivos de este proyecto</h2>
+            <Link to="/projects" className="btn btn-sm">Editar en Proyectos</Link>
+          </div>
+          <p className="t-sub" style={{ marginBottom: 6 }}>
+            <strong>GSC:</strong>{' '}
+            <span className="mono">{activeProject.gsc_site_url || '— sin configurar —'}</span>
+          </p>
+          <p className="t-sub">
+            <strong>GA4:</strong>{' '}
+            <span className="mono">{activeProject.ga4_property_id || '— sin configurar —'}</span>
+          </p>
+        </div>
       )}
 
       <div className="grid grid-1 gap-16">

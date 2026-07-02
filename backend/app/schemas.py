@@ -22,17 +22,23 @@ class OrmBase(BaseModel):
 class ProjectCreate(BaseModel):
     name: str
     description: str | None = None
+    gsc_site_url: str | None = None
+    ga4_property_id: str | None = None
 
 
 class ProjectUpdate(BaseModel):
     name: str | None = None
     description: str | None = None
+    gsc_site_url: str | None = None
+    ga4_property_id: str | None = None
 
 
 class ProjectOut(OrmBase):
     id: int
     name: str
     description: str | None
+    gsc_site_url: str | None
+    ga4_property_id: str | None
     created_at: datetime
 
 

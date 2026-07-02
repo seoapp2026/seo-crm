@@ -12,7 +12,8 @@ from googleapiclient.discovery import build
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.models import GoogleAuth, GoogleServiceType
+from app.models import GoogleAuth, GoogleServiceType, Project
+from app.services.project_targets import apply_project_targets_to_auth
 
 SCOPES = {
     GoogleServiceType.gsc: ["https://www.googleapis.com/auth/webmasters.readonly"],
@@ -105,12 +106,9 @@ def save_credentials(db: Session, auth: GoogleAuth, creds: Credentials, service:
     else:
         auth.token_expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
 
-    if service == GoogleServiceType.gsc and settings.gsc_site_url:
-        auth.property_id = settings.gsc_site_url
-        auth.property_label = settings.gsc_site_url
-    elif service == GoogleServiceType.ga4 and settings.ga4_property_id:
-        auth.property_id = settings.ga4_property_id
-        auth.property_label = f"GA4 — {settings.ga4_property_id}"
+    project = db.get(Project, auth.project_id)
+    if project:
+        apply_project_targets_to_auth(db, project, auth)
 
     try:
         oauth2 = build("oauth2", "v2", credentials=creds)

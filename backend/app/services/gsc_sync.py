@@ -3,13 +3,9 @@ from datetime import date, datetime, timedelta, timezone
 from googleapiclient.discovery import build
 from sqlalchemy.orm import Session
 
-from app.config import settings
 from app.models import GoogleAuth, GoogleServiceType, GscData, SyncJob, SyncJobStatus, SyncJobType, Url
 from app.services.google_oauth import credentials_from_auth, save_credentials
-
-
-def _site_url(auth: GoogleAuth) -> str:
-    return auth.property_id or settings.gsc_site_url
+from app.services.project_targets import resolve_gsc_site
 
 
 def sync_gsc_for_project(db: Session, project_id: int) -> int:
@@ -18,9 +14,9 @@ def sync_gsc_for_project(db: Session, project_id: int) -> int:
         .filter(GoogleAuth.project_id == project_id, GoogleAuth.service == GoogleServiceType.gsc)
         .first()
     )
-    site = _site_url(auth) if auth else None
+    site = resolve_gsc_site(db, project_id, auth)
     if not auth or not auth.refresh_token or not site:
-        raise ValueError("GSC no conectado o GSC_SITE_URL no configurado")
+        raise ValueError("GSC no conectado — configura la URL de Search Console en el proyecto")
 
     job = (
         db.query(SyncJob)

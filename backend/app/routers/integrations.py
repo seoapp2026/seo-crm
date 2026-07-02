@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
 from app.models import GoogleAuth, GoogleServiceType, Project
+from app.services.project_targets import project_ga4_property, project_gsc_site
 from app.schemas_phase2 import GoogleAuthOut, GoogleConnectRequest, GoogleConnectResponse
 from app.services.google_oauth import (
     auth_to_out,
@@ -38,10 +39,21 @@ def list_google_integrations(project_id: int | None = Query(None), db: Session =
 
 @router.post("/google/connect", response_model=GoogleConnectResponse)
 def connect_google(payload: GoogleConnectRequest, db: Session = Depends(get_db)):
-    if not db.get(Project, payload.project_id):
+    project = db.get(Project, payload.project_id)
+    if not project:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
     if payload.service == GoogleServiceType.ads:
         raise HTTPException(status_code=400, detail="Google Ads OAuth pendiente — requiere developer token")
+    if payload.service == GoogleServiceType.gsc and not project_gsc_site(project):
+        raise HTTPException(
+            status_code=400,
+            detail="Configura la URL de Search Console en Proyectos (ej. https://www.tusitio.com/)",
+        )
+    if payload.service == GoogleServiceType.ga4 and not project_ga4_property(project):
+        raise HTTPException(
+            status_code=400,
+            detail="Configura el GA4 Property ID en Proyectos antes de conectar",
+        )
     get_or_create_auth(db, payload.project_id, payload.service)
     url = build_auth_url(payload.project_id, payload.service)
     return GoogleConnectResponse(auth_url=url)

@@ -5,16 +5,9 @@ from google.analytics.data_v1beta.types import DateRange, Dimension, Metric, Run
 from google.oauth2.credentials import Credentials
 from sqlalchemy.orm import Session
 
-from app.config import settings
 from app.models import AnalyticsData, GoogleAuth, GoogleServiceType, SyncJob, SyncJobStatus, SyncJobType
 from app.services.google_oauth import SCOPES, credentials_from_auth, save_credentials
-
-
-def _property_id(auth: GoogleAuth) -> str:
-    raw = auth.property_id or settings.ga4_property_id
-    if not raw:
-        return ""
-    return raw if raw.startswith("properties/") else f"properties/{raw}"
+from app.services.project_targets import resolve_ga4_property
 
 
 def sync_ga4_for_project(db: Session, project_id: int) -> int:
@@ -23,9 +16,9 @@ def sync_ga4_for_project(db: Session, project_id: int) -> int:
         .filter(GoogleAuth.project_id == project_id, GoogleAuth.service == GoogleServiceType.ga4)
         .first()
     )
-    property_id = _property_id(auth) if auth else ""
+    property_id = resolve_ga4_property(db, project_id, auth)
     if not auth or not auth.refresh_token or not property_id:
-        raise ValueError("GA4 no conectado o GA4_PROPERTY_ID no configurado")
+        raise ValueError("GA4 no conectado — configura el Property ID en el proyecto")
 
     job = (
         db.query(SyncJob)

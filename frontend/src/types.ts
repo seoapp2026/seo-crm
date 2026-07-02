@@ -9,6 +9,8 @@ export interface Project {
   id: number
   name: string
   description: string | null
+  gsc_site_url: string | null
+  ga4_property_id: string | null
   created_at: string
 }
 

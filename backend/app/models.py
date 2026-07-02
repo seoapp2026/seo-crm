@@ -59,6 +59,8 @@ class Project(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
+    gsc_site_url: Mapped[str | None] = mapped_column(Text)
+    ga4_property_id: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     niches: Mapped[list["Niche"]] = relationship(back_populates="project")

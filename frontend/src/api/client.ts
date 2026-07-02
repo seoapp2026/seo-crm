@@ -35,9 +35,19 @@ export const api = {
 
   projects: {
     list: () => request<Project[]>(`${API_BASE}/projects`),
-    create: (data: { name: string; description?: string }) =>
+    create: (data: {
+      name: string
+      description?: string
+      gsc_site_url?: string
+      ga4_property_id?: string
+    }) =>
       request<Project>(`${API_BASE}/projects`, { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: number, data: Partial<{ name: string; description: string }>) =>
+    update: (id: number, data: Partial<{
+      name: string
+      description: string
+      gsc_site_url: string
+      ga4_property_id: string
+    }>) =>
       request<Project>(`${API_BASE}/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     remove: (id: number) => request<void>(`${API_BASE}/projects/${id}`, { method: 'DELETE' }),
   },
