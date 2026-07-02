@@ -6,11 +6,18 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
+from app.constants import API_PREFIX
 from app.database import Base, engine
 from app.routers import ai, dashboard, keywords, links, niches, notes, pages, projects, urls
 from app.seed import seed_if_empty
 
-app = FastAPI(title="CRM SEO", version="0.2.0")
+app = FastAPI(
+    title="CRM SEO",
+    version="0.2.0",
+    docs_url=settings.docs_url,
+    redoc_url=None,
+    openapi_url=settings.openapi_url,
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,15 +27,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(projects.router, prefix="/api")
-app.include_router(niches.router, prefix="/api")
-app.include_router(pages.router, prefix="/api")
-app.include_router(keywords.router, prefix="/api")
-app.include_router(urls.router, prefix="/api")
-app.include_router(links.router, prefix="/api")
-app.include_router(notes.router, prefix="/api")
-app.include_router(dashboard.router, prefix="/api")
-app.include_router(ai.router, prefix="/api")
+app.include_router(projects.router, prefix=API_PREFIX)
+app.include_router(niches.router, prefix=API_PREFIX)
+app.include_router(pages.router, prefix=API_PREFIX)
+app.include_router(keywords.router, prefix=API_PREFIX)
+app.include_router(urls.router, prefix=API_PREFIX)
+app.include_router(links.router, prefix=API_PREFIX)
+app.include_router(notes.router, prefix=API_PREFIX)
+app.include_router(dashboard.router, prefix=API_PREFIX)
+app.include_router(ai.router, prefix=API_PREFIX)
 
 
 @app.on_event("startup")
@@ -37,7 +44,7 @@ def on_startup():
     seed_if_empty()
 
 
-@app.get("/api/health")
+@app.get(f"{API_PREFIX}/health")
 def health():
     return {"status": "ok", "env": settings.app_env}
 
@@ -51,9 +58,11 @@ def _mount_frontend():
     if assets_dir.is_dir():
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
+    api_segment = API_PREFIX.lstrip("/")
+
     @app.get("/{full_path:path}", include_in_schema=False)
     async def spa_fallback(full_path: str):
-        if full_path.startswith("api/"):
+        if full_path == api_segment or full_path.startswith(f"{api_segment}/"):
             raise HTTPException(status_code=404, detail="Not found")
         candidate = static_root / full_path
         if full_path and candidate.is_file():

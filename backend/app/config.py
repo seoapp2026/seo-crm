@@ -3,6 +3,8 @@ import os
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.constants import API_PREFIX
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -13,7 +15,6 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173"
     secret_key: str = "change-me-in-production"
     app_env: str = "development"
-
     # ── Server (Railway sets PORT automatically) ────────────────────────────
     port: int = 8000
     static_dir: str = ""
@@ -42,6 +43,15 @@ class Settings(BaseSettings):
         return v
 
     @property
+    def docs_enabled(self) -> bool:
+        flag = os.getenv("ENABLE_API_DOCS", "").lower()
+        if flag in ("1", "true", "yes"):
+            return True
+        if flag in ("0", "false", "no"):
+            return False
+        return self.app_env != "production"
+
+    @property
     def cors_origin_list(self) -> list[str]:
         origins = [o.strip() for o in self.cors_origins.split(",") if o.strip()]
         railway_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN")
@@ -54,6 +64,14 @@ class Settings(BaseSettings):
         if self.static_dir:
             return self.static_dir
         return os.getenv("STATIC_DIR", "../frontend/dist")
+
+    @property
+    def docs_url(self) -> str | None:
+        return f"{API_PREFIX}/docs" if self.docs_enabled else None
+
+    @property
+    def openapi_url(self) -> str | None:
+        return f"{API_PREFIX}/openapi.json" if self.docs_enabled else None
 
 
 settings = Settings()

@@ -1,3 +1,4 @@
+import { API_BASE } from './base'
 import {
   MOCK_ADS_KEYWORDS,
   MOCK_AI_PROMPTS,
@@ -59,13 +60,13 @@ function projectQuery(projectId: number | 'all') {
 export const phase2Api = {
   integrations: {
     list: async (projectId: number | 'all') => {
-      const data = await tryBackend<GoogleAuth[]>(`/api/integrations/google${projectQuery(projectId)}`)
+      const data = await tryBackend<GoogleAuth[]>(`${API_BASE}/integrations/google${projectQuery(projectId)}`)
       if (data) return data
       await delay()
       return projectFilter(MOCK_GOOGLE_AUTH, projectId)
     },
     connect: async (projectId: number, service: GoogleService) => {
-      const data = await tryBackend<GoogleAuth>(`/api/integrations/google/connect`, {
+      const data = await tryBackend<GoogleAuth>(`${API_BASE}/integrations/google/connect`, {
         method: 'POST',
         body: JSON.stringify({ project_id: projectId, service }),
       })
@@ -80,7 +81,7 @@ export const phase2Api = {
       return existing!
     },
     disconnect: async (id: number) => {
-      const ok = await tryBackend<void>(`/api/integrations/google/${id}`, { method: 'DELETE' })
+      const ok = await tryBackend<void>(`${API_BASE}/integrations/google/${id}`, { method: 'DELETE' })
       if (ok !== null) return
       await delay()
       const row = MOCK_GOOGLE_AUTH.find((a) => a.id === id)
@@ -95,13 +96,13 @@ export const phase2Api = {
 
   sync: {
     list: async (projectId: number | 'all') => {
-      const data = await tryBackend<SyncJob[]>(`/api/sync/jobs${projectQuery(projectId)}`)
+      const data = await tryBackend<SyncJob[]>(`${API_BASE}/sync/jobs${projectQuery(projectId)}`)
       if (data) return data
       await delay()
       return projectFilter(MOCK_SYNC_JOBS, projectId)
     },
     runNow: async (jobId: number) => {
-      const data = await tryBackend<SyncJob>(`/api/sync/jobs/${jobId}/run`, { method: 'POST' })
+      const data = await tryBackend<SyncJob>(`${API_BASE}/sync/jobs/${jobId}/run`, { method: 'POST' })
       if (data) return data
       await delay(800)
       const job = MOCK_SYNC_JOBS.find((j) => j.id === jobId)
@@ -115,7 +116,7 @@ export const phase2Api = {
       return job
     },
     toggle: async (jobId: number, enabled: boolean) => {
-      const data = await tryBackend<SyncJob>(`/api/sync/jobs/${jobId}`, {
+      const data = await tryBackend<SyncJob>(`${API_BASE}/sync/jobs/${jobId}`, {
         method: 'PATCH',
         body: JSON.stringify({ enabled }),
       })
@@ -130,7 +131,7 @@ export const phase2Api = {
   performance: {
     summary: async (projectId: number | 'all') => {
       const data = await tryBackend<PerformanceSummary>(
-        `/api/performance/summary${projectQuery(projectId)}`,
+        `${API_BASE}/performance/summary${projectQuery(projectId)}`,
       )
       if (data) return data
       await delay()
@@ -145,7 +146,7 @@ export const phase2Api = {
       if (range?.from) qs.set('from', range.from)
       if (range?.to) qs.set('to', range.to)
       const q = qs.toString() ? `?${qs}` : ''
-      const data = await tryBackend<GscDataRow[]>(`/api/gsc/data${q}`)
+      const data = await tryBackend<GscDataRow[]>(`${API_BASE}/gsc/data${q}`)
       if (data) return data
       await delay()
       return projectFilter(MOCK_GSC_ROWS, projectId).filter((r) => inDateRange(r.date, range))
@@ -159,7 +160,7 @@ export const phase2Api = {
       if (range?.from) qs.set('from', range.from)
       if (range?.to) qs.set('to', range.to)
       const q = qs.toString() ? `?${qs}` : ''
-      const data = await tryBackend<AnalyticsDataRow[]>(`/api/analytics/data${q}`)
+      const data = await tryBackend<AnalyticsDataRow[]>(`${API_BASE}/analytics/data${q}`)
       if (data) return data
       await delay()
       return projectFilter(MOCK_ANALYTICS_ROWS, projectId).filter((r) => inDateRange(r.date, range))
@@ -168,7 +169,7 @@ export const phase2Api = {
 
   adsKeywords: {
     list: async (projectId: number | 'all') => {
-      const data = await tryBackend<AdsKeyword[]>(`/api/ads/keywords${projectQuery(projectId)}`)
+      const data = await tryBackend<AdsKeyword[]>(`${API_BASE}/ads/keywords${projectQuery(projectId)}`)
       if (data) return data
       await delay()
       return projectFilter(MOCK_ADS_KEYWORDS, projectId)
@@ -177,13 +178,13 @@ export const phase2Api = {
 
   competitors: {
     list: async (projectId: number | 'all') => {
-      const data = await tryBackend<Competitor[]>(`/api/competitors${projectQuery(projectId)}`)
+      const data = await tryBackend<Competitor[]>(`${API_BASE}/competitors${projectQuery(projectId)}`)
       if (data) return data
       await delay()
       return projectFilter(MOCK_COMPETITORS, projectId)
     },
     create: async (data: Omit<Competitor, 'id' | 'created_at' | 'pages_tracked'>) => {
-      const res = await tryBackend<Competitor>('/api/competitors', {
+      const res = await tryBackend<Competitor>('${API_BASE}/competitors', {
         method: 'POST',
         body: JSON.stringify(data),
       })
@@ -199,7 +200,7 @@ export const phase2Api = {
       return row
     },
     update: async (id: number, data: Partial<Competitor>) => {
-      const res = await tryBackend<Competitor>(`/api/competitors/${id}`, {
+      const res = await tryBackend<Competitor>(`${API_BASE}/competitors/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(data),
       })
@@ -210,7 +211,7 @@ export const phase2Api = {
       return row
     },
     remove: async (id: number) => {
-      const res = await tryBackend<void>(`/api/competitors/${id}`, { method: 'DELETE' })
+      const res = await tryBackend<void>(`${API_BASE}/competitors/${id}`, { method: 'DELETE' })
       if (res !== null) return
       await delay()
       const idx = MOCK_COMPETITORS.findIndex((c) => c.id === id)
@@ -220,13 +221,13 @@ export const phase2Api = {
 
   prompts: {
     list: async () => {
-      const data = await tryBackend<AiPrompt[]>('/api/ai/prompts')
+      const data = await tryBackend<AiPrompt[]>('${API_BASE}/ai/prompts')
       if (data) return data
       await delay()
       return [...MOCK_AI_PROMPTS]
     },
     update: async (id: number, payload: Partial<Pick<AiPrompt, 'system_prompt' | 'model_default' | 'description'>>) => {
-      const data = await tryBackend<AiPrompt>(`/api/ai/prompts/${id}`, {
+      const data = await tryBackend<AiPrompt>(`${API_BASE}/ai/prompts/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(payload),
       })
@@ -240,7 +241,7 @@ export const phase2Api = {
 
   assistants: {
     run: async (payload: AssistantRunRequest) => {
-      const data = await tryBackend<AssistantRunResponse>('/api/ai/assistants/run', {
+      const data = await tryBackend<AssistantRunResponse>('${API_BASE}/ai/assistants/run', {
         method: 'POST',
         body: JSON.stringify(payload),
       })
@@ -252,7 +253,7 @@ export const phase2Api = {
 
   wordpress: {
     export: async (projectId: number) => {
-      const data = await tryBackend<WpExportBundle>(`/api/wordpress/export?project_id=${projectId}`)
+      const data = await tryBackend<WpExportBundle>(`${API_BASE}/wordpress/export?project_id=${projectId}`)
       if (data) return data
       await delay(500)
       return { ...MOCK_WP_EXPORT, project_name: projectId === 1 ? 'Afiliación Hogar' : 'Proyecto' }

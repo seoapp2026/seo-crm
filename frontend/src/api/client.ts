@@ -9,6 +9,7 @@ import type {
   Project,
   Url,
 } from '../types'
+import { API_BASE } from './base'
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(path, {
@@ -28,82 +29,82 @@ function projectQuery(projectId: number | 'all') {
 }
 
 export const api = {
-  health: () => request<{ status: string }>('/api/health'),
+  health: () => request<{ status: string }>(`${API_BASE}/health`),
   dashboard: (projectId: number | 'all') =>
-    request<DashboardStats>(`/api/dashboard/stats${projectQuery(projectId)}`),
+    request<DashboardStats>(`${API_BASE}/dashboard/stats${projectQuery(projectId)}`),
 
   projects: {
-    list: () => request<Project[]>('/api/projects'),
+    list: () => request<Project[]>(`${API_BASE}/projects`),
     create: (data: { name: string; description?: string }) =>
-      request<Project>('/api/projects', { method: 'POST', body: JSON.stringify(data) }),
+      request<Project>(`${API_BASE}/projects`, { method: 'POST', body: JSON.stringify(data) }),
     update: (id: number, data: Partial<{ name: string; description: string }>) =>
-      request<Project>(`/api/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-    remove: (id: number) => request<void>(`/api/projects/${id}`, { method: 'DELETE' }),
+      request<Project>(`${API_BASE}/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    remove: (id: number) => request<void>(`${API_BASE}/projects/${id}`, { method: 'DELETE' }),
   },
 
   niches: {
     list: (projectId: number | 'all') =>
-      request<Niche[]>(`/api/niches${projectQuery(projectId)}`),
+      request<Niche[]>(`${API_BASE}/niches${projectQuery(projectId)}`),
     create: (data: Omit<Niche, 'id' | 'created_at'>) =>
-      request<Niche>('/api/niches', { method: 'POST', body: JSON.stringify(data) }),
+      request<Niche>(`${API_BASE}/niches`, { method: 'POST', body: JSON.stringify(data) }),
     update: (id: number, data: Partial<Niche>) =>
-      request<Niche>(`/api/niches/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-    remove: (id: number) => request<void>(`/api/niches/${id}`, { method: 'DELETE' }),
+      request<Niche>(`${API_BASE}/niches/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    remove: (id: number) => request<void>(`${API_BASE}/niches/${id}`, { method: 'DELETE' }),
   },
 
   pages: {
     list: (projectId: number | 'all') =>
-      request<Page[]>(`/api/pages${projectQuery(projectId)}`),
+      request<Page[]>(`${API_BASE}/pages${projectQuery(projectId)}`),
     create: (data: Omit<Page, 'id' | 'created_at'>) =>
-      request<Page>('/api/pages', { method: 'POST', body: JSON.stringify(data) }),
+      request<Page>(`${API_BASE}/pages`, { method: 'POST', body: JSON.stringify(data) }),
     update: (id: number, data: Partial<Page>) =>
-      request<Page>(`/api/pages/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-    remove: (id: number) => request<void>(`/api/pages/${id}`, { method: 'DELETE' }),
+      request<Page>(`${API_BASE}/pages/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    remove: (id: number) => request<void>(`${API_BASE}/pages/${id}`, { method: 'DELETE' }),
   },
 
   keywords: {
     list: (projectId: number | 'all') =>
-      request<Keyword[]>(`/api/keywords${projectQuery(projectId)}`),
+      request<Keyword[]>(`${API_BASE}/keywords${projectQuery(projectId)}`),
     create: (data: Omit<Keyword, 'id' | 'created_at' | 'cannibalized'>) =>
-      request<Keyword>('/api/keywords', { method: 'POST', body: JSON.stringify(data) }),
+      request<Keyword>(`${API_BASE}/keywords`, { method: 'POST', body: JSON.stringify(data) }),
     update: (id: number, data: Partial<Keyword>) =>
-      request<Keyword>(`/api/keywords/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-    remove: (id: number) => request<void>(`/api/keywords/${id}`, { method: 'DELETE' }),
+      request<Keyword>(`${API_BASE}/keywords/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    remove: (id: number) => request<void>(`${API_BASE}/keywords/${id}`, { method: 'DELETE' }),
   },
 
   urls: {
     list: (projectId: number | 'all') =>
-      request<Url[]>(`/api/urls${projectQuery(projectId)}`),
+      request<Url[]>(`${API_BASE}/urls${projectQuery(projectId)}`),
     create: (data: Omit<Url, 'id' | 'created_at'>) =>
-      request<Url>('/api/urls', { method: 'POST', body: JSON.stringify(data) }),
+      request<Url>(`${API_BASE}/urls`, { method: 'POST', body: JSON.stringify(data) }),
     update: (id: number, data: Partial<Url>) =>
-      request<Url>(`/api/urls/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-    remove: (id: number) => request<void>(`/api/urls/${id}`, { method: 'DELETE' }),
+      request<Url>(`${API_BASE}/urls/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    remove: (id: number) => request<void>(`${API_BASE}/urls/${id}`, { method: 'DELETE' }),
   },
 
   links: {
     list: (projectId: number | 'all') =>
-      request<InternalLink[]>(`/api/links${projectQuery(projectId)}`),
+      request<InternalLink[]>(`${API_BASE}/links${projectQuery(projectId)}`),
     create: (data: Omit<InternalLink, 'id' | 'created_at'>) =>
-      request<InternalLink>('/api/links', { method: 'POST', body: JSON.stringify(data) }),
+      request<InternalLink>(`${API_BASE}/links`, { method: 'POST', body: JSON.stringify(data) }),
     update: (id: number, data: Partial<InternalLink>) =>
-      request<InternalLink>(`/api/links/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-    remove: (id: number) => request<void>(`/api/links/${id}`, { method: 'DELETE' }),
+      request<InternalLink>(`${API_BASE}/links/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    remove: (id: number) => request<void>(`${API_BASE}/links/${id}`, { method: 'DELETE' }),
   },
 
   notes: {
     list: (projectId: number | 'all') =>
-      request<Note[]>(`/api/notes${projectQuery(projectId)}`),
+      request<Note[]>(`${API_BASE}/notes${projectQuery(projectId)}`),
     create: (data: Omit<Note, 'id' | 'created_at'>) =>
-      request<Note>('/api/notes', { method: 'POST', body: JSON.stringify(data) }),
+      request<Note>(`${API_BASE}/notes`, { method: 'POST', body: JSON.stringify(data) }),
     update: (id: number, data: Partial<Note>) =>
-      request<Note>(`/api/notes/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-    remove: (id: number) => request<void>(`/api/notes/${id}`, { method: 'DELETE' }),
+      request<Note>(`${API_BASE}/notes/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    remove: (id: number) => request<void>(`${API_BASE}/notes/${id}`, { method: 'DELETE' }),
   },
 
   ai: {
     generate: (pageId: number, model: string) =>
-      request<GenerateContentResponse>('/api/ai/generate', {
+      request<GenerateContentResponse>(`${API_BASE}/ai/generate`, {
         method: 'POST',
         body: JSON.stringify({ page_id: pageId, model }),
       }),
