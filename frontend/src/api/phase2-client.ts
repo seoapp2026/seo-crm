@@ -4,7 +4,6 @@ import {
   MOCK_AI_PROMPTS,
   MOCK_ANALYTICS_ROWS,
   MOCK_COMPETITORS,
-  MOCK_GOOGLE_AUTH,
   MOCK_GSC_ROWS,
   MOCK_SYNC_JOBS,
   MOCK_WP_EXPORT,
@@ -39,6 +38,19 @@ function inDateRange(date: string, range?: DateRange) {
   return date >= range.from && date <= range.to
 }
 
+async function parseApiError(res: Response): Promise<string> {
+  try {
+    const body = await res.json()
+    if (typeof body?.detail === 'string') return body.detail
+    if (Array.isArray(body?.detail)) {
+      return body.detail.map((d: { msg?: string }) => d.msg).filter(Boolean).join(', ') || res.statusText
+    }
+  } catch {
+    /* ignore */
+  }
+  return res.statusText || 'Error del servidor'
+}
+
 async function tryBackend<T>(path: string, options?: RequestInit): Promise<T | null> {
   try {
     const res = await fetch(path, {
@@ -53,6 +65,16 @@ async function tryBackend<T>(path: string, options?: RequestInit): Promise<T | n
   }
 }
 
+async function tryBackendOrThrow<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(path, {
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    ...options,
+  })
+  if (!res.ok) throw new Error(await parseApiError(res))
+  if (res.status === 204) return undefined as T
+  return res.json()
+}
+
 function projectQuery(projectId: number | 'all') {
   return projectId === 'all' ? '' : `?project_id=${projectId}`
 }
@@ -60,41 +82,21 @@ function projectQuery(projectId: number | 'all') {
 export const phase2Api = {
   integrations: {
     list: async (projectId: number | 'all') => {
-      const data = await tryBackend<GoogleAuth[]>(`${API_BASE}/integrations/google${projectQuery(projectId)}`)
-      if (data) return data
-      await delay()
-      return projectFilter(MOCK_GOOGLE_AUTH, projectId)
+      return tryBackendOrThrow<GoogleAuth[]>(`${API_BASE}/integrations/google${projectQuery(projectId)}`)
     },
-    connect: async (projectId: number, service: GoogleService): Promise<{ auth_url?: string }> => {
-      const data = await tryBackend<{ auth_url?: string; auth?: GoogleAuth }>(
+    connect: async (projectId: number, service: GoogleService): Promise<{ auth_url: string }> => {
+      const data = await tryBackendOrThrow<{ auth_url: string }>(
         `${API_BASE}/integrations/google/connect`,
         {
           method: 'POST',
           body: JSON.stringify({ project_id: projectId, service }),
         },
       )
-      if (data?.auth_url) return { auth_url: data.auth_url }
-      if (data?.auth) return {}
-      await delay(400)
-      const existing = MOCK_GOOGLE_AUTH.find((a) => a.project_id === projectId && a.service === service)
-      if (existing) {
-        existing.connected = true
-        existing.account_email = 'cliente@gmail.com'
-        existing.last_sync_at = new Date().toISOString()
-      }
-      return {}
+      if (!data.auth_url) throw new Error('El servidor no devolvió la URL de autorización OAuth')
+      return data
     },
     disconnect: async (id: number) => {
-      const ok = await tryBackend<void>(`${API_BASE}/integrations/google/${id}`, { method: 'DELETE' })
-      if (ok !== null) return
-      await delay()
-      const row = MOCK_GOOGLE_AUTH.find((a) => a.id === id)
-      if (row) {
-        row.connected = false
-        row.account_email = null
-        row.property_id = null
-        row.property_label = null
-      }
+      await tryBackendOrThrow<void>(`${API_BASE}/integrations/google/${id}`, { method: 'DELETE' })
     },
   },
 

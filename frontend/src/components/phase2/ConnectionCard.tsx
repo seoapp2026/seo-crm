@@ -27,9 +27,10 @@ interface Props {
   auth: GoogleAuth
   onConnect: () => void
   onDisconnect: () => void
+  connectBlockedReason?: string | null
 }
 
-export function ConnectionCard({ auth, onConnect, onDisconnect }: Props) {
+export function ConnectionCard({ auth, onConnect, onDisconnect, connectBlockedReason }: Props) {
   const meta = SERVICE_META[auth.service]
 
   return (
@@ -60,15 +61,17 @@ export function ConnectionCard({ auth, onConnect, onDisconnect }: Props) {
       ) : (
         <div className="conn-body">
           <p className="muted" style={{ flex: 1 }}>
-            {auth.service === 'ads'
-              ? 'Pendiente de developer token de Google Ads. Inicia la solicitud cuanto antes.'
-              : 'Conecta vía OAuth2 para sincronizar datos en segundo plano.'}
+            {connectBlockedReason
+              ? connectBlockedReason
+              : auth.service === 'ads'
+                ? 'Pendiente de developer token de Google Ads. Inicia la solicitud cuanto antes.'
+                : 'Conecta vía OAuth2 para sincronizar datos en segundo plano.'}
           </p>
           <button
             type="button"
             className="btn btn-sm btn-primary"
             onClick={onConnect}
-            disabled={auth.service === 'ads'}
+            disabled={auth.service === 'ads' || Boolean(connectBlockedReason)}
           >
             Conectar OAuth
           </button>

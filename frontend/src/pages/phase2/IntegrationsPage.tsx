@@ -13,36 +13,55 @@ export function IntegrationsPage() {
   const [items, setItems] = useState<GoogleAuth[]>([])
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const reload = useCallback(() => {
-    phase2Api.integrations.list(scopeProject).then(setItems)
-  }, [scopeProject])
-
-  useEffect(() => { reload() }, [reload])
-
-  useEffect(() => {
-    const connected = searchParams.get('connected')
-    if (connected) {
-      toast(`${connected.toUpperCase()} conectado correctamente`)
-      setSearchParams({}, { replace: true })
-      reload()
-    }
-  }, [searchParams, setSearchParams, toast, reload])
-
   const effectiveProject = scopeProject === 'all' ? projects[0]?.id : scopeProject
   const activeProject = projects.find((p) => p.id === effectiveProject)
+  const listProjectId = effectiveProject ?? 'all'
+
+  const reload = useCallback(async () => {
+    if (scopeProject === 'all' && !effectiveProject) {
+      setItems([])
+      return []
+    }
+    try {
+      const rows = await phase2Api.integrations.list(listProjectId)
+      setItems(rows)
+      return rows
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'No se pudieron cargar las integraciones')
+      setItems([])
+      return []
+    }
+  }, [scopeProject, effectiveProject, listProjectId, toast])
+
+  useEffect(() => { void reload() }, [reload])
+
+  useEffect(() => {
+    const connected = searchParams.get('connected') as GoogleAuth['service'] | null
+    if (!connected) return
+    setSearchParams({}, { replace: true })
+    void reload().then((rows) => {
+      const row = rows.find((r) => r.service === connected)
+      if (row?.connected) {
+        toast(`${connected.toUpperCase()} conectado correctamente`)
+      } else {
+        toast('OAuth completado pero la integración no quedó conectada. Revisa la configuración del proyecto.')
+      }
+    })
+  }, [searchParams, setSearchParams, toast, reload])
 
   const connect = async (service: GoogleAuth['service']) => {
     if (!effectiveProject) return toast('Selecciona un proyecto')
+    if (service === 'gsc' && !activeProject?.gsc_site_url?.trim()) {
+      return toast('Configura la URL de Search Console en Proyectos antes de conectar')
+    }
+    if (service === 'ga4' && !activeProject?.ga4_property_id?.trim()) {
+      return toast('Configura el GA4 Property ID en Proyectos antes de conectar')
+    }
     try {
       const res = await phase2Api.integrations.connect(effectiveProject, service)
-      if (res.auth_url) {
-        window.location.href = res.auth_url
-        return
-      }
-      toast(`${service.toUpperCase()} conectado`)
-      reload()
+      window.location.href = res.auth_url
     } catch (e) {
-      toast(e instanceof Error ? e.message : 'Error')
+      toast(e instanceof Error ? e.message : 'Error al iniciar OAuth')
     }
   }
 
@@ -90,6 +109,13 @@ export function IntegrationsPage() {
             auth={auth}
             onConnect={() => connect(auth.service)}
             onDisconnect={() => disconnect(auth.id)}
+            connectBlockedReason={
+              auth.service === 'gsc' && !activeProject?.gsc_site_url?.trim()
+                ? 'Configura la URL de Search Console en Proyectos.'
+                : auth.service === 'ga4' && !activeProject?.ga4_property_id?.trim()
+                  ? 'Configura el GA4 Property ID en Proyectos.'
+                  : null
+            }
           />
         ))}
         {!items.length && <div className="empty card card-pad">Sin integraciones para este proyecto.</div>}
