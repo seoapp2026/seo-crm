@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { phase2Api } from '../../api/phase2-client'
 import { ScopeBar } from '../../components/ScopeBar'
 import { ConnectionCard } from '../../components/phase2/ConnectionCard'
@@ -10,6 +11,7 @@ export function IntegrationsPage() {
   const { scopeProject, setScopeProject, toast } = useApp()
   const { projects } = useProjects()
   const [items, setItems] = useState<GoogleAuth[]>([])
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const reload = useCallback(() => {
     phase2Api.integrations.list(scopeProject).then(setItems)
@@ -17,13 +19,26 @@ export function IntegrationsPage() {
 
   useEffect(() => { reload() }, [reload])
 
+  useEffect(() => {
+    const connected = searchParams.get('connected')
+    if (connected) {
+      toast(`${connected.toUpperCase()} conectado correctamente`)
+      setSearchParams({}, { replace: true })
+      reload()
+    }
+  }, [searchParams, setSearchParams, toast, reload])
+
   const effectiveProject = scopeProject === 'all' ? projects[0]?.id : scopeProject
 
   const connect = async (service: GoogleAuth['service']) => {
     if (!effectiveProject) return toast('Selecciona un proyecto')
     try {
-      await phase2Api.integrations.connect(effectiveProject, service)
-      toast(`OAuth simulado — ${service.toUpperCase()} conectado`)
+      const res = await phase2Api.integrations.connect(effectiveProject, service)
+      if (res.auth_url) {
+        window.location.href = res.auth_url
+        return
+      }
+      toast(`${service.toUpperCase()} conectado`)
       reload()
     } catch (e) {
       toast(e instanceof Error ? e.message : 'Error')

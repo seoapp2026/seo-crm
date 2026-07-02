@@ -65,12 +65,16 @@ export const phase2Api = {
       await delay()
       return projectFilter(MOCK_GOOGLE_AUTH, projectId)
     },
-    connect: async (projectId: number, service: GoogleService) => {
-      const data = await tryBackend<GoogleAuth>(`${API_BASE}/integrations/google/connect`, {
-        method: 'POST',
-        body: JSON.stringify({ project_id: projectId, service }),
-      })
-      if (data) return data
+    connect: async (projectId: number, service: GoogleService): Promise<{ auth_url?: string }> => {
+      const data = await tryBackend<{ auth_url?: string; auth?: GoogleAuth }>(
+        `${API_BASE}/integrations/google/connect`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ project_id: projectId, service }),
+        },
+      )
+      if (data?.auth_url) return { auth_url: data.auth_url }
+      if (data?.auth) return {}
       await delay(400)
       const existing = MOCK_GOOGLE_AUTH.find((a) => a.project_id === projectId && a.service === service)
       if (existing) {
@@ -78,7 +82,7 @@ export const phase2Api = {
         existing.account_email = 'cliente@gmail.com'
         existing.last_sync_at = new Date().toISOString()
       }
-      return existing!
+      return {}
     },
     disconnect: async (id: number) => {
       const ok = await tryBackend<void>(`${API_BASE}/integrations/google/${id}`, { method: 'DELETE' })
