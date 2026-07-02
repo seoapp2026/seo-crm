@@ -247,3 +247,16 @@ tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-al
   color: var(--accent-ink); font-weight: 600; text-decoration: none; margin-top: 8px;
 }
 .dash-phase2-link:hover { text-decoration: underline; }
+
+.not-found {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; min-height: 360px; padding: 40px 24px;
+}
+.not-found-code {
+  font-size: 72px; font-weight: 800; line-height: 1; color: var(--accent-soft);
+  letter-spacing: -2px; margin-bottom: 8px;
+}
+.not-found h1 { font-size: 22px; font-weight: 650; margin-bottom: 10px; }
+.not-found p { max-width: 420px; margin-bottom: 24px; font-size: 14px; }
+.not-found-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.not-found code { background: #eef0ee; padding: 2px 8px; border-radius: 4px; font-size: 12px; }

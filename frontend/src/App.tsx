@@ -19,6 +19,7 @@ import { IntegrationsPage } from './pages/phase2/IntegrationsPage'
 import { PerformancePage } from './pages/phase2/PerformancePage'
 import { PromptsPage } from './pages/phase2/PromptsPage'
 import { SyncPage } from './pages/phase2/SyncPage'
+import { NotFoundPage } from './pages/NotFoundPage'
 import { WordPressPage } from './pages/phase2/WordPressPage'
 
 export default function App() {
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="assistants" element={<AssistantsPage />} />
           <Route path="prompts" element={<PromptsPage />} />
           <Route path="wordpress" element={<WordPressPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </AppProvider>

@@ -5,8 +5,9 @@ import { useApp } from '../context/AppContext'
 export function Layout() {
   const { topbarAction } = useApp()
   const location = useLocation()
-  const routeId = location.pathname.replace('/', '') || 'dashboard'
+  const routeId = location.pathname.replace(/^\//, '').split('/')[0] || 'dashboard'
   const routeMeta = ROUTES.find((r) => 'id' in r && r.id === routeId) as { crumb?: string; sub?: string } | undefined
+  const isKnown = Boolean(routeMeta)
 
   return (
     <div className="app">
@@ -35,8 +36,8 @@ export function Layout() {
       <div className="main">
         <header className="topbar">
           <div>
-            <div className="crumb">{routeMeta?.crumb || 'Panel'}</div>
-            <div className="crumb-sub">{routeMeta?.sub || ''}</div>
+            <div className="crumb">{isKnown ? routeMeta!.crumb : 'No encontrado'}</div>
+            <div className="crumb-sub">{isKnown ? routeMeta!.sub : 'La página que buscas no existe'}</div>
           </div>
           <div>{topbarAction}</div>
         </header>
