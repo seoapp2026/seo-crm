@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hmac
 import json
+import os
 from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException
@@ -65,7 +66,6 @@ def build_auth_url(project_id: int, service: GoogleServiceType) -> str:
     state = make_oauth_state(project_id, service)
     url, _ = flow.authorization_url(
         access_type="offline",
-        include_granted_scopes="true",
         prompt="consent",
         state=state,
     )
@@ -73,6 +73,8 @@ def build_auth_url(project_id: int, service: GoogleServiceType) -> str:
 
 
 def exchange_code(code: str, service: GoogleServiceType) -> Credentials:
+    # Google may return scopes from prior authorizations; oauthlib rejects that by default.
+    os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
     flow = Flow.from_client_config(_client_config(), scopes=SCOPES[service])
     flow.redirect_uri = settings.google_redirect_uri
     flow.fetch_token(code=code)

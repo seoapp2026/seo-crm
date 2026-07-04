@@ -36,6 +36,14 @@ export function IntegrationsPage() {
   useEffect(() => { void reload() }, [reload])
 
   useEffect(() => {
+    const oauthError = searchParams.get('oauth_error') as GoogleAuth['service'] | null
+    if (oauthError) {
+      const message = searchParams.get('message')
+      setSearchParams({}, { replace: true })
+      toast(message || `Error al conectar ${oauthError.toUpperCase()}. Inténtalo de nuevo.`)
+      return
+    }
+
     const connected = searchParams.get('connected') as GoogleAuth['service'] | null
     if (!connected) return
     setSearchParams({}, { replace: true })

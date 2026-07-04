@@ -1,3 +1,5 @@
+from urllib.parse import quote
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
@@ -62,9 +64,20 @@ def connect_google(payload: GoogleConnectRequest, db: Session = Depends(get_db))
 @router.get("/google/callback")
 def google_callback(code: str = Query(...), state: str = Query(...), db: Session = Depends(get_db)):
     project_id, service = parse_oauth_state(state)
-    auth = get_or_create_auth(db, project_id, service)
-    creds = exchange_code(code, service)
-    save_credentials(db, auth, creds, service)
+    try:
+        auth = get_or_create_auth(db, project_id, service)
+        creds = exchange_code(code, service)
+        save_credentials(db, auth, creds, service)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        detail = str(exc) or "Error al completar OAuth con Google"
+        return RedirectResponse(
+            url=(
+                f"{settings.frontend_base_url}/integrations?oauth_error={service.value}"
+                f"&message={quote(detail[:200])}"
+            )
+        )
     return RedirectResponse(
         url=f"{settings.frontend_base_url}/integrations?connected={service.value}"
     )
