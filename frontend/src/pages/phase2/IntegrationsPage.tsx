@@ -5,12 +5,21 @@ import { ScopeBar } from '../../components/ScopeBar'
 import { ConnectionCard } from '../../components/phase2/ConnectionCard'
 import { useApp } from '../../context/AppContext'
 import { useProjects } from '../../hooks/useProjects'
-import type { GoogleAuth } from '../../types/phase2'
+import type { GoogleAuth, GscSite } from '../../types/phase2'
+
+function normalizeGscUrl(url: string) {
+  const trimmed = url.trim()
+  if (trimmed.startsWith('sc-domain:')) return trimmed
+  const withScheme = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`
+  return withScheme.endsWith('/') ? withScheme : `${withScheme}/`
+}
 
 export function IntegrationsPage() {
   const { scopeProject, setScopeProject, toast } = useApp()
   const { projects } = useProjects()
   const [items, setItems] = useState<GoogleAuth[]>([])
+  const [gscSites, setGscSites] = useState<GscSite[]>([])
+  const [gscSitesError, setGscSitesError] = useState<string | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
 
   const effectiveProject = scopeProject === 'all' ? projects[0]?.id : scopeProject
@@ -34,6 +43,21 @@ export function IntegrationsPage() {
   }, [scopeProject, effectiveProject, listProjectId, toast])
 
   useEffect(() => { void reload() }, [reload])
+
+  useEffect(() => {
+    const gsc = items.find((row) => row.service === 'gsc' && row.connected)
+    if (!effectiveProject || !gsc) {
+      setGscSites([])
+      setGscSitesError(null)
+      return
+    }
+    void phase2Api.integrations.listGscSites(effectiveProject)
+      .then(setGscSites)
+      .catch((e) => {
+        setGscSites([])
+        setGscSitesError(e instanceof Error ? e.message : 'No se pudieron cargar las propiedades GSC')
+      })
+  }, [items, effectiveProject])
 
   useEffect(() => {
     const oauthError = searchParams.get('oauth_error') as GoogleAuth['service'] | null
@@ -107,6 +131,29 @@ export function IntegrationsPage() {
             <strong>GA4:</strong>{' '}
             <span className="mono">{activeProject.ga4_property_id || '— sin configurar —'}</span>
           </p>
+          {gscSites.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <p className="t-sub" style={{ marginBottom: 6 }}>
+                <strong>Propiedades GSC de tu cuenta OAuth:</strong> copia una URL exacta en Proyectos.
+              </p>
+              <ul className="checklist muted">
+                {gscSites.map((site) => {
+                  const matches = activeProject.gsc_site_url
+                    ? normalizeGscUrl(activeProject.gsc_site_url) === normalizeGscUrl(site.site_url)
+                    : false
+                  return (
+                    <li key={site.site_url}>
+                      <code className="mono">{site.site_url}</code>
+                      {' '}({site.permission_level}){matches ? ' ✓ configurada' : ''}
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          )}
+          {gscSitesError && (
+            <p className="sync-error" style={{ marginTop: 10 }}>{gscSitesError}</p>
+          )}
         </div>
       )}
 

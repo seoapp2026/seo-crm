@@ -8,7 +8,8 @@ from app.config import settings
 from app.database import get_db
 from app.models import GoogleAuth, GoogleServiceType, Project
 from app.services.project_targets import project_ga4_property, project_gsc_site
-from app.schemas_phase2 import GoogleAuthOut, GoogleConnectRequest, GoogleConnectResponse
+from app.schemas_phase2 import GscSiteOut, GoogleAuthOut, GoogleConnectRequest, GoogleConnectResponse
+from app.services.gsc_sites import list_gsc_sites_for_project
 from app.services.google_oauth import (
     auth_to_out,
     build_auth_url,
@@ -81,6 +82,14 @@ def google_callback(code: str = Query(...), state: str = Query(...), db: Session
     return RedirectResponse(
         url=f"{settings.frontend_base_url}/integrations?connected={service.value}"
     )
+
+
+@router.get("/google/gsc-sites", response_model=list[GscSiteOut])
+def list_gsc_sites(project_id: int = Query(...), db: Session = Depends(get_db)):
+    try:
+        return list_gsc_sites_for_project(db, project_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @router.delete("/google/{auth_id}", status_code=204)

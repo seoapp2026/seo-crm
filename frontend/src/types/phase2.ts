@@ -12,6 +12,11 @@ export interface GoogleAuth {
   token_expires_at: string | null
 }
 
+export interface GscSite {
+  site_url: string
+  permission_level: string
+}
+
 export interface GscDataRow {
   id: number
   project_id: number

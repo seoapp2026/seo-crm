@@ -19,6 +19,7 @@ import type {
   DateRange,
   GoogleAuth,
   GoogleService,
+  GscSite,
   GscDataRow,
   PerformanceSummary,
   SyncJob,
@@ -96,6 +97,9 @@ export const phase2Api = {
     },
     disconnect: async (id: number) => {
       await tryBackendOrThrow<void>(`${API_BASE}/integrations/google/${id}`, { method: 'DELETE' })
+    },
+    listGscSites: async (projectId: number) => {
+      return tryBackendOrThrow<GscSite[]>(`${API_BASE}/integrations/google/gsc-sites?project_id=${projectId}`)
     },
   },
 

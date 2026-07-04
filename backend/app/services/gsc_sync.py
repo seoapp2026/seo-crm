@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models import GoogleAuth, GoogleServiceType, GscData, SyncJob, SyncJobStatus, SyncJobType, Url
 from app.services.google_oauth import credentials_from_auth, save_credentials
+from app.services.gsc_sites import validate_gsc_site_access
 from app.services.project_targets import resolve_gsc_site
 
 
@@ -30,6 +31,7 @@ def sync_gsc_for_project(db: Session, project_id: int) -> int:
 
     creds = credentials_from_auth(auth, GoogleServiceType.gsc)
     save_credentials(db, auth, creds, GoogleServiceType.gsc)
+    validate_gsc_site_access(db, project_id, site)
 
     end = date.today() - timedelta(days=1)
     start = end - timedelta(days=27)

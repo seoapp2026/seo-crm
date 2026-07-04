@@ -93,7 +93,10 @@ def run_sync_job_now(db: Session, job_id: int) -> SyncJob:
         raise
     except Exception as exc:
         message = _sync_error_message(exc)
-        logger.exception("Manual sync failed for job %s", job_id)
+        if "403" in message or "sufficient permission" in message.lower():
+            logger.warning("Manual sync failed for job %s: %s", job_id, message.split("\n")[0])
+        else:
+            logger.exception("Manual sync failed for job %s", job_id)
         db.refresh(job)
         if job.status == SyncJobStatus.running:
             _mark_job_failed(db, job, message)

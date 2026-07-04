@@ -16,10 +16,15 @@ from app.config import settings
 from app.models import GoogleAuth, GoogleServiceType, Project
 from app.services.project_targets import apply_project_targets_to_auth
 
+_PROFILE_SCOPES = [
+    "openid",
+    "https://www.googleapis.com/auth/userinfo.email",
+]
+
 SCOPES = {
-    GoogleServiceType.gsc: ["https://www.googleapis.com/auth/webmasters.readonly"],
-    GoogleServiceType.ga4: ["https://www.googleapis.com/auth/analytics.readonly"],
-    GoogleServiceType.ads: ["https://www.googleapis.com/auth/adwords"],
+    GoogleServiceType.gsc: _PROFILE_SCOPES + ["https://www.googleapis.com/auth/webmasters.readonly"],
+    GoogleServiceType.ga4: _PROFILE_SCOPES + ["https://www.googleapis.com/auth/analytics.readonly"],
+    GoogleServiceType.ads: _PROFILE_SCOPES + ["https://www.googleapis.com/auth/adwords"],
 }
 
 

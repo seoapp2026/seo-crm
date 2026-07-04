@@ -28,6 +28,11 @@ class GoogleConnectRequest(BaseModel):
 
 class GoogleConnectResponse(BaseModel):
     auth_url: str | None = None
+
+
+class GscSiteOut(BaseModel):
+    site_url: str
+    permission_level: str
     auth: GoogleAuthOut | None = None
 
 
