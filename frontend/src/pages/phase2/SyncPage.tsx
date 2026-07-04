@@ -26,6 +26,7 @@ export function SyncPage() {
       reload()
     } catch (e) {
       toast(e instanceof Error ? e.message : 'Error de sincronización')
+      reload()
     } finally {
       setRunningId(null)
     }

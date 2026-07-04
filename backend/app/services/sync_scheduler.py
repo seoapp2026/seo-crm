@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import SessionLocal
@@ -48,24 +49,58 @@ def _run_job(job_type: SyncJobType):
         db.close()
 
 
-def run_sync_job_now(job_id: int) -> SyncJob:
-    db = SessionLocal()
+def _sync_error_message(exc: Exception) -> str:
     try:
-        job = db.get(SyncJob, job_id)
-        if not job:
-            raise ValueError("Trabajo no encontrado")
-        if not job.enabled:
-            raise ValueError(job.last_error or "Trabajo deshabilitado")
+        from googleapiclient.errors import HttpError
+
+        if isinstance(exc, HttpError):
+            return f"Error de Google API ({exc.resp.status}): {exc.reason or exc.resp.reason}"
+    except Exception:
+        pass
+    return str(exc) or "Error de sincronización"
+
+
+def _mark_job_failed(db: Session, job: SyncJob, message: str) -> None:
+    job.status = SyncJobStatus.error
+    job.last_error = message[:500]
+    job.last_run_at = datetime.now(timezone.utc)
+    db.commit()
+
+
+def run_sync_job_now(db: Session, job_id: int) -> SyncJob:
+    job = db.get(SyncJob, job_id)
+    if not job:
+        raise ValueError("Trabajo no encontrado")
+    if not job.enabled:
+        raise ValueError(job.last_error or "Trabajo deshabilitado")
+
+    if job.status == SyncJobStatus.running:
+        job.status = SyncJobStatus.idle
+        job.last_error = None
+        db.commit()
+
+    try:
         if job.job_type == SyncJobType.gsc:
             sync_gsc_for_project(db, job.project_id)
         elif job.job_type == SyncJobType.ga4:
             sync_ga4_for_project(db, job.project_id)
         elif job.job_type == SyncJobType.ads:
             raise ValueError("Google Ads sync no implementado aún")
+    except ValueError:
         db.refresh(job)
-        return job
-    finally:
-        db.close()
+        if job.status == SyncJobStatus.running:
+            _mark_job_failed(db, job, "Error de sincronización")
+        raise
+    except Exception as exc:
+        message = _sync_error_message(exc)
+        logger.exception("Manual sync failed for job %s", job_id)
+        db.refresh(job)
+        if job.status == SyncJobStatus.running:
+            _mark_job_failed(db, job, message)
+        raise ValueError(message) from exc
+
+    db.refresh(job)
+    return job
 
 
 def start_scheduler():

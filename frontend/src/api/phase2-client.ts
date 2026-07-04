@@ -5,7 +5,6 @@ import {
   MOCK_ANALYTICS_ROWS,
   MOCK_COMPETITORS,
   MOCK_GSC_ROWS,
-  MOCK_SYNC_JOBS,
   MOCK_WP_EXPORT,
   buildPerformanceSummary,
   mockAssistantRun,
@@ -102,35 +101,16 @@ export const phase2Api = {
 
   sync: {
     list: async (projectId: number | 'all') => {
-      const data = await tryBackend<SyncJob[]>(`${API_BASE}/sync/jobs${projectQuery(projectId)}`)
-      if (data) return data
-      await delay()
-      return projectFilter(MOCK_SYNC_JOBS, projectId)
+      return tryBackendOrThrow<SyncJob[]>(`${API_BASE}/sync/jobs${projectQuery(projectId)}`)
     },
     runNow: async (jobId: number) => {
-      const data = await tryBackend<SyncJob>(`${API_BASE}/sync/jobs/${jobId}/run`, { method: 'POST' })
-      if (data) return data
-      await delay(800)
-      const job = MOCK_SYNC_JOBS.find((j) => j.id === jobId)
-      if (!job) throw new Error('Trabajo no encontrado')
-      if (!job.enabled) throw new Error(job.last_error || 'Trabajo deshabilitado')
-      job.status = 'running'
-      await delay(600)
-      job.status = 'success'
-      job.last_run_at = new Date().toISOString()
-      job.records_synced += Math.floor(Math.random() * 50) + 10
-      return job
+      return tryBackendOrThrow<SyncJob>(`${API_BASE}/sync/jobs/${jobId}/run`, { method: 'POST' })
     },
     toggle: async (jobId: number, enabled: boolean) => {
-      const data = await tryBackend<SyncJob>(`${API_BASE}/sync/jobs/${jobId}`, {
+      return tryBackendOrThrow<SyncJob>(`${API_BASE}/sync/jobs/${jobId}`, {
         method: 'PATCH',
         body: JSON.stringify({ enabled }),
       })
-      if (data) return data
-      await delay()
-      const job = MOCK_SYNC_JOBS.find((j) => j.id === jobId)!
-      job.enabled = enabled
-      return job
     },
   },
 

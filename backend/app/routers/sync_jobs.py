@@ -22,7 +22,7 @@ def list_jobs(project_id: int | None = Query(None), db: Session = Depends(get_db
 @router.post("/jobs/{job_id}/run", response_model=SyncJobOut)
 def run_job(job_id: int, db: Session = Depends(get_db)):
     try:
-        job = run_sync_job_now(job_id)
+        job = run_sync_job_now(db, job_id)
         return job
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
