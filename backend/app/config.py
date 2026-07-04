@@ -1,4 +1,5 @@
 import os
+from urllib.parse import urlparse
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -51,6 +52,20 @@ class Settings(BaseSettings):
         if flag in ("0", "false", "no"):
             return False
         return self.app_env != "production"
+
+    @property
+    def frontend_base_url(self) -> str:
+        """Public app URL for post-OAuth redirects (must match GOOGLE_REDIRECT_URI host)."""
+        if self.google_redirect_uri:
+            parsed = urlparse(self.google_redirect_uri)
+            if parsed.scheme and parsed.netloc:
+                return f"{parsed.scheme}://{parsed.netloc}"
+        for origin in self.cors_origin_list:
+            if origin.startswith("https://"):
+                return origin.rstrip("/")
+        if self.cors_origin_list:
+            return self.cors_origin_list[0].rstrip("/")
+        return "http://localhost:5173"
 
     @property
     def cors_origin_list(self) -> list[str]:

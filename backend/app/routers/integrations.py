@@ -65,15 +65,9 @@ def google_callback(code: str = Query(...), state: str = Query(...), db: Session
     auth = get_or_create_auth(db, project_id, service)
     creds = exchange_code(code, service)
     save_credentials(db, auth, creds, service)
-    frontend = "http://localhost:5173"
-    for origin in settings.cors_origin_list:
-        if origin.startswith("https://"):
-            frontend = origin.rstrip("/")
-            break
-    else:
-        if settings.cors_origin_list:
-            frontend = settings.cors_origin_list[0].rstrip("/")
-    return RedirectResponse(url=f"{frontend}/integrations?connected={service.value}")
+    return RedirectResponse(
+        url=f"{settings.frontend_base_url}/integrations?connected={service.value}"
+    )
 
 
 @router.delete("/google/{auth_id}", status_code=204)
