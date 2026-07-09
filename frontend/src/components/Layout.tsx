@@ -33,6 +33,11 @@ export function Layout() {
         <div className="sidebar-foot">
           Datos · Integraciones · IA<br />
           GSC · GA4 · Sincronización
+          <div className="sidebar-legal">
+            <NavLink to="/privacy">Privacy</NavLink>
+            {' · '}
+            <NavLink to="/terms">Terms</NavLink>
+          </div>
         </div>
       </aside>
 

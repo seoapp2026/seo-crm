@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="SEO CRM">
+  <rect width="120" height="120" rx="22" fill="#1f2723"/>
+  <rect x="18" y="16" width="52" height="24" rx="8" fill="#2f6f4e"/>
+  <text x="34" y="34" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#ffffff">S</text>
+  <rect x="22" y="72" width="16" height="20" rx="4" fill="#2f6f4e"/>
+  <rect x="44" y="56" width="16" height="36" rx="4" fill="#2f6f4e"/>
+  <rect x="66" y="42" width="16" height="50" rx="4" fill="#2f6f4e"/>
+  <rect x="88" y="28" width="16" height="64" rx="4" fill="#2f6f4e"/>
+  <path d="M30 68 L52 52 L74 38 L96 24" fill="none" stroke="#e8f1ec" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="30" cy="68" r="4" fill="#e8f1ec"/>
+  <circle cx="96" cy="24" r="4" fill="#e8f1ec"/>
+</svg>
