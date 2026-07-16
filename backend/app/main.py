@@ -108,6 +108,16 @@ def _mount_frontend():
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
     api_segment = API_PREFIX.lstrip("/")
+    home_page = static_root / "home.html"
+
+    @app.get("/", include_in_schema=False)
+    async def public_home():
+        if home_page.is_file():
+            return FileResponse(home_page)
+        index = static_root / "index.html"
+        if index.is_file():
+            return FileResponse(index)
+        raise HTTPException(status_code=404, detail="Frontend not built")
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def spa_fallback(full_path: str):
