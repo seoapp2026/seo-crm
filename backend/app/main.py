@@ -35,7 +35,7 @@ from app.seed_phase2 import seed_phase2
 from app.services.sync_scheduler import start_scheduler
 
 app = FastAPI(
-    title="CRM SEO",
+    title="SEO CRM",
     version="0.3.0",
     docs_url=settings.docs_url,
     redoc_url=None,
