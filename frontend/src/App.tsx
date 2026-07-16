@@ -1,9 +1,10 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { AppProvider } from './context/AppContext'
 import { AiPage } from './pages/AiPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { KeywordsPage } from './pages/KeywordsPage'
+import { HomePage } from './pages/HomePage'
 import { LegalLayout } from './pages/LegalLayout'
 import { LinksPage } from './pages/LinksPage'
 import { NichesPage } from './pages/NichesPage'
@@ -30,12 +31,12 @@ export default function App() {
     <AppProvider>
       <Routes>
         <Route element={<LegalLayout />}>
+          <Route index element={<HomePage />} />
           <Route path="privacy" element={<PrivacyPage />} />
           <Route path="terms" element={<TermsPage />} />
         </Route>
 
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route element={<Layout />}>
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="niches" element={<NichesPage />} />

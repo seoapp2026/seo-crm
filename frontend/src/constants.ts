@@ -1,8 +1,8 @@
 export const APP = {
-  name: 'CRM SEO',
+  name: 'SEO CRM',
   tagline: 'Nichos, datos e IA supervisada',
   description:
-    'CRM para equipos SEO: proyectos, nichos, páginas, keywords, Search Console, Analytics e IA supervisada.',
+    'SEO operations platform for teams: projects, niches, pages, keywords, Search Console, Analytics, and supervised AI.',
   themeColor: '#1f2723',
   locale: 'es',
 } as const

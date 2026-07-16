@@ -105,6 +105,7 @@ input, select, textarea { font-family: inherit; font-size: 14px; }
 .legal-doc li { margin-bottom: 6px; }
 .legal-doc a { color: var(--accent-ink); }
 .legal-meta { color: var(--ink-soft) !important; font-size: 13px !important; margin-bottom: 18px !important; }
+.home-page .home-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
 
 .main { flex: 1; margin-left: 230px; display: flex; flex-direction: column; min-width: 0; }
 .topbar {

@@ -13,6 +13,7 @@ export function LegalLayout() {
           </div>
         </Link>
         <nav className="legal-nav">
+          <Link to="/">Home</Link>
           <Link to="/privacy">Privacy Policy</Link>
           <Link to="/terms">Terms of Service</Link>
           <Link to="/dashboard">Open app</Link>
