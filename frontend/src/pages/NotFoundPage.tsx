@@ -12,6 +12,7 @@ export function NotFoundPage() {
         No existe ninguna ruta para <code className="mono">{pathname}</code> en {APP.name}.
       </p>
       <div className="not-found-actions">
+        <Link to="/" className="btn btn-ghost">Home</Link>
         <Link to="/dashboard" className="btn btn-primary">Ir al panel</Link>
         <Link to="/projects" className="btn">Ver proyectos</Link>
       </div>

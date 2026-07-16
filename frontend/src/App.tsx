@@ -30,7 +30,7 @@ export default function App() {
   return (
     <AppProvider>
       <Routes>
-        <Route element={<LegalLayout />}>
+        <Route path="/" element={<LegalLayout />}>
           <Route index element={<HomePage />} />
           <Route path="privacy" element={<PrivacyPage />} />
           <Route path="terms" element={<TermsPage />} />
@@ -56,8 +56,9 @@ export default function App() {
           <Route path="assistants" element={<AssistantsPage />} />
           <Route path="prompts" element={<PromptsPage />} />
           <Route path="wordpress" element={<WordPressPage />} />
-          <Route path="*" element={<NotFoundPage />} />
         </Route>
+
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AppProvider>
   )
