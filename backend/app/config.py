@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173"
     secret_key: str = "change-me-in-production"
     app_env: str = "development"
+    app_public_url: str = ""
 
     # ── Server (Railway sets PORT automatically) ────────────────────────────
     port: int = 8000
@@ -56,6 +57,8 @@ class Settings(BaseSettings):
     @property
     def frontend_base_url(self) -> str:
         """Public app URL for post-OAuth redirects (must match GOOGLE_REDIRECT_URI host)."""
+        if self.app_public_url:
+            return self.app_public_url.rstrip("/")
         if self.google_redirect_uri:
             parsed = urlparse(self.google_redirect_uri)
             if parsed.scheme and parsed.netloc:
@@ -70,6 +73,8 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         origins = [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        if self.app_public_url:
+            origins.append(self.app_public_url.rstrip("/"))
         railway_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN")
         if railway_domain:
             origins.append(f"https://{railway_domain}")

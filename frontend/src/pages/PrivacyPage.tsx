@@ -1,3 +1,4 @@
+import { APP } from '../constants'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 const UPDATED = '9 July 2026'
@@ -14,8 +15,8 @@ export function PrivacyPage() {
         This Privacy Policy describes how <strong>SEO CRM</strong> (“we”, “us”, “our”), an internal SEO
         operations tool operated from Nigeria, collects, uses, and protects information when you use our
         application at{' '}
-        <a href="https://seo-crm.up.railway.app" rel="noreferrer" target="_blank">
-          https://seo-crm.up.railway.app
+        <a href={APP.publicUrl} rel="noreferrer" target="_blank">
+          {APP.publicUrl}
         </a>{' '}
         (the “Service”).
       </p>
@@ -154,8 +155,8 @@ export function PrivacyPage() {
         Operator: SEO CRM · Nigeria
         <br />
         Application:{' '}
-        <a href="https://seo-crm.up.railway.app" rel="noreferrer" target="_blank">
-          https://seo-crm.up.railway.app
+        <a href={APP.publicUrl} rel="noreferrer" target="_blank">
+          {APP.publicUrl}
         </a>
       </p>
 

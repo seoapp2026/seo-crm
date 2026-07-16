@@ -1,3 +1,4 @@
+import { APP } from '../constants'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 const UPDATED = '9 July 2026'
@@ -13,8 +14,8 @@ export function TermsPage() {
       <p>
         These Terms of Service (“Terms”) govern access to and use of <strong>SEO CRM</strong> (the
         “Service”), available at{' '}
-        <a href="https://seo-crm.up.railway.app" rel="noreferrer" target="_blank">
-          https://seo-crm.up.railway.app
+        <a href={APP.publicUrl} rel="noreferrer" target="_blank">
+          {APP.publicUrl}
         </a>
         . By accessing or using the Service, you agree to these Terms.
       </p>

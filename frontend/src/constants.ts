@@ -3,6 +3,7 @@ export const APP = {
   tagline: 'Nichos, datos e IA supervisada',
   description:
     'SEO operations platform for teams: projects, niches, pages, keywords, Search Console, Analytics, and supervised AI.',
+  publicUrl: 'https://crmpersonal.es',
   themeColor: '#1f2723',
   locale: 'es',
 } as const
