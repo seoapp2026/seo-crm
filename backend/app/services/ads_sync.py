@@ -23,8 +23,10 @@ from app.services.google_oauth import credentials_from_auth, save_credentials
 
 logger = logging.getLogger(__name__)
 
-# Google Ads API version for REST KeywordPlanIdeaService
-ADS_API_VERSION = "v19"
+# Google Ads API version for REST KeywordPlanIdeaService.
+# Must track a currently supported major version — sunset versions return HTML 404.
+# Docs (2026): https://developers.google.com/google-ads/api/docs/keyword-planning/generate-historical-metrics
+ADS_API_VERSION = "v25"
 BATCH_SIZE = 20
 
 
@@ -127,12 +129,26 @@ def _call_historical_metrics(
     if resp.status_code >= 400:
         detail = _parse_ads_error(resp)
         logger.error(
-            "Ads API error status=%s customer=%s detail=%s body=%s",
+            "Ads API error status=%s version=%s customer=%s detail=%s body=%s",
             resp.status_code,
+            ADS_API_VERSION,
             customer_id,
             detail,
             resp.text[:800],
         )
+        # Sunset / unknown API versions often return Google's HTML 404 page, not JSON.
+        if resp.status_code == 404 and (
+            "<!DOCTYPE" in (resp.text or "")[:200].upper()
+            or "Error 404" in (resp.text or "")
+            or "Not Found" in detail
+        ):
+            raise ValueError(
+                f"Google Ads API: HTTP 404 on {ADS_API_VERSION} "
+                f"(customers/{customer_id}:generateKeywordHistoricalMetrics). "
+                "La versión de la API puede estar retirada o la URL es incorrecta. "
+                "Actualiza ADS_API_VERSION en ads_sync.py a una versión soportada "
+                "(docs: KeywordPlanIdeaService.GenerateKeywordHistoricalMetrics)."
+            )
         if "login-customer-id" in detail.lower() or "LOGIN_CUSTOMER" in detail.upper():
             raise ValueError(
                 f"Google Ads API: {detail}. "
