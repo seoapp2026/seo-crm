@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     secret_key: str = "change-me-in-production"
     app_env: str = "development"
     app_public_url: str = ""
+    app_auth_password: str = ""
+    auth_allowed_emails: str = ""
 
     # ── Server (Railway sets PORT automatically) ────────────────────────────
     port: int = 8000
@@ -32,6 +34,8 @@ class Settings(BaseSettings):
     ga4_property_id: str = ""
     google_ads_developer_token: str = ""
     google_ads_customer_id: str = ""
+    # MCC / Manager ID when OAuth user accesses client account via manager
+    google_ads_login_customer_id: str = ""
 
     # ── Background sync schedules — cron (Phase 2) ──────────────────────────
     sync_gsc_cron: str = "0 6 * * *"
@@ -69,6 +73,10 @@ class Settings(BaseSettings):
         if self.cors_origin_list:
             return self.cors_origin_list[0].rstrip("/")
         return "http://localhost:5173"
+
+    @property
+    def auth_allowed_emails_list(self) -> list[str]:
+        return [e.strip().lower() for e in self.auth_allowed_emails.split(",") if e.strip()]
 
     @property
     def cors_origin_list(self) -> list[str]:

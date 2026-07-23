@@ -13,7 +13,7 @@ const SERVICE_META: Record<GoogleService, { title: string; desc: string; icon: s
   },
   ads: {
     title: 'Keyword Planner',
-    desc: 'Volumen, competencia y CPC estimado · requiere developer token',
+    desc: 'Volumen, competencia y CPC estimado · Google Ads API',
     icon: 'Ads',
   },
 }
@@ -64,14 +64,14 @@ export function ConnectionCard({ auth, onConnect, onDisconnect, connectBlockedRe
             {connectBlockedReason
               ? connectBlockedReason
               : auth.service === 'ads'
-                ? 'Pendiente de developer token de Google Ads. Inicia la solicitud cuanto antes.'
+                ? 'Conecta la cuenta de Google Ads (Keyword Planner) vía OAuth2. Requiere GOOGLE_ADS_DEVELOPER_TOKEN en el servidor.'
                 : 'Conecta vía OAuth2 para sincronizar datos en segundo plano.'}
           </p>
           <button
             type="button"
             className="btn btn-sm btn-primary"
             onClick={onConnect}
-            disabled={auth.service === 'ads' || Boolean(connectBlockedReason)}
+            disabled={Boolean(connectBlockedReason)}
           >
             Conectar OAuth
           </button>

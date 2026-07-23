@@ -29,11 +29,23 @@ SCOPES = {
 
 
 def _client_config() -> dict:
-    if not settings.google_client_id or not settings.google_client_secret:
-        raise HTTPException(status_code=503, detail="Google OAuth no configurado (CLIENT_ID/SECRET)")
+    import logging
+
+    log = logging.getLogger(__name__)
+    missing = []
+    if not settings.google_client_id:
+        missing.append("GOOGLE_CLIENT_ID")
+    if not settings.google_client_secret:
+        missing.append("GOOGLE_CLIENT_SECRET")
     redirect = settings.google_redirect_uri
     if not redirect:
-        raise HTTPException(status_code=503, detail="GOOGLE_REDIRECT_URI no configurado")
+        missing.append("GOOGLE_REDIRECT_URI")
+    if missing:
+        log.error("Google OAuth misconfigured — missing: %s", ", ".join(missing))
+        raise HTTPException(
+            status_code=503,
+            detail=f"Google OAuth no configurado. Faltan: {', '.join(missing)}",
+        )
     return {
         "web": {
             "client_id": settings.google_client_id,

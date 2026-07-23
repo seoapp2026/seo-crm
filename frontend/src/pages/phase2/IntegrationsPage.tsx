@@ -181,7 +181,8 @@ export function IntegrationsPage() {
         <ul className="checklist muted">
           <li>Proyecto en Google Cloud con credenciales OAuth (Search Console + Analytics)</li>
           <li>Cuentas del cliente autorizadas en la pantalla de consentimiento</li>
-          <li>Developer token de Google Ads — solicitar con antelación (puede tardar semanas)</li>
+          <li>Developer token de Google Ads (Basic Access) + GOOGLE_ADS_CUSTOMER_ID en Railway</li>
+          <li>Opcional: GOOGLE_ADS_LOGIN_CUSTOMER_ID (MCC) si usas cuenta Manager</li>
           <li>URLs de redirección configuradas para tu dominio de producción</li>
         </ul>
       </div>

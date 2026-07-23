@@ -7,6 +7,8 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.constants import API_PREFIX
+from app.middleware.app_auth import AppAuthMiddleware
+from app.routers import auth as auth_router
 from app.database import Base, engine
 from app.routers import (
     ads,
@@ -42,6 +44,7 @@ app = FastAPI(
     openapi_url=settings.openapi_url,
 )
 
+app.add_middleware(AppAuthMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
@@ -63,6 +66,8 @@ phase2_routers = [
     wordpress.router,
 ]
 
+app.include_router(auth_router.router, prefix=API_PREFIX)
+
 for r in [
     projects.router,
     niches.router,
@@ -80,22 +85,35 @@ for r in [
 
 @app.on_event("startup")
 def on_startup():
+    import logging
+
+    log = logging.getLogger("app.startup")
     Base.metadata.create_all(bind=engine)
     run_light_migrations()
     seed_if_empty()
     from app.database import SessionLocal
+    from app.services.ads_config import log_ads_config_status
 
     db = SessionLocal()
     try:
         seed_phase2(db)
     finally:
         db.close()
+    log_ads_config_status("Startup")
     start_scheduler()
+    log.info("SEO CRM startup complete env=%s", settings.app_env)
 
 
 @app.get(f"{API_PREFIX}/health")
 def health():
-    return {"status": "ok", "env": settings.app_env, "phase": 2}
+    from app.services.ads_config import ads_config_status
+
+    return {
+        "status": "ok",
+        "env": settings.app_env,
+        "phase": 2,
+        "google_ads": ads_config_status(),
+    }
 
 
 def _mount_frontend():

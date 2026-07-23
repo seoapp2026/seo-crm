@@ -1,10 +1,12 @@
 import { Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
+import { RequireAuth } from './components/RequireAuth'
 import { AppProvider } from './context/AppContext'
 import { AiPage } from './pages/AiPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { KeywordsPage } from './pages/KeywordsPage'
 import { HomePage } from './pages/HomePage'
+import { LoginPage } from './pages/LoginPage'
 import { LegalLayout } from './pages/LegalLayout'
 import { LinksPage } from './pages/LinksPage'
 import { NichesPage } from './pages/NichesPage'
@@ -36,7 +38,15 @@ export default function App() {
           <Route path="terms" element={<TermsPage />} />
         </Route>
 
-        <Route element={<Layout />}>
+        <Route path="login" element={<LoginPage />} />
+
+        <Route
+          element={
+            <RequireAuth>
+              <Layout />
+            </RequireAuth>
+          }
+        >
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="niches" element={<NichesPage />} />

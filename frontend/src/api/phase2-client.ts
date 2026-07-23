@@ -1,4 +1,5 @@
 import { API_BASE } from './base'
+import { apiFetch } from './http'
 import {
   MOCK_ADS_KEYWORDS,
   MOCK_AI_PROMPTS,
@@ -53,10 +54,7 @@ async function parseApiError(res: Response): Promise<string> {
 
 async function tryBackend<T>(path: string, options?: RequestInit): Promise<T | null> {
   try {
-    const res = await fetch(path, {
-      headers: { 'Content-Type': 'application/json', ...options?.headers },
-      ...options,
-    })
+    const res = await apiFetch(path, options)
     if (!res.ok) return null
     if (res.status === 204) return undefined as T
     return res.json()
@@ -66,10 +64,7 @@ async function tryBackend<T>(path: string, options?: RequestInit): Promise<T | n
 }
 
 async function tryBackendOrThrow<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(path, {
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    ...options,
-  })
+  const res = await apiFetch(path, options)
   if (!res.ok) throw new Error(await parseApiError(res))
   if (res.status === 204) return undefined as T
   return res.json()

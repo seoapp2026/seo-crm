@@ -61,8 +61,8 @@ export function HomePage() {
       </p>
 
       <div className="home-actions">
-        <Link to="/dashboard" className="btn btn-primary">
-          Open application
+        <Link to="/login" className="btn btn-primary">
+          Sign in
         </Link>
         <a href="mailto:seo.app2026@gmail.com" className="btn btn-ghost">
           Contact support

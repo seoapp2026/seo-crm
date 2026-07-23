@@ -26,7 +26,7 @@ export function AdsKeywordsPage() {
       <ScopeBar projects={projects} value={scopeProject} onChange={setScopeProject} />
 
       <div className="banner">
-        <strong>Google Ads Keyword Planner.</strong> Volumen de búsqueda, competencia y CPC estimado. Tabla <code className="mono">ads_keywords</code> · sincronización semanal. <em>Requiere developer token aprobado.</em>
+        <strong>Google Ads Keyword Planner.</strong> Volumen de búsqueda, competencia y CPC estimado. Tabla <code className="mono">ads_keywords</code> · sync semanal o manual en Sincronización. Conecta Ads en Integraciones y añade keywords al proyecto antes de sincronizar.
       </div>
 
       <div className="card">
@@ -48,7 +48,7 @@ export function AdsKeywordsPage() {
                 </tr>
               )
             }) : (
-              <tr><td colSpan={6} className="empty">Sin datos de Ads. Conecta Keyword Planner cuando el developer token esté aprobado.</td></tr>
+              <tr><td colSpan={6} className="empty">Sin datos de Ads. Conecta Keyword Planner en Integraciones, añade keywords al proyecto y ejecuta el sync de Ads.</td></tr>
             )}
           </tbody>
         </table>

@@ -1,10 +1,13 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { APP, ROUTES } from '../constants'
 import { useApp } from '../context/AppContext'
+import { useAuth } from '../context/AuthContext'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 export function Layout() {
   const { topbarAction } = useApp()
+  const { status, logout } = useAuth()
+  const navigate = useNavigate()
   const location = useLocation()
   const routeId = location.pathname.replace(/^\//, '').split('/')[0] || 'dashboard'
   const routeMeta = ROUTES.find((r) => 'id' in r && r.id === routeId) as { crumb?: string; sub?: string } | undefined
@@ -47,7 +50,24 @@ export function Layout() {
             <div className="crumb">{isKnown ? routeMeta!.crumb : 'No encontrado'}</div>
             <div className="crumb-sub">{isKnown ? routeMeta!.sub : 'La página que buscas no existe'}</div>
           </div>
-          <div>{topbarAction}</div>
+          <div className="topbar-actions">
+            {status?.auth_required && status.email && (
+              <span className="topbar-user muted">{status.email}</span>
+            )}
+            {status?.auth_required && (
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={async () => {
+                  await logout()
+                  navigate('/login', { replace: true })
+                }}
+              >
+                Sign out
+              </button>
+            )}
+            {topbarAction}
+          </div>
         </header>
         <div className="content">
           <Outlet />

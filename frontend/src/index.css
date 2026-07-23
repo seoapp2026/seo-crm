@@ -322,3 +322,35 @@ tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-al
 .not-found p { max-width: 420px; margin-bottom: 24px; font-size: 14px; }
 .not-found-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .not-found code { background: #eef0ee; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+
+/* Login */
+.login-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+}
+.login-card {
+  width: 100%;
+  max-width: 400px;
+}
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.login-brand strong { display: block; font-size: 15px; }
+.login-brand span { display: block; font-size: 12px; color: var(--ink-soft); }
+.login-form { margin-top: 4px; }
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.topbar-user { font-size: 12.5px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

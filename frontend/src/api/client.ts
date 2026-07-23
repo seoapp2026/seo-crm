@@ -10,12 +10,10 @@ import type {
   Url,
 } from '../types'
 import { API_BASE } from './base'
+import { apiFetch } from './http'
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(path, {
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    ...options,
-  })
+  const res = await apiFetch(path, options)
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }))
     throw new Error(err.detail || res.statusText)

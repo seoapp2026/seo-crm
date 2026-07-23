@@ -99,10 +99,14 @@ def seed_phase2(db: Session):
                 .first()
             )
             if not exists:
-                enabled = job_type != SyncJobType.ads or bool(settings.google_ads_developer_token)
+                enabled = True
                 last_error = None
                 if job_type == SyncJobType.ads and not settings.google_ads_developer_token:
-                    last_error = "Google Ads: developer token pendiente de aprobación"
+                    last_error = (
+                        "Google Ads: falta GOOGLE_ADS_DEVELOPER_TOKEN "
+                        "(o conecta OAuth y sincroniza tras configurar el token)"
+                    )
+                    enabled = False
                 db.add(
                     SyncJob(
                         project_id=project.id,
@@ -113,5 +117,16 @@ def seed_phase2(db: Session):
                         last_error=last_error,
                     )
                 )
+
+    # Re-enable Ads jobs once developer token is configured
+    if settings.google_ads_developer_token:
+        for job in db.query(SyncJob).filter(SyncJob.job_type == SyncJobType.ads).all():
+            if not job.enabled:
+                job.enabled = True
+            if job.last_error and (
+                "developer token" in job.last_error.lower()
+                or "GOOGLE_ADS_DEVELOPER_TOKEN" in job.last_error
+            ):
+                job.last_error = None
 
     db.commit()
