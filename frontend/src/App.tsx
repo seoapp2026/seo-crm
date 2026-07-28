@@ -4,6 +4,7 @@ import { RequireAuth } from './components/RequireAuth'
 import { AppProvider } from './context/AppContext'
 import { AiPage } from './pages/AiPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { HelpPage } from './pages/HelpPage'
 import { KeywordsPage } from './pages/KeywordsPage'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
@@ -48,6 +49,7 @@ export default function App() {
           }
         >
           <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="help" element={<HelpPage />} />
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="niches" element={<NichesPage />} />
           <Route path="pages" element={<PagesPage />} />

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../api/client'
+import { AiResultView } from '../components/AiResultView'
 import { ScopeBar } from '../components/ScopeBar'
 import { PAGE_TYPES } from '../constants'
 import { useApp } from '../context/AppContext'
@@ -51,7 +53,9 @@ export function AiPage() {
       <ScopeBar projects={projects} value={scopeProject} onChange={setScopeProject} />
 
       <div className="banner">
-        <strong>Sistema supervisado.</strong> La IA genera borradores editables. Tú siempre revisas, editas y publicas manualmente en WordPress. La API key vive solo en el servidor.
+        <strong>Sistema supervisado.</strong> La IA genera borradores editables a partir de la página, su tipo (TSG/TSR/TSA) y sus keywords.
+        Tú siempre revisas, editas y publicas manualmente. Nada se publica solo.{' '}
+        <Link to="/help">Ver guía completa →</Link>
       </div>
 
       <div className="card">
@@ -91,13 +95,27 @@ export function AiPage() {
             <div className="section-head">
               <div>
                 <h2 style={{ fontSize: 15 }}>Borrador generado</h2>
-                <div className="muted" style={{ fontSize: 12.5 }}>Revisa y edita antes de publicar</div>
+                <div className="muted" style={{ fontSize: 12.5 }}>
+                  Formateado para lectura · copia el texto y edítalo fuera antes de publicar
+                </div>
               </div>
-              {result && <button className="btn btn-sm btn-ghost" onClick={() => navigator.clipboard.writeText(result)}>Copiar</button>}
+              {result && (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-ghost"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(result)
+                    toast('Texto copiado')
+                  }}
+                >
+                  Copiar texto
+                </button>
+              )}
             </div>
-            <div className="ai-result" style={result ? {} : { display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-soft)' }}>
-              {result || 'El borrador aparecerá aquí.'}
-            </div>
+            <AiResultView
+              text={result}
+              emptyMessage="El borrador aparecerá aquí con títulos, listas y meta legibles."
+            />
           </div>
         </div>
       </div>

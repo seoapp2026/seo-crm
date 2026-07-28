@@ -19,10 +19,10 @@ export function GscDataPage() {
 
   useEffect(() => {
     setLoading(true)
-    phase2Api.gsc.list(scopeProject, range).then((data) => {
-      setRows(data)
-      setLoading(false)
-    })
+    phase2Api.gsc.list(scopeProject, range)
+      .then((data) => setRows(data))
+      .catch(() => setRows([]))
+      .finally(() => setLoading(false))
   }, [scopeProject, range])
 
   const totals = rows.reduce(

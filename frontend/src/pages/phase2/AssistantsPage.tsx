@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api/client'
 import { phase2Api } from '../../api/phase2-client'
+import { AiResultView } from '../../components/AiResultView'
 import { ScopeBar } from '../../components/ScopeBar'
 import { useApp } from '../../context/AppContext'
 import { useProjects } from '../../hooks/useProjects'
@@ -35,11 +36,13 @@ export function AssistantsPage() {
   const effectiveProject = scopeProject === 'all' ? projects[0]?.id : scopeProject
 
   useEffect(() => {
-    phase2Api.prompts.list().then((ps) => {
-      setPrompts(ps)
-      if (ps[0]) setModel(ps[0].model_default)
-    })
-  }, [])
+    phase2Api.prompts.list()
+      .then((ps) => {
+        setPrompts(ps)
+        if (ps[0]) setModel(ps[0].model_default)
+      })
+      .catch((e) => toast(e instanceof Error ? e.message : 'No se pudieron cargar los prompts'))
+  }, [toast])
 
   useEffect(() => {
     if (effectiveProject) {
@@ -47,16 +50,18 @@ export function AssistantsPage() {
         api.pages.list(effectiveProject),
         api.niches.list(effectiveProject),
         phase2Api.competitors.list(effectiveProject),
-      ]).then(([pgs, ncs, comps]) => {
-        setPages(pgs)
-        setNiches(ncs)
-        setCompetitors(comps)
-        if (pgs[0]) setPageId(pgs[0].id)
-        if (ncs[0]) setNicheId(ncs[0].id)
-        if (comps[0]) setCompetitorId(comps[0].id)
-      })
+      ])
+        .then(([pgs, ncs, comps]) => {
+          setPages(pgs)
+          setNiches(ncs)
+          setCompetitors(comps)
+          if (pgs[0]) setPageId(pgs[0].id)
+          if (ncs[0]) setNicheId(ncs[0].id)
+          if (comps[0]) setCompetitorId(comps[0].id)
+        })
+        .catch((e) => toast(e instanceof Error ? e.message : 'Error al cargar contexto del asistente'))
     }
-  }, [effectiveProject])
+  }, [effectiveProject, toast])
 
   useEffect(() => {
     setTopbarAction(
@@ -103,7 +108,10 @@ export function AssistantsPage() {
       <ScopeBar projects={projects} value={scopeProject} onChange={setScopeProject} />
 
       <div className="banner">
-        <strong>5 asistentes IA especializados.</strong> Cada uno usa un prompt editable desde la base de datos. El Generador y el Optimizador enriquecen respuestas con métricas reales cuando GSC/Analytics están conectados. Siempre supervisado.
+        <strong>5 asistentes IA especializados.</strong> Cada uno usa un prompt editable.
+        El Generador y el Optimizador pueden usar métricas GSC/Analytics si hay sync.
+        Siempre supervisado — el resultado se formatea para lectura; no se publica solo.{' '}
+        <Link to="/help#ia">Cómo funciona la IA →</Link>
       </div>
 
       <div className="assistant-tabs">
@@ -183,10 +191,29 @@ export function AssistantsPage() {
 
           <div className="ai-output">
             <div className="section-head">
-              <h2>Resultado</h2>
-              <span className="muted">Editable · no se publica automáticamente</span>
+              <div>
+                <h2 style={{ fontSize: 15 }}>Resultado</h2>
+                <div className="muted" style={{ fontSize: 12.5 }}>
+                  Formateado · no se publica automáticamente
+                </div>
+              </div>
+              {result && (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-ghost"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(result)
+                    toast('Texto copiado')
+                  }}
+                >
+                  Copiar texto
+                </button>
+              )}
             </div>
-            <div className="ai-result">{result || 'Selecciona un asistente y ejecuta para ver el borrador.'}</div>
+            <AiResultView
+              text={result}
+              emptyMessage="Selecciona un asistente y pulsa Ejecutar. El análisis se mostrará con títulos y listas legibles."
+            />
           </div>
         </div>
       </div>

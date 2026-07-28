@@ -13,10 +13,17 @@ export function PerformancePage() {
   const [summary, setSummary] = useState<PerformanceSummary | null>(null)
   const [filter, setFilter] = useState<'all' | 'winning' | 'declining' | 'needs_work' | 'stable'>('all')
 
+  const [error, setError] = useState<string | null>(null)
+
   useEffect(() => {
-    phase2Api.performance.summary(scopeProject).then(setSummary)
+    setError(null)
+    setSummary(null)
+    phase2Api.performance.summary(scopeProject)
+      .then(setSummary)
+      .catch((e) => setError(e instanceof Error ? e.message : 'Error al cargar rendimiento'))
   }, [scopeProject])
 
+  if (error) return <p className="sync-error">{error}</p>
   if (!summary) return <p className="muted">Cargando rendimiento…</p>
 
   const pages = filter === 'all' ? summary.pages : summary.pages.filter((p) => p.status === filter)

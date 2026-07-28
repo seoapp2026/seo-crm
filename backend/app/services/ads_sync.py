@@ -159,10 +159,26 @@ def _call_historical_metrics(
                 f"Google Ads API: {detail}. "
                 "Revisa GOOGLE_ADS_DEVELOPER_TOKEN y que Basic Access esté Approved en API Center."
             )
+        if "CUSTOMER_NOT_ENABLED" in detail.upper() or (
+            "not yet enabled" in detail.lower() or "has been deactivated" in detail.lower()
+        ):
+            raise ValueError(
+                f"Google Ads API: {detail} (Customer ID {customer_id}). "
+                "La cuenta de Google Ads no está activa: completa el alta en ads.google.com "
+                "(términos + facturación), usa el Customer ID del cliente (no del Manager si está vacío), "
+                "y si usas MCC pon el Manager en GOOGLE_ADS_LOGIN_CUSTOMER_ID y el cliente en "
+                "GOOGLE_ADS_CUSTOMER_ID. Luego redeploy y vuelve a sincronizar."
+            )
         if "CUSTOMER" in detail.upper() and "PERMISSION" in detail.upper():
             raise ValueError(
                 f"Google Ads API: {detail}. "
                 "La cuenta OAuth debe tener acceso al Customer ID y el cliente debe estar linked al MCC."
+            )
+        if "ACCESS_TOKEN_SCOPE" in detail.upper() or "insufficient authentication scopes" in detail.lower():
+            raise ValueError(
+                f"Google Ads API: {detail}. "
+                "Desconecta Keyword Planner en Integraciones y vuelve a conectar (OAuth debe incluir "
+                "https://www.googleapis.com/auth/adwords)."
             )
         raise ValueError(f"Google Ads API: {detail}")
 

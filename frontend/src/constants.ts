@@ -51,6 +51,7 @@ export const INDEX_STATES: Record<string, { label: string; cls: string }> = {
 export const ROUTES = [
   { group: 'Trabajo' },
   { id: 'dashboard', label: 'Panel', crumb: 'Panel', sub: 'Resumen general' },
+  { id: 'help', label: 'Ayuda / Guía', crumb: 'Ayuda y guía del CRM', sub: 'Cómo usar cada pantalla · glosario · problemas frecuentes' },
   { id: 'projects', label: 'Proyectos', crumb: 'Proyectos', sub: 'Agrupación de nichos y webs' },
   { id: 'niches', label: 'Nichos', crumb: 'Nichos', sub: 'Unidad estratégica principal' },
   { id: 'pages', label: 'Páginas', crumb: 'Páginas', sub: 'Contenido planificado (TSG / TSR / TSA)' },

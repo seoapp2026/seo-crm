@@ -13,7 +13,7 @@ export function SyncPage() {
   const [runningId, setRunningId] = useState<number | null>(null)
 
   const reload = useCallback(() => {
-    phase2Api.sync.list(scopeProject).then(setJobs)
+    phase2Api.sync.list(scopeProject).then(setJobs).catch(() => setJobs([]))
   }, [scopeProject])
 
   useEffect(() => { reload() }, [reload])

@@ -25,10 +25,10 @@ export function AnalyticsDataPage() {
 
   useEffect(() => {
     setLoading(true)
-    phase2Api.analytics.list(scopeProject, range).then((data) => {
-      setRows(data)
-      setLoading(false)
-    })
+    phase2Api.analytics.list(scopeProject, range)
+      .then((data) => setRows(data))
+      .catch(() => setRows([]))
+      .finally(() => setLoading(false))
   }, [scopeProject, range])
 
   const totals = rows.reduce(

@@ -14,7 +14,11 @@ export function CompetitorsPage() {
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ domain: '', project_id: 0, niche_id: null as number | null, notes: '' })
 
-  const reload = () => phase2Api.competitors.list(scopeProject).then(setItems)
+  const reload = () =>
+    phase2Api.competitors.list(scopeProject).then(setItems).catch((e) => {
+      setItems([])
+      toast(e instanceof Error ? e.message : 'No se pudieron cargar competidores')
+    })
 
   useEffect(() => { reload() }, [scopeProject])
   useEffect(() => {

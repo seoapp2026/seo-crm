@@ -12,7 +12,11 @@ export function PromptsPage() {
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ system_prompt: '', model_default: '', description: '' })
 
-  const reload = () => phase2Api.prompts.list().then(setPrompts)
+  const reload = () =>
+    phase2Api.prompts.list().then(setPrompts).catch((e) => {
+      setPrompts([])
+      toast(e instanceof Error ? e.message : 'No se pudieron cargar los prompts')
+    })
 
   useEffect(() => { reload() }, [])
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { phase2Api } from '../../api/phase2-client'
 import { Badge } from '../../components/Badge'
 import { ScopeBar } from '../../components/ScopeBar'
@@ -18,7 +19,7 @@ export function AdsKeywordsPage() {
   const [items, setItems] = useState<AdsKeyword[]>([])
 
   useEffect(() => {
-    phase2Api.adsKeywords.list(scopeProject).then(setItems)
+    phase2Api.adsKeywords.list(scopeProject).then(setItems).catch(() => setItems([]))
   }, [scopeProject])
 
   return (
@@ -26,7 +27,10 @@ export function AdsKeywordsPage() {
       <ScopeBar projects={projects} value={scopeProject} onChange={setScopeProject} />
 
       <div className="banner">
-        <strong>Google Ads Keyword Planner.</strong> Volumen de búsqueda, competencia y CPC estimado. Tabla <code className="mono">ads_keywords</code> · sync semanal o manual en Sincronización. Conecta Ads en Integraciones y añade keywords al proyecto antes de sincronizar.
+        <strong>Google Ads Keyword Planner.</strong> Solo muestra métricas ya sincronizadas (volumen, competencia, CPC)
+        de las <em>palabras clave del proyecto</em> — no de URLs. Flujo: Palabras clave → Integraciones (Ads) →
+        Sincronización (job ads) → esta tabla.{' '}
+        <Link to="/help#ads">Guía Keywords Ads →</Link>
       </div>
 
       <div className="card">

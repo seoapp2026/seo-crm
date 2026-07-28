@@ -21,8 +21,8 @@ export function DashboardPage() {
   const [perf, setPerf] = useState<PerformanceSummary | null>(null)
 
   useEffect(() => {
-    api.dashboard(scopeProject).then(setStats)
-    phase2Api.performance.summary(scopeProject).then(setPerf)
+    api.dashboard(scopeProject).then(setStats).catch(() => setStats(null))
+    phase2Api.performance.summary(scopeProject).then(setPerf).catch(() => setPerf(null))
   }, [scopeProject])
 
   if (!stats) return <p className="muted">Cargando panel...</p>
@@ -32,6 +32,20 @@ export function DashboardPage() {
   return (
     <>
       <ScopeBar projects={projects} value={scopeProject} onChange={setScopeProject} />
+
+      <div className="dash-help-card">
+        <div>
+          <h2>¿Cómo se usa este CRM?</h2>
+          <p>
+            Proyecto → nicho → página → keywords. Luego Google (OAuth + sync), IA supervisada y export a WordPress.
+            La guía explica cada pantalla, Keywords Ads, y un glosario (TSG, canibalización, CPC…).
+          </p>
+        </div>
+        <Link to="/help" className="btn btn-primary">
+          Abrir ayuda / guía
+        </Link>
+      </div>
+
       <div className="grid grid-4" style={{ marginBottom: 22 }}>
         {[
           ['Proyectos', stats.projects],
