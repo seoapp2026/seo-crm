@@ -161,19 +161,39 @@ def run_job(db: Session, job_id: int) -> ResearchJob:
             _run_stub(db, job)
             job.used_stub = True
             job.actual_cost_eur = 0.0
+            job.ai_report = _build_stub_ai_report(job)
         else:
-            # PR2: live DataForSEO — until then fall back to stub with clear flag
-            logger.warning("DataForSEO credentials set but live client not implemented yet; using stub")
-            _run_stub(db, job)
-            job.used_stub = True
-            job.actual_cost_eur = 0.0
+            from app.services.dataforseo_client import DataForSeoClient
+            from app.services.research_live import build_live_ai_report, run_live_pack
 
-        job.ai_report = _build_stub_ai_report(job)
+            client = DataForSeoClient()
+            if not client.configured:
+                raise CapViolation(
+                    "DataForSEO no configurado. Define DATAFORSEO_LOGIN y DATAFORSEO_PASSWORD "
+                    "o activa DATAFORSEO_FORCE_STUB=true."
+                )
+            cost = run_live_pack(db, job, client)
+            job.used_stub = False
+            job.actual_cost_eur = float(cost)
+            # surface partial failures if all calls failed
+            if client.calls and all(not c.ok for c in client.calls):
+                errs = "; ".join((c.error or c.path) for c in client.calls[:3])
+                raise CapViolation(f"DataForSEO no devolvió datos útiles: {errs}")
+            job.ai_report = build_live_ai_report(job, db)
+
         job.status = ResearchJobStatus.done
         job.finished_at = _now()
         db.commit()
         db.refresh(job)
         return job
+    except CapViolation as exc:
+        logger.warning("Research job %s cap/config error: %s", job_id, exc)
+        job.status = ResearchJobStatus.error
+        job.error_message = str(exc)[:500]
+        job.finished_at = _now()
+        db.commit()
+        db.refresh(job)
+        raise
     except Exception as exc:
         logger.exception("Research job %s failed: %s", job_id, exc)
         job.status = ResearchJobStatus.error

@@ -300,28 +300,45 @@ export function HelpPage() {
       <section id="option2" className="card card-pad help-section">
         <h2>9. Option 2 — Análisis SEO (DataForSEO) · hard caps</h2>
         <p>
-          Pantalla <Link to="/research">Análisis SEO</Link>: un clic <strong>Analizar proyecto</strong> guarda un
-          snapshot (keywords, SERP, snapshot on-page, backlinks básicos, link gap, oportunidades + informe IA).
-          Catálogo <Link to="/products">Productos</Link> para hechos reales.
+          Pantalla <Link to="/research">Análisis SEO</Link>: un clic <strong>Analizar proyecto</strong> llama a un
+          pack fijo de DataForSEO y guarda un snapshot (keywords + volumen/CPC, SERP orgánico, snapshot on-page,
+          backlinks + referring domains, link gap, oportunidades + informe).
+          Catálogo <Link to="/products">Productos</Link> para hechos reales (la IA no inventa precios/stock).
         </p>
+        <h3>Cómo activar datos reales</h3>
+        <ol>
+          <li>Crea cuenta en DataForSEO y genera <strong>API login + password</strong> (app.dataforseo.com → API Access).</li>
+          <li>En Railway / servidor: <code className="mono">DATAFORSEO_LOGIN</code> y <code className="mono">DATAFORSEO_PASSWORD</code>.</li>
+          <li>Recarga <Link to="/research">Análisis SEO</Link>: debe decir “Credenciales DataForSEO configuradas” (no stub).</li>
+          <li>Elige proyecto, URL opcional, hasta 3 competidores, keywords semilla → <strong>Analizar proyecto</strong>.</li>
+        </ol>
+        <h3>Endpoints usados (whitelist — no se llama “todo”)</h3>
+        <ul>
+          <li>Keywords: Google Ads search volume (live)</li>
+          <li>Ideas: Labs related keywords (live, acotado)</li>
+          <li>SERP: Google organic regular (live, máx. 10 queries)</li>
+          <li>On-page: Instant pages (1 URL)</li>
+          <li>Backlinks: summary + referring domains (live, filas acotadas)</li>
+        </ul>
         <h3>Hard caps (no negociables en v1)</h3>
         <ul>
           <li>Máx. <strong>3 competidores</strong> por análisis</li>
           <li>Máx. <strong>20 keywords semilla</strong> · hasta 100 términos guardados</li>
           <li>Máx. <strong>10 queries SERP</strong> · 10 resultados c/u</li>
           <li>Máx. <strong>1 URL</strong> de snapshot on-page</li>
-          <li>Máx. <strong>50</strong> backlinks / referring domains por dominio</li>
+          <li>Máx. <strong>50</strong> backlinks sample / referring domains por dominio</li>
           <li>Análisis <strong>manual</strong> (no nightly auto-refresh)</li>
-          <li>Reabrir historial = <strong>gratis</strong>; re-run = nuevo coste</li>
+          <li>Reabrir historial = <strong>gratis</strong>; re-run = nuevo coste API</li>
           <li>Presupuesto soft/hard mensual (por defecto 50 € / 100 €)</li>
         </ul>
         <h3>No incluido</h3>
         <ul>
-          <li>Crawler multipágina · charts tipo Ahrefs · outreach de enlaces · otras APIs SEO</li>
+          <li>Crawler multipágina · charts tipo Ahrefs · outreach de enlaces · Ahrefs/Semrush</li>
         </ul>
         <p className="muted">
-          Sin credenciales DataForSEO el sistema corre en <strong>modo stub</strong> (datos de ejemplo, 0 € API)
-          para validar flujo. PR2 conectará el cliente live.
+          Sin credenciales (o con <code className="mono">DATAFORSEO_FORCE_STUB=true</code>) el sistema usa{' '}
+          <strong>modo stub</strong> (datos de ejemplo, 0 € API) solo para probar la UI.
+          El coste real lo cobra DataForSEO a tu saldo (pay-as-you-go).
         </p>
       </section>
 

@@ -111,12 +111,22 @@ def on_startup():
 @app.get(f"{API_PREFIX}/health")
 def health():
     from app.services.ads_config import ads_config_status
+    from app.services.research_runner import credentials_configured, should_use_stub
 
     return {
         "status": "ok",
         "env": settings.app_env,
         "phase": 2,
         "google_ads": ads_config_status(),
+        "dataforseo": {
+            "login_set": bool((settings.dataforseo_login or "").strip()),
+            "password_set": bool((settings.dataforseo_password or "").strip()),
+            "credentials_configured": credentials_configured(),
+            "force_stub": bool(settings.dataforseo_force_stub),
+            "using_stub": should_use_stub(),
+            "soft_monthly_eur": settings.dataforseo_soft_monthly_eur,
+            "hard_monthly_eur": settings.dataforseo_hard_monthly_eur,
+        },
     }
 
 

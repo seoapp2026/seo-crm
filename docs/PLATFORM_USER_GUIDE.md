@@ -135,7 +135,9 @@ Always set the filter before creating or editing so new rows land on the right w
 | **Rendimiento** | Winning / declining / needs-work / stable pages (last 28 days) |
 | **Search Console** | Impressions, clicks, CTR, position by URL |
 | **Analytics** | Sessions, users, bounce, engagement |
-| **Keywords Ads** | Keyword Planner volume, competition, CPC |
+| **Keywords Ads** | Keyword Planner volume, competition, CPC (Google Ads account) |
+| **Análisis SEO** | Option 2: DataForSEO research job (keywords, SERP, on-page, backlinks, link gap) with hard cost caps |
+| **Productos** | Real product facts for AI (no invented prices/stock) |
 
 ### Integraciones
 
@@ -360,6 +362,17 @@ Read-only data browsers for synced tables:
 - **Keywords Ads** — volumes/CPC from Keyword Planner (when Ads is connected and configured)
 
 Empty tables usually mean: OAuth not connected, wrong project scope, or sync not run yet → go to **Integraciones** then **Sincronización**.
+
+### Keywords Ads vs Análisis SEO (Option 2)
+
+| | **Keywords Ads** | **Análisis SEO (Option 2)** |
+|---|---|---|
+| Source | Google Ads Keyword Planner (your Ads account) | DataForSEO API pack |
+| Input | CRM **keywords** only | Site URL + up to 3 competitors + seed keywords |
+| Output | volume / competition / CPC in `ads_keywords` | Full research job history + SERP + backlinks + report |
+| Cost control | Google Ads account | Hard caps + monthly soft/hard EUR budget |
+
+See also in-app **Ayuda → Option 2** and `docs/OPTION2_DATAFORSEO_GUIDE.md`.
 
 ---
 

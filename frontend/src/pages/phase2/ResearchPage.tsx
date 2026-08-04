@@ -140,9 +140,10 @@ export function ResearchPage() {
       <ScopeBar projects={projects} value={scopeProject} onChange={setScopeProject} />
 
       <div className="banner">
-        <strong>Análisis SEO (Option 2).</strong> Keywords, SERP, snapshot on-page, backlinks básicos y
-        oportunidades — con <em>hard caps</em> de coste. Manual (no auto-noche). Historial gratis al reabrir.{' '}
-        <Link to="/help#option2">Caps y exclusiones →</Link>
+        <strong>Análisis SEO (Option 2 · DataForSEO).</strong> Pack real acotado: volumen/CPC, related keywords,
+        SERP orgánico, snapshot on-page (1 URL), backlinks + link gap. Manual (no auto-noche). Historial gratis al
+        reabrir.{' '}
+        <Link to="/help#option2">Guía y caps →</Link>
         {' · '}
         <Link to="/products">Productos</Link>
       </div>
@@ -150,16 +151,18 @@ export function ResearchPage() {
       {caps && (
         <div className="card card-pad" style={{ marginBottom: 16 }}>
           <div className="section-head">
-            <h2 style={{ fontSize: 15 }}>Límites activos</h2>
-            <span className="muted">
-              {caps.force_stub || !caps.credentials_configured
-                ? 'Modo stub (sin llamadas DataForSEO)'
-                : 'Credenciales DataForSEO configuradas'}
+            <h2 style={{ fontSize: 15 }}>Estado de integración</h2>
+            <span className={caps.credentials_configured && !caps.force_stub ? 't-title' : 'muted'}>
+              {caps.force_stub
+                ? 'FORCE STUB activo'
+                : caps.credentials_configured
+                  ? '● DataForSEO live listo'
+                  : '○ Sin credenciales → stub (0 € API)'}
             </span>
           </div>
-          <p className="muted" style={{ fontSize: 13, margin: 0 }}>
+          <p className="muted" style={{ fontSize: 13, margin: '0 0 8px' }}>
             Máx. {caps.max_competitors} competidores · {caps.max_seed_keywords} keywords semilla ·{' '}
-            {caps.max_serp_queries} SERP · {caps.max_backlinks_per_domain} backlinks/dominio · soft{' '}
+            {caps.max_serp_queries} SERP · {caps.max_backlinks_per_domain} ref. domains/dominio · soft{' '}
             {caps.soft_monthly_eur} € / hard {caps.hard_monthly_eur || 'off'} €
             {budget && (
               <>
@@ -170,6 +173,13 @@ export function ResearchPage() {
               </>
             )}
           </p>
+          {!caps.credentials_configured && (
+            <p style={{ fontSize: 13, margin: 0 }}>
+              Para datos reales: define <code className="mono">DATAFORSEO_LOGIN</code> y{' '}
+              <code className="mono">DATAFORSEO_PASSWORD</code> en Railway (API Access de DataForSEO), redeploy, y
+              vuelve aquí. Ver <Link to="/help#option2">ayuda Option 2</Link>.
+            </p>
+          )}
         </div>
       )}
 
