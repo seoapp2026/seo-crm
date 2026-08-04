@@ -1,0 +1,625 @@
+SEO CRM — FULL APP END-TO-END TEST GUIDE
+(Including login, every main screen, Google data, AI, Option 2 / DataForSEO)
+App URL: https://crmpersonal.es
+Date: 2026-08-04
+
+How to use this file
+  - Go top to bottom.
+  - Mark [ ] when done, [x] when it passes.
+  - Write FAIL + short note if something breaks.
+  - Keep Railway logs open while testing Google + AI.
+
+
+================================================================================
+0. WHAT YOU NEED BEFORE STARTING
+================================================================================
+
+Accounts / secrets (you should already have these on Railway):
+
+  APP_AUTH_PASSWORD          shared CRM login password
+  AUTH_ALLOWED_EMAILS        optional: only these emails can log in
+                             (empty = any email + correct password)
+  SECRET_KEY                 session signing (must be stable in production)
+  OPENAI_API_KEY             AI drafts
+  GOOGLE_CLIENT_ID
+  GOOGLE_CLIENT_SECRET
+  GOOGLE_REDIRECT_URI=https://crmpersonal.es/api/seo-crm/integrations/google/callback
+  GOOGLE_ADS_DEVELOPER_TOKEN
+  GOOGLE_ADS_CUSTOMER_ID
+  GOOGLE_ADS_LOGIN_CUSTOMER_ID   optional MCC id
+  DATAFORSEO_LOGIN               Option 2 live research (API login)
+  DATAFORSEO_PASSWORD            Option 2 live research (API password)
+  DATAFORSEO_FORCE_STUB=false    true = demo data only
+  DATAFORSEO_SOFT_MONTHLY_EUR=50
+  DATAFORSEO_HARD_MONTHLY_EUR=100
+  APP_PUBLIC_URL=https://crmpersonal.es
+  DATABASE_URL               Railway Postgres
+
+Test identity (fill in before you start):
+
+  CRM login email:     ________________________________
+  CRM password:        (the APP_AUTH_PASSWORD value)
+  Google account:      ________________________________
+  Test project name:   ________________________________
+
+
+Quick health check (public, no login):
+
+  [ ] Open https://crmpersonal.es/api/seo-crm/health
+  [ ] status = ok
+  [ ] google_ads.developer_token_set = true (for Ads tests)
+  [ ] google_ads.customer_id_set = true
+  [ ] google_ads.ready_for_oauth = true
+  [ ] google_ads.ready_for_sync = true
+  [ ] dataforseo object present
+  [ ] If live Option 2 desired: dataforseo.credentials_configured = true
+  [ ] dataforseo.using_stub = false when credentials set (true = stub/demo only)
+
+
+================================================================================
+1. PUBLIC PAGES (no login required)
+================================================================================
+
+1.1 Home / landing
+  [ ] Open https://crmpersonal.es/
+  [ ] Landing page loads (not a blank page)
+  [ ] Links to Privacy / Terms / app entry work
+
+1.2 Privacy
+  [ ] Open https://crmpersonal.es/privacy
+  [ ] Policy text loads
+
+1.3 Terms
+  [ ] Open https://crmpersonal.es/terms
+  [ ] Terms text loads
+
+1.4 Login page reachable
+  [ ] Open https://crmpersonal.es/login
+  [ ] Form shows email + password + Entrar
+
+
+================================================================================
+2. LOGIN / LOGOUT / SESSION (full auth gate)
+================================================================================
+
+How login works (short):
+  - If APP_AUTH_PASSWORD is set on Railway, the CRM requires login.
+  - Email + password form posts to /api/seo-crm/auth/login
+  - Server sets httpOnly cookie seo_crm_session (about 7 days)
+  - Protected API routes return 401 without a valid session
+  - Frontend RequireAuth sends you to /login if not authenticated
+
+2.1 Wrong password
+  [ ] Go to /login
+  [ ] Enter allowed email + WRONG password
+  [ ] Expect error (incorrect password / cannot login)
+  [ ] You stay on login page (not dashboard)
+
+2.2 Email not allowed (only if AUTH_ALLOWED_EMAILS is set)
+  [ ] Enter an email NOT in the allowlist + correct password
+  [ ] Expect “email not authorized” (or similar)
+  [ ] Login blocked
+
+2.3 Successful login
+  [ ] Enter allowed email + correct APP_AUTH_PASSWORD
+  [ ] Click Entrar
+  [ ] Redirect to /dashboard (or the page you tried to open)
+  [ ] Sidebar shows CRM menu (Panel, Proyectos, etc.)
+  [ ] Your session stays after refresh (F5)
+
+2.4 Protected route without session
+  [ ] Open a private window
+  [ ] Go directly to https://crmpersonal.es/dashboard
+  [ ] Expect redirect to /login (or login wall)
+  [ ] After login, you can open dashboard
+
+2.5 Logout
+  [ ] In the app, use logout (sidebar / top control if shown)
+  [ ] Expect return to login or public area
+  [ ] Open /dashboard again → must require login
+
+2.6 Session after redeploy
+  [ ] Log in again after Railway redeploy
+  [ ] If SECRET_KEY changed, old sessions die (must re-login) — that is expected
+
+
+LOGIN SECTION PASS:  [ ] YES   [ ] NO
+Notes: ________________________________________________
+
+
+================================================================================
+3. DASHBOARD (Panel)
+================================================================================
+
+  [ ] Open Panel / Dashboard
+  [ ] Page loads without crash
+  [ ] Shows summary cards / counts (may be zero on empty DB)
+  [ ] Cannibalization / orphans info appears if data exists
+  [ ] Scope bar (project filter) works if present
+
+
+================================================================================
+4. CORE SEO STRUCTURE (create data the whole app uses)
+================================================================================
+
+Use one real-ish test project so Ads + AI have something to chew on.
+
+4.1 Projects
+  [ ] Proyectos → create project
+      Name: e.g. "E2E Test Site"
+  [ ] Edit project:
+      GSC site URL (exact from Search Console if testing GSC)
+      GA4 property ID (if testing Analytics)
+  [ ] Save
+  [ ] Project appears in list
+  [ ] Edit works
+  [ ] (Optional later) delete only if you created a disposable project
+
+4.2 Niches
+  [ ] Nichos → create niche under the project
+  [ ] Name + topic filled
+  [ ] State / monetization fields save if shown
+  [ ] Edit + list OK
+
+4.3 Pages
+  [ ] Páginas → create at least 2 pages
+      Example 1: type TSG (guía), linked to niche
+      Example 2: type TSR or TSA
+  [ ] Title, objective, type save correctly
+  [ ] Edit + list OK
+
+4.4 Keywords
+  [ ] Palabras clave → add at least 8–10 keywords
+  [ ] Assign several keywords to Page 1
+  [ ] Set intent (informacional / comercial / transaccional) if available
+  [ ] Edit + delete one keyword works
+  IMPORTANT: Ads sync reads from this keywords table.
+             AI drafts use keywords assigned to the page.
+
+4.5 URLs
+  [ ] URLs → add URL for a page (slug/path or full URL as UI expects)
+  [ ] Index status can be set (indexada / pendiente / noindex)
+  [ ] Edit + list OK
+
+4.6 Internal links
+  [ ] Enlazado interno → create link from page A → page B
+  [ ] List shows the link
+  [ ] Orphan / stats area makes sense with your data
+  [ ] Delete link works
+
+4.7 Notes
+  [ ] Notas → create a strategic note for the project
+  [ ] Edit + delete OK
+
+
+STRUCTURE SECTION PASS:  [ ] YES   [ ] NO
+Notes: ________________________________________________
+
+
+================================================================================
+5. GOOGLE INTEGRATIONS (OAuth)
+================================================================================
+
+Path: Integraciones (Google OAuth)
+Always select the correct project in the scope bar first.
+
+5.1 Search Console
+  [ ] Project has GSC site URL configured
+  [ ] Conectar OAuth → Google consent → return to app
+  [ ] Status: Conectado + account email
+  [ ] (If shown) list of GSC properties; configured URL matches one of them
+  [ ] Disconnect then reconnect works (optional)
+
+5.2 Google Analytics 4
+  [ ] Project has GA4 property ID
+  [ ] Conectar OAuth → consent → Conectado
+  [ ] Disconnect/reconnect optional
+
+5.3 Google Ads / Keyword Planner
+  [ ] GOOGLE_ADS_* env OK (see health)
+  [ ] Conectar OAuth → approve Google Ads / adwords scope
+  [ ] Status: Conectado
+  [ ] property/customer info shows if available
+
+OAuth fail cheat-sheet:
+  redirect_uri_mismatch  → fix GOOGLE_REDIRECT_URI + Cloud Console
+  access_denied          → Testing mode: add test user
+  400 missing token      → GOOGLE_ADS_DEVELOPER_TOKEN missing
+  401 after connect      → re-login to CRM (session), then retry
+
+
+INTEGRATIONS PASS:  [ ] YES   [ ] NO
+Notes: ________________________________________________
+
+
+================================================================================
+6. SYNCHRONIZATION JOBS
+================================================================================
+
+Path: Sincronización
+
+  [ ] Page lists jobs for project: GSC, GA4, Ads
+  [ ] Each job shows schedule / enabled / last run / last error
+  [ ] Toggle enable/disable works
+  [ ] Run GSC now → success or clear error
+  [ ] Run GA4 now → success or clear error
+  [ ] Run Ads now → success or clear error
+      Ads needs: OAuth connected + keywords in project + token/customer id
+
+Ads-specific fails (check Railway logs):
+  [ ] "Faltan variables" → env
+  [ ] "no conectado" → Integraciones Ads
+  [ ] "no tiene keywords" → add keywords
+  [ ] login-customer-id → set GOOGLE_ADS_LOGIN_CUSTOMER_ID (MCC)
+  [ ] DEVELOPER_TOKEN → Basic Access / wrong token
+
+
+SYNC PASS:  [ ] YES   [ ] NO
+Notes: ________________________________________________
+
+
+================================================================================
+7. DATA SCREENS (read Google data from DB)
+================================================================================
+
+7.1 Search Console data
+  [ ] Search Console menu loads
+  [ ] After successful GSC sync: rows with impressions/clicks/CTR/position
+      (empty is OK only if site has no data / wrong property)
+
+7.2 Analytics data
+  [ ] Analytics menu loads
+  [ ] After GA4 sync: sessions/users/etc. or empty with reason
+
+7.3 Keywords Ads
+  [ ] Keywords Ads menu loads
+  [ ] After Ads sync: keyword, volume/mo, competition, CPC low/high, last sync
+  [ ] Project filter isolates data
+
+7.4 Performance panel
+  [ ] Rendimiento loads
+  [ ] Shows winning / declining / priority style summary when GSC/GA4 data exists
+  [ ] Empty state is understandable if no metrics yet
+
+
+DATA SCREENS PASS:  [ ] YES   [ ] NO
+Notes: ________________________________________________
+
+
+================================================================================
+8. COMPETITORS
+================================================================================
+
+  [ ] Competidores → add domain for the niche/project
+  [ ] Notes field saves
+  [ ] Edit + delete OK
+  [ ] Used later by Competitor analyst assistant
+
+
+================================================================================
+9. AI — HOW IT WORKS (read once)
+================================================================================
+
+Pipeline:
+
+  Your CRM data (pages, keywords, notes, competitors)
+        +
+  Synced Google data in YOUR database
+        (GSC / GA4 metrics; Ads volumes in Keywords Ads)
+        ↓
+  You click Generador IA or an Asistente
+        ↓
+  Backend builds a text prompt from that context
+        ↓
+  OpenAI (OPENAI_API_KEY on server only)
+        ↓
+  Draft / analysis shown in UI
+        ↓
+  YOU review → copy → publish manually (WordPress is manual)
+
+What each AI entry uses TODAY:
+
+  Generador IA
+    - Selected page (title, type TSG/TSR/TSA)
+    - Niche
+    - Keywords assigned to that page
+    - Does NOT auto-pull Ads rows yet
+    - Best Ads workflow: sync Ads → prioritize keywords → assign to page → generate
+
+  Asistentes IA
+    SEO Architect          → niche / structure context
+    Keyword classifier     → page + keywords
+    Content generator      → page + keywords + GSC/GA4 page metrics if available
+    Competitor analyst     → competitor + page/niche
+    Continuous optimizer   → page + GSC/GA4 performance if available
+
+  Ads + AI practical loop
+    1) Sync Keyword Planner
+    2) Read volume/competition/CPC in Keywords Ads
+    3) Put best keywords on the right page
+    4) Run Generador IA or Content generator
+    5) Optional: paste Ads numbers into “extra context” on Assistants
+
+AI never:
+  - publishes to WordPress alone
+  - creates Google Ads campaigns
+  - exposes API keys in the browser
+
+
+================================================================================
+10. AI — GENERADOR IA (full test)
+================================================================================
+
+Path: Generador IA
+
+  [ ] OPENAI_API_KEY set (else expect server error)
+  [ ] Select project in scope bar
+  [ ] Select page that HAS keywords assigned
+  [ ] Choose model gpt-4o-mini (fast/cheap test)
+  [ ] Click Generar borrador
+  [ ] Loading state appears
+  [ ] Draft text appears (meta, headings, body, FAQ style depending on type)
+  [ ] Draft is in Spanish (or expected language)
+  [ ] Keywords/topic of the page are reflected sensibly
+  [ ] Copiar works
+  [ ] Repeat with page type TSG and TSR/TSA if you created both
+  [ ] Optional: try gpt-4o and confirm higher quality path works
+
+Fails:
+  [ ] 503 / API key → Railway OPENAI_API_KEY
+  [ ] empty page list → create pages first
+  [ ] weak draft → assign more keywords / clearer title-objective
+
+
+GENERADOR IA PASS:  [ ] YES   [ ] NO
+Notes: ________________________________________________
+
+
+================================================================================
+11. AI — ASISTENTES + PROMPTS
+================================================================================
+
+11.1 Asistentes IA
+Path: Asistentes IA
+
+  [ ] Select project + page (+ niche / competitor when needed)
+  [ ] SEO Architect → non-empty useful output
+  [ ] Keyword classifier → mapping / priorities
+  [ ] Content generator → draft; if GSC/GA4 synced, metrics may influence output
+  [ ] Competitor analyst → with competitor selected
+  [ ] Continuous optimizer → with performance data if available
+
+Ads-aware optional:
+  [ ] Copy 2–3 lines from Keywords Ads (term, volume, CPC)
+  [ ] Paste into extra context
+  [ ] Re-run Keyword classifier or Content generator
+  [ ] Output references those volumes / priorities
+
+11.2 Editor de prompts
+Path: Editor de prompts
+
+  [ ] List of 5 assistants with system prompts
+  [ ] Edit one prompt slightly → save
+  [ ] Re-run that assistant → behavior changes
+  [ ] Revert prompt if you want production defaults back
+
+
+ASSISTANTS PASS:  [ ] YES   [ ] NO
+Notes: ________________________________________________
+
+
+================================================================================
+11b. OPTION 2 — ANÁLISIS SEO + PRODUCTOS (DataForSEO)
+================================================================================
+
+Paths: Análisis SEO (/research) · Productos (/products) · Ayuda #option2
+
+11b.1 Health / mode
+  [ ] /api/seo-crm/health → dataforseo.credentials_configured matches expectation
+  [ ] UI strip: "DataForSEO live listo" OR "Sin credenciales → stub"
+  [ ] Caps visible (3 competitors, 20 seeds, soft/hard monthly)
+
+11b.2 Productos
+  [ ] Create product with name + price + features
+  [ ] Edit product
+  [ ] Leave price empty on another product → shows "needs data" style empty
+  [ ] Delete test product if needed
+  [ ] Scope filter limits products to project
+
+11b.3 Análisis SEO — validation (hard caps)
+  [ ] 4 competitor URLs → rejected (toast/API 400)
+  [ ] 21 unique seed lines → rejected
+  [ ] Empty form (no URL, no comps, no seeds) → rejected
+
+11b.4 Análisis SEO — run (stub or live)
+  [ ] Select project
+  [ ] Optional site URL
+  [ ] 1–3 competitors
+  [ ] 3–10 seed keywords
+  [ ] Country es / language es / type TSG
+  [ ] Click Analizar proyecto
+  [ ] Job appears in history as Listo (or Error with readable message)
+  [ ] used_stub true if no credentials; false if live
+
+11b.5 Result tabs
+  [ ] Informe IA non-empty, readable formatting
+  [ ] Keywords table has rows (volume/CPC if live)
+  [ ] SERP table has rows if seeds provided
+  [ ] Snapshot if URL provided (title/meta/H tags)
+  [ ] Backlinks summaries (+ link gap if competitors)
+  [ ] Oportunidades list
+  [ ] Copiar informe works
+  [ ] Re-open same job from history WITHOUT new charge (same id)
+
+11b.6 Budget
+  [ ] Budget strip shows year_month, runs_count, spend
+  [ ] Soft warning appears near soft cap (if you approach it)
+  [ ] Hard block message if over hard monthly (only if testing intentionally)
+
+Fails:
+  [ ] Always stub with credentials → Railway env / redeploy / FORCE_STUB
+  [ ] Live errors → DataForSEO balance, API password, Railway logs
+  [ ] Timeout → reduce seeds/SERPs; check logs
+
+
+OPTION2 PASS:  [ ] YES   [ ] NO
+Notes: ________________________________________________
+
+
+================================================================================
+12. WORDPRESS BRIDGE
+================================================================================
+
+Path: WordPress
+
+  [ ] Select project
+  [ ] Click Generar export WP
+  [ ] JSON / structure preview appears
+  [ ] Copy JSON works
+  [ ] Download JSON works (if button present)
+  [ ] Confirm this is EXPORT ONLY — you still publish manually in WP
+
+
+WORDPRESS PASS:  [ ] YES   [ ] NO
+Notes: ________________________________________________
+
+
+================================================================================
+13. FULL STORY TEST (one continuous path)
+================================================================================
+
+This is the “does the whole product make sense” run.
+
+  [ ] 1. Login with CRM email/password
+  [ ] 2. Create/select project + niche + page + keywords
+  [ ] 3. Connect GSC (optional) + GA4 (optional) + Ads
+  [ ] 4. Run sync jobs (especially Ads)
+  [ ] 5. Keywords Ads shows volumes
+  [ ] 5b. (Optional) Análisis SEO run → history + tabs
+  [ ] 5c. (Optional) Productos entry for commercial pages
+  [ ] 6. Pick high-volume keyword → ensure it is on the page
+  [ ] 7. Open Performance if GSC/GA4 data exists
+  [ ] 8. Run Generador IA or Content generator
+  [ ] 9. Review draft
+  [ ] 10. Export WordPress structure (optional)
+  [ ] 11. Copy content for manual publish
+  [ ] 12. Add a Note “Published draft for page X”
+  [ ] 13. Logout
+  [ ] 14. Login again → data still there
+
+FULL STORY PASS:  [ ] YES   [ ] NO
+Notes: ________________________________________________
+
+
+================================================================================
+14. REGRESSION / EDGE CASES
+================================================================================
+
+  [ ] Switch project scope → lists filter correctly
+  [ ] “All projects” scope does not break Integrations (shows first project hint)
+  [ ] Create duplicate keyword behavior is acceptable / warned if cannibalization shows
+  [ ] 404 unknown route shows not-found page
+  [ ] /privacy and /terms still public while logged out
+  [ ] API health still public while logged out
+  [ ] After logout, API calls from UI do not show private data
+  [ ] Long AI generation does not crash UI (wait / error toast)
+  [ ] Sync error message is readable in UI (not only logs)
+
+
+================================================================================
+15. MENU COVERAGE CHECKLIST (every screen once)
+================================================================================
+
+Public
+  [ ] /                 Home
+  [ ] /privacy          Privacy
+  [ ] /terms            Terms
+  [ ] /login            Login
+
+Auth app
+  [ ] /dashboard        Panel
+  [ ] /help             Ayuda / Guía
+  [ ] /projects         Proyectos
+  [ ] /niches           Nichos
+  [ ] /pages            Páginas
+  [ ] /keywords         Palabras clave
+  [ ] /urls             URLs
+  [ ] /links            Enlazado interno
+  [ ] /notes            Notas
+  [ ] /ai               Generador IA
+  [ ] /performance      Rendimiento
+  [ ] /gsc-data         Search Console data
+  [ ] /analytics-data   Analytics data
+  [ ] /ads-keywords     Keywords Ads
+  [ ] /research         Análisis SEO (Option 2)
+  [ ] /products         Productos
+  [ ] /integrations     Google OAuth
+  [ ] /sync             Sincronización
+  [ ] /competitors      Competidores
+  [ ] /assistants       Asistentes IA
+  [ ] /prompts          Editor de prompts
+  [ ] /wordpress        WordPress
+
+
+================================================================================
+16. PASS / FAIL SCORECARD
+================================================================================
+
+  Login / session .............. [ ] Pass  [ ] Fail
+  Public pages ................. [ ] Pass  [ ] Fail
+  Core structure ............... [ ] Pass  [ ] Fail
+  Integrations OAuth ........... [ ] Pass  [ ] Fail
+  Sync jobs .................... [ ] Pass  [ ] Fail
+  Data screens ................. [ ] Pass  [ ] Fail
+  Generador IA ................. [ ] Pass  [ ] Fail
+  Asistentes + prompts ......... [ ] Pass  [ ] Fail
+  Option 2 research + products . [ ] Pass  [ ] Fail
+  WordPress export ............. [ ] Pass  [ ] Fail
+  Full story path .............. [ ] Pass  [ ] Fail
+
+OVERALL:  [ ] READY FOR DAILY USE   [ ] BLOCKED (list blockers below)
+
+Blockers:
+  1. ________________________________________________
+  2. ________________________________________________
+  3. ________________________________________________
+
+Tested by: _________________  Date: _______________  Env: production / staging
+
+
+================================================================================
+17. WHERE TO LOOK WHEN STUCK
+================================================================================
+
+  Login fails ............... APP_AUTH_PASSWORD, AUTH_ALLOWED_EMAILS, SECRET_KEY
+  401 on API after login .... cookie blocked / wrong domain / not https secure issues
+  Google OAuth .............. redirect URI, test users, client id/secret
+  Ads empty ................. connect Ads, add keywords, run Ads sync, check logs
+  AI empty/error ............ OPENAI_API_KEY, page has keywords, Railway logs
+  Sync error text ........... Sincronización → last_error + Railway logs
+  Health flags .............. /api/seo-crm/health → google_ads.* + dataforseo.*
+  Option 2 always stub ...... DATAFORSEO_LOGIN/PASSWORD, FORCE_STUB, redeploy
+  Option 2 400 caps ......... max 3 competitors, max 20 seed keywords
+  Option 2 hard monthly ..... DATAFORSEO_HARD_MONTHLY_EUR or wait next month
+  Product AI invents price .. fill Productos first
+
+
+================================================================================
+18. ONE-PAGE CHEAT SHEET
+================================================================================
+
+  Login → Project → Niche → Page → Keywords
+  → Integraciones (GSC / GA4 / Ads)
+  → Sincronización (run jobs)
+  → Keywords Ads + Performance
+  → (Optional) Análisis SEO DataForSEO + Productos
+  → Generador IA / Asistentes
+  → Review draft → WordPress export (optional) → publish manually
+  → Logout → Login again → data still there
+
+  Docs:
+    docs/PLATFORM_USER_GUIDE.md
+    docs/OPTION2_DATAFORSEO_GUIDE.md
+    In-app /help
+
+Done.

@@ -83,11 +83,14 @@ Do this once per new site, then loop for each niche:
 | 6 | **URLs** | Record live slug + index status when published |
 | 7 | **Enlazado interno** | Map which pages link to which; fix orphans |
 | 8 | **Sincronización** | Pull real Google metrics |
+| 8b | **Análisis SEO** (Option 2) | Optional: DataForSEO research (SERP, volume pack, backlinks) with hard cost caps |
+| 8c | **Productos** | Real product facts before TSA / commercial AI drafts |
 | 9 | **Generador IA** or **Asistentes IA** | Draft / plan / optimize with that context |
 | 10 | **WordPress** | Export structure; you publish manually |
-| Ongoing | **Panel**, **Rendimiento**, **Notas**, **Competidores** | Monitor and decide next actions |
+| Ongoing | **Panel**, **Rendimiento**, **Notas**, **Competidores**, **Ayuda** | Monitor and decide next actions |
 
-You can skip Google until later; Phase 1 structure + simple AI draft works without OAuth.
+You can skip Google until later; Phase 1 structure + simple AI draft works without OAuth.  
+You can skip Option 2 until DataForSEO credentials are configured; without them, Análisis SEO runs in **stub** mode (demo data, €0 API).
 
 ---
 
@@ -371,8 +374,66 @@ Empty tables usually mean: OAuth not connected, wrong project scope, or sync not
 | Input | CRM **keywords** only | Site URL + up to 3 competitors + seed keywords |
 | Output | volume / competition / CPC in `ads_keywords` | Full research job history + SERP + backlinks + report |
 | Cost control | Google Ads account | Hard caps + monthly soft/hard EUR budget |
+| Re-read | Table always free | Past jobs free; new run costs API |
 
-See also in-app **Ayuda → Option 2** and `docs/OPTION2_DATAFORSEO_GUIDE.md`.
+See also in-app **Ayuda → Option 2** and full ops doc: `docs/OPTION2_DATAFORSEO_GUIDE.md`.
+
+---
+
+### 6.11b Análisis SEO (Option 2 · DataForSEO)
+
+**Path:** `/research` · Menu: **Análisis SEO**
+
+**Purpose:** One-click research job with **stored history**. Manual only (no nightly auto-refresh).
+
+**Form fields**
+
+| Field | Rules |
+|---|---|
+| Site URL | Optional; max **1** main URL (or “proyecto sin web aún”) |
+| Competitor URLs | Max **3** |
+| Seed keywords | One per line, max **20** unique |
+| Country / language | e.g. `es` / `es` (maps to DataForSEO location + language) |
+| Page type | TSG / TSR / TSA (shapes the strategy report) |
+
+**What a successful run stores**
+
+- Keywords (seed + limited ideas) with volume / CPC / competition  
+- SERP organic rows (capped queries)  
+- On-page snapshot (title, meta, H1–H3) if URL provided  
+- Backlink summary per domain + **link gap** opportunities  
+- Derived **oportunidades** list  
+- Strategy **informe** text  
+
+**Modes**
+
+| Mode | When | API cost |
+|---|---|---|
+| **Live** | `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD` set, force_stub off | Pay-as-you-go on your DataForSEO balance |
+| **Stub** | No credentials or `DATAFORSEO_FORCE_STUB=true` | €0 (demo fixture for UI testing) |
+
+**Hard caps (defaults):** 3 competitors · 20 seeds · 100 keywords stored · 10 SERP queries · 1 page snapshot · 50 ref. domains/domain · 1 concurrent job/project · soft €50 / hard €100 monthly.
+
+**UI status strip** shows live vs stub, caps, and monthly spend.
+
+**Whitelisted DataForSEO endpoints only** (no open-ended API): search volume, related keywords, SERP organic regular, on-page instant, backlinks summary, referring domains. Details: `docs/OPTION2_DATAFORSEO_GUIDE.md`.
+
+---
+
+### 6.11c Productos (product facts for AI)
+
+**Path:** `/products` · Menu: **Productos**
+
+| Field | Use |
+|---|---|
+| Nombre / marca / SKU | Identity |
+| Características | Verifiable features only |
+| Precio + moneda | Leave empty if unknown → AI should say “needs data” |
+| Stock / notas | Availability notes |
+| Opiniones | Only claims you approve |
+| URL fuente | Optional |
+
+**Hard rule:** Generators and assistants must **not invent** price, stock, features, or opinions missing from this table. Fill products **before** TSA-style AI drafts.
 
 ---
 
@@ -501,8 +562,11 @@ Nothing requires you to chain GPTs in Make/Zapier: context is the CRM database.
 
 - Does not publish to WordPress  
 - Does not invent traffic numbers without real metrics (prompts instruct honesty)  
+- Does not invent product prices/stock/features missing from **Productos**  
 - Does not fix cannibalization automatically — only flags it  
 - Does not create niches/pages from assistants automatically — assistants **propose**; you create records if you accept  
+- Does not run Option 2 analyses every night (manual only; cost-capped)  
+- Does not crawl entire sites or replace Ahrefs  
 
 You remain the editor-in-chief.
 
@@ -517,11 +581,17 @@ You remain the editor-in-chief.
 | **Page** | Planned content unit (TSG/TSR/TSA) |
 | **Keyword** | Search term owned by one page |
 | **URL** | Live slug + index state for a page |
-| **Cannibalization** | Same keyword on multiple pages |
+| **Cannibalization** | Same keyword on multiple pages (CRM flag) |
 | **Orphan page** | Page with no internal links pointing to it |
 | **Scope** | Filter “which project am I looking at” |
 | **Sync** | Job that copies Google data into CRM tables |
+| **Keywords Ads** | Planner metrics via Google Ads API for CRM keywords |
+| **Análisis SEO / Option 2** | DataForSEO research job with SERP/backlinks/snapshot |
+| **Stub mode** | Demo research data when DataForSEO credentials missing |
+| **Productos** | Real product facts table for non-hallucinated AI |
+| **Link gap** | Domains linking to competitors but not to you |
 | **Supervised AI** | AI proposes text; human approves and publishes |
+| **Hard cap** | Server limit that rejects or blocks overspend |
 
 ---
 
@@ -534,7 +604,13 @@ You remain the editor-in-chief.
 | AI error / 503 | Server missing OpenAI API key |
 | No GSC/GA data | Set GSC URL / GA4 ID → OAuth → Sync run |
 | Performance all zeros | Wait for successful sync; check project scope |
-| Ads keywords empty | Ads OAuth + developer token + ads sync job |
+| Ads keywords empty | Ads OAuth + developer token + keywords in CRM + ads sync |
+| Ads incomplete after new keywords | Re-run **Ads** sync |
+| URL not in Keywords Ads | Expected — Ads only uses keyword terms, not URLs |
+| Análisis SEO always stub | Set `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD`, redeploy |
+| Análisis 400 competitors/keywords | Stay within 3 competitors / 20 seeds |
+| Análisis hard monthly block | Raise hard budget env or wait next month |
+| AI invents product price | Fill **Productos** first |
 | Wrong site’s data | Change ScopeBar to the correct project |
 
 ---
@@ -549,15 +625,29 @@ KEYWORD  = query owned by one page (intent; watch cannibalization)
 URL      = live path + index flag
 LINKS    = internal graph; fix orphans
 NOTES    = strategy scratchpad
+PRODUCTS = real commercial facts for AI
 
-GOOGLE   = OAuth on project → Sync → tables
-DATA UI  = GSC / Analytics / Ads / Performance
+GOOGLE   = OAuth on project → Sync → GSC / Analytics / Ads tables
+OPTION 2 = Análisis SEO (DataForSEO, caps) → stored research jobs
+DATA UI  = GSC / Analytics / Ads / Performance / Research history
 AI SIMPLE = Generador (page + keywords → draft)
 AI PRO   = 5 assistants (prompts editable; some use metrics)
 WP       = export only; you publish
 
-Always: structure first → assign keywords → then AI → then human review.
+Always: structure first → assign keywords → research if needed → AI → human review.
 ```
+
+---
+
+## 13. Related docs
+
+| Doc | Audience |
+|---|---|
+| `docs/OPTION2_DATAFORSEO_GUIDE.md` | Full Option 2 ops (env, endpoints, caps, troubleshooting) |
+| `docs/E2E_TEST_GUIDE.txt` | Click-through test checklist including Option 2 |
+| `docs/google-ads-account-setup.txt` | Google Ads account + billing for Keyword Planner |
+| `docs/google-ads-developer-token.txt` | Developer token for Ads API |
+| In-app **Ayuda / Guía** (`/help`) | Same product story inside the CRM UI |
 
 ---
 
