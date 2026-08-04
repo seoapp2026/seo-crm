@@ -28,6 +28,8 @@ import { PerformancePage } from './pages/phase2/PerformancePage'
 import { PromptsPage } from './pages/phase2/PromptsPage'
 import { SyncPage } from './pages/phase2/SyncPage'
 import { WordPressPage } from './pages/phase2/WordPressPage'
+import { ProductsPage } from './pages/phase2/ProductsPage'
+import { ResearchPage } from './pages/phase2/ResearchPage'
 
 export default function App() {
   return (
@@ -62,6 +64,8 @@ export default function App() {
           <Route path="gsc-data" element={<GscDataPage />} />
           <Route path="analytics-data" element={<AnalyticsDataPage />} />
           <Route path="ads-keywords" element={<AdsKeywordsPage />} />
+          <Route path="research" element={<ResearchPage />} />
+          <Route path="products" element={<ProductsPage />} />
           <Route path="integrations" element={<IntegrationsPage />} />
           <Route path="sync" element={<SyncPage />} />
           <Route path="competitors" element={<CompetitorsPage />} />

@@ -42,6 +42,23 @@ class Settings(BaseSettings):
     sync_ga4_cron: str = "0 7 * * *"
     sync_ads_cron: str = "0 8 * * 1"
 
+    # ── Option 2: DataForSEO research ───────────────────────────────────────
+    dataforseo_login: str = ""
+    dataforseo_password: str = ""
+    # If true, runner uses fixture data (no live API spend). Auto-true when no credentials.
+    dataforseo_force_stub: bool = False
+    dataforseo_soft_monthly_eur: float = 50.0
+    dataforseo_hard_monthly_eur: float = 100.0  # 0 = disabled
+    dataforseo_max_competitors: int = 3
+    dataforseo_max_seed_keywords: int = 20
+    dataforseo_max_keywords_stored: int = 100
+    dataforseo_max_serp_queries: int = 10
+    dataforseo_max_serp_results: int = 10
+    dataforseo_max_backlinks_per_domain: int = 50
+    dataforseo_max_referring_domains: int = 50
+    dataforseo_max_link_gaps: int = 100
+    dataforseo_max_concurrent_global: int = 2
+
     @field_validator("database_url", mode="before")
     @classmethod
     def normalize_database_url(cls, v: str) -> str:

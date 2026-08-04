@@ -324,3 +324,162 @@ class SyncJob(Base):
     last_error: Mapped[str | None] = mapped_column(Text)
     records_synced: Mapped[int] = mapped_column(Integer, default=0)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+# ── Option 2: DataForSEO research + product facts ───────────────────────────
+
+
+class ResearchJobStatus(str, enum.Enum):
+    queued = "queued"
+    running = "running"
+    done = "done"
+    error = "error"
+
+
+class Product(Base):
+    """Real product facts for AI — never invent commercial claims not stored here."""
+
+    __tablename__ = "products"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    brand: Mapped[str | None] = mapped_column(Text)
+    sku: Mapped[str | None] = mapped_column(Text)
+    features: Mapped[str | None] = mapped_column(Text)
+    price: Mapped[float | None] = mapped_column(Float)
+    currency: Mapped[str] = mapped_column(Text, default="EUR")
+    stock_notes: Mapped[str | None] = mapped_column(Text)
+    opinions: Mapped[str | None] = mapped_column(Text)
+    source_url: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class ResearchJob(Base):
+    __tablename__ = "research_jobs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
+    site_url: Mapped[str | None] = mapped_column(Text)
+    competitor_urls_json: Mapped[str] = mapped_column(Text, default="[]")
+    seed_keywords_json: Mapped[str] = mapped_column(Text, default="[]")
+    country: Mapped[str] = mapped_column(Text, default="es")
+    language: Mapped[str] = mapped_column(Text, default="es")
+    page_type: Mapped[PageType] = mapped_column(Enum(PageType), default=PageType.TSG)
+    status: Mapped[ResearchJobStatus] = mapped_column(
+        Enum(ResearchJobStatus), default=ResearchJobStatus.queued
+    )
+    error_message: Mapped[str | None] = mapped_column(Text)
+    estimated_cost_eur: Mapped[float] = mapped_column(Float, default=0.0)
+    actual_cost_eur: Mapped[float] = mapped_column(Float, default=0.0)
+    ai_report: Mapped[str | None] = mapped_column(Text)
+    used_stub: Mapped[bool] = mapped_column(Boolean, default=False)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    keywords: Mapped[list["ResearchKeyword"]] = relationship(
+        back_populates="job", cascade="all, delete-orphan"
+    )
+    serp_rows: Mapped[list["ResearchSerpRow"]] = relationship(
+        back_populates="job", cascade="all, delete-orphan"
+    )
+    page_snapshots: Mapped[list["ResearchPageSnapshot"]] = relationship(
+        back_populates="job", cascade="all, delete-orphan"
+    )
+    backlink_summaries: Mapped[list["ResearchBacklinkSummary"]] = relationship(
+        back_populates="job", cascade="all, delete-orphan"
+    )
+    link_gaps: Mapped[list["ResearchLinkGap"]] = relationship(
+        back_populates="job", cascade="all, delete-orphan"
+    )
+    opportunities: Mapped[list["ResearchOpportunity"]] = relationship(
+        back_populates="job", cascade="all, delete-orphan"
+    )
+
+
+class ResearchKeyword(Base):
+    __tablename__ = "research_keywords"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    job_id: Mapped[int] = mapped_column(ForeignKey("research_jobs.id", ondelete="CASCADE"), nullable=False)
+    term: Mapped[str] = mapped_column(Text, nullable=False)
+    volume: Mapped[int] = mapped_column(Integer, default=0)
+    intent: Mapped[str | None] = mapped_column(Text)
+    cpc: Mapped[float] = mapped_column(Float, default=0.0)
+    competition: Mapped[str | None] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(Text, default="seed")
+
+    job: Mapped["ResearchJob"] = relationship(back_populates="keywords")
+
+
+class ResearchSerpRow(Base):
+    __tablename__ = "research_serp_rows"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    job_id: Mapped[int] = mapped_column(ForeignKey("research_jobs.id", ondelete="CASCADE"), nullable=False)
+    query: Mapped[str] = mapped_column(Text, nullable=False)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+    url: Mapped[str] = mapped_column(Text, nullable=False)
+    title: Mapped[str | None] = mapped_column(Text)
+    domain: Mapped[str | None] = mapped_column(Text)
+
+    job: Mapped["ResearchJob"] = relationship(back_populates="serp_rows")
+
+
+class ResearchPageSnapshot(Base):
+    __tablename__ = "research_page_snapshots"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    job_id: Mapped[int] = mapped_column(ForeignKey("research_jobs.id", ondelete="CASCADE"), nullable=False)
+    url: Mapped[str] = mapped_column(Text, nullable=False)
+    title: Mapped[str | None] = mapped_column(Text)
+    meta_description: Mapped[str | None] = mapped_column(Text)
+    h1_json: Mapped[str] = mapped_column(Text, default="[]")
+    h2_json: Mapped[str] = mapped_column(Text, default="[]")
+    h3_json: Mapped[str] = mapped_column(Text, default="[]")
+    links_json: Mapped[str] = mapped_column(Text, default="[]")
+
+    job: Mapped["ResearchJob"] = relationship(back_populates="page_snapshots")
+
+
+class ResearchBacklinkSummary(Base):
+    __tablename__ = "research_backlink_summaries"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    job_id: Mapped[int] = mapped_column(ForeignKey("research_jobs.id", ondelete="CASCADE"), nullable=False)
+    domain: Mapped[str] = mapped_column(Text, nullable=False)
+    is_target: Mapped[bool] = mapped_column(Boolean, default=False)
+    backlinks_count: Mapped[int] = mapped_column(Integer, default=0)
+    referring_domains: Mapped[int] = mapped_column(Integer, default=0)
+    sample_json: Mapped[str] = mapped_column(Text, default="[]")
+
+    job: Mapped["ResearchJob"] = relationship(back_populates="backlink_summaries")
+
+
+class ResearchLinkGap(Base):
+    __tablename__ = "research_link_gaps"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    job_id: Mapped[int] = mapped_column(ForeignKey("research_jobs.id", ondelete="CASCADE"), nullable=False)
+    domain: Mapped[str] = mapped_column(Text, nullable=False)
+    linked_to_competitor: Mapped[str] = mapped_column(Text, nullable=False)
+    note: Mapped[str | None] = mapped_column(Text)
+
+    job: Mapped["ResearchJob"] = relationship(back_populates="link_gaps")
+
+
+class ResearchOpportunity(Base):
+    __tablename__ = "research_opportunities"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    job_id: Mapped[int] = mapped_column(ForeignKey("research_jobs.id", ondelete="CASCADE"), nullable=False)
+    kind: Mapped[str] = mapped_column(Text, nullable=False)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    detail: Mapped[str | None] = mapped_column(Text)
+    priority: Mapped[int] = mapped_column(Integer, default=3)
+
+    job: Mapped["ResearchJob"] = relationship(back_populates="opportunities")

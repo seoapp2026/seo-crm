@@ -167,3 +167,141 @@ export interface DateRange {
   from: string
   to: string
 }
+
+export type ResearchJobStatus = 'queued' | 'running' | 'done' | 'error'
+export type PageTypeCode = 'TSG' | 'TSR' | 'TSA'
+
+export interface Product {
+  id: number
+  project_id: number
+  name: string
+  brand: string | null
+  sku: string | null
+  features: string | null
+  price: number | null
+  currency: string
+  stock_notes: string | null
+  opinions: string | null
+  source_url: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ResearchCaps {
+  max_competitors: number
+  max_seed_keywords: number
+  max_keywords_stored: number
+  max_serp_queries: number
+  max_serp_results_per_query: number
+  max_page_snapshots: number
+  max_backlinks_per_domain: number
+  max_referring_domains: number
+  max_link_gaps: number
+  soft_monthly_eur: number
+  hard_monthly_eur: number
+  credentials_configured: boolean
+  force_stub: boolean
+}
+
+export interface ResearchBudget {
+  year_month: string
+  runs_count: number
+  spend_eur: number
+  soft_monthly_eur: number
+  hard_monthly_eur: number
+  soft_warning: boolean
+  hard_blocked: boolean
+}
+
+export interface ResearchJob {
+  id: number
+  project_id: number
+  site_url: string | null
+  competitor_urls: string[]
+  seed_keywords: string[]
+  country: string
+  language: string
+  page_type: PageTypeCode
+  status: ResearchJobStatus
+  error_message: string | null
+  estimated_cost_eur: number
+  actual_cost_eur: number
+  ai_report: string | null
+  used_stub: boolean
+  started_at: string | null
+  finished_at: string | null
+  created_at: string
+}
+
+export interface ResearchKeywordRow {
+  id: number
+  term: string
+  volume: number
+  intent: string | null
+  cpc: number
+  competition: string | null
+  source: string
+}
+
+export interface ResearchSerpRow {
+  id: number
+  query: string
+  position: number
+  url: string
+  title: string | null
+  domain: string | null
+}
+
+export interface ResearchPageSnapshot {
+  id: number
+  url: string
+  title: string | null
+  meta_description: string | null
+  h1_json: string
+  h2_json: string
+  h3_json: string
+  links_json: string
+}
+
+export interface ResearchBacklinkSummary {
+  id: number
+  domain: string
+  is_target: boolean
+  backlinks_count: number
+  referring_domains: number
+  sample_json: string
+}
+
+export interface ResearchLinkGap {
+  id: number
+  domain: string
+  linked_to_competitor: string
+  note: string | null
+}
+
+export interface ResearchOpportunity {
+  id: number
+  kind: string
+  title: string
+  detail: string | null
+  priority: number
+}
+
+export interface ResearchJobDetail extends ResearchJob {
+  keywords: ResearchKeywordRow[]
+  serp_rows: ResearchSerpRow[]
+  page_snapshots: ResearchPageSnapshot[]
+  backlink_summaries: ResearchBacklinkSummary[]
+  link_gaps: ResearchLinkGap[]
+  opportunities: ResearchOpportunity[]
+}
+
+export interface ResearchJobCreate {
+  project_id: number
+  site_url?: string | null
+  competitor_urls: string[]
+  seed_keywords: string[]
+  country: string
+  language: string
+  page_type: PageTypeCode
+}

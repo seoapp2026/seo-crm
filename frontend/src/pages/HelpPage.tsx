@@ -41,6 +41,7 @@ export function HelpPage() {
           <li><a href="#google">Datos de Google (GSC / GA4)</a></li>
           <li><a href="#ia">IA supervisada</a></li>
           <li><a href="#glosario">Glosario de términos</a></li>
+          <li><a href="#option2">Option 2 — Análisis SEO (hard caps)</a></li>
           <li><a href="#problemas">Problemas frecuentes</a></li>
         </ol>
       </nav>
@@ -296,8 +297,36 @@ export function HelpPage() {
         </dl>
       </section>
 
+      <section id="option2" className="card card-pad help-section">
+        <h2>9. Option 2 — Análisis SEO (DataForSEO) · hard caps</h2>
+        <p>
+          Pantalla <Link to="/research">Análisis SEO</Link>: un clic <strong>Analizar proyecto</strong> guarda un
+          snapshot (keywords, SERP, snapshot on-page, backlinks básicos, link gap, oportunidades + informe IA).
+          Catálogo <Link to="/products">Productos</Link> para hechos reales.
+        </p>
+        <h3>Hard caps (no negociables en v1)</h3>
+        <ul>
+          <li>Máx. <strong>3 competidores</strong> por análisis</li>
+          <li>Máx. <strong>20 keywords semilla</strong> · hasta 100 términos guardados</li>
+          <li>Máx. <strong>10 queries SERP</strong> · 10 resultados c/u</li>
+          <li>Máx. <strong>1 URL</strong> de snapshot on-page</li>
+          <li>Máx. <strong>50</strong> backlinks / referring domains por dominio</li>
+          <li>Análisis <strong>manual</strong> (no nightly auto-refresh)</li>
+          <li>Reabrir historial = <strong>gratis</strong>; re-run = nuevo coste</li>
+          <li>Presupuesto soft/hard mensual (por defecto 50 € / 100 €)</li>
+        </ul>
+        <h3>No incluido</h3>
+        <ul>
+          <li>Crawler multipágina · charts tipo Ahrefs · outreach de enlaces · otras APIs SEO</li>
+        </ul>
+        <p className="muted">
+          Sin credenciales DataForSEO el sistema corre en <strong>modo stub</strong> (datos de ejemplo, 0 € API)
+          para validar flujo. PR2 conectará el cliente live.
+        </p>
+      </section>
+
       <section id="problemas" className="card card-pad help-section">
-        <h2>9. Problemas frecuentes</h2>
+        <h2>10. Problemas frecuentes</h2>
         <table className="help-table">
           <thead>
             <tr>

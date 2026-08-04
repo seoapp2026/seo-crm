@@ -67,6 +67,8 @@ export const ROUTES = [
   { id: 'gsc-data', label: 'Search Console', crumb: 'Datos Search Console', sub: 'Impresiones, clicks, CTR y posición por URL' },
   { id: 'analytics-data', label: 'Analytics', crumb: 'Datos Google Analytics', sub: 'Sesiones, usuarios, rebote y engagement' },
   { id: 'ads-keywords', label: 'Keywords Ads', crumb: 'Google Ads Keyword Planner', sub: 'Volumen, competencia y CPC' },
+  { id: 'research', label: 'Análisis SEO', crumb: 'Análisis SEO (Option 2)', sub: 'DataForSEO · keywords, SERP, backlinks · caps de coste' },
+  { id: 'products', label: 'Productos', crumb: 'Catálogo de productos', sub: 'Hechos reales para IA · sin inventar precios' },
   { group: 'Integraciones' },
   { id: 'integrations', label: 'Google OAuth', crumb: 'Integraciones Google', sub: 'Search Console, Analytics y Ads' },
   { id: 'sync', label: 'Sincronización', crumb: 'Sincronización en segundo plano', sub: 'Trabajos programados e histórico' },

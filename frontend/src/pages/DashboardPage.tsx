@@ -38,12 +38,18 @@ export function DashboardPage() {
           <h2>¿Cómo se usa este CRM?</h2>
           <p>
             Proyecto → nicho → página → keywords. Luego Google (OAuth + sync), IA supervisada y export a WordPress.
-            La guía explica cada pantalla, Keywords Ads, y un glosario (TSG, canibalización, CPC…).
+            Option 2: <Link to="/research">Análisis SEO</Link> (caps de coste) y{' '}
+            <Link to="/products">Productos</Link> (hechos reales para IA).
           </p>
         </div>
-        <Link to="/help" className="btn btn-primary">
-          Abrir ayuda / guía
-        </Link>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Link to="/research" className="btn btn-primary">
+            Análisis SEO
+          </Link>
+          <Link to="/help" className="btn">
+            Ayuda / guía
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-4" style={{ marginBottom: 22 }}>

@@ -2,7 +2,15 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models import AdsCompetition, AssistantSlug, GoogleServiceType, SyncJobStatus, SyncJobType
+from app.models import (
+    AdsCompetition,
+    AssistantSlug,
+    GoogleServiceType,
+    PageType,
+    ResearchJobStatus,
+    SyncJobStatus,
+    SyncJobType,
+)
 
 
 class OrmBase(BaseModel):
@@ -188,3 +196,166 @@ class WpExportBundleOut(BaseModel):
     project_name: str
     exported_at: datetime
     pages: list[WpExportItemOut]
+
+
+# ── Option 2: products + research ───────────────────────────────────────────
+
+
+class ProductCreate(BaseModel):
+    project_id: int
+    name: str
+    brand: str | None = None
+    sku: str | None = None
+    features: str | None = None
+    price: float | None = None
+    currency: str = "EUR"
+    stock_notes: str | None = None
+    opinions: str | None = None
+    source_url: str | None = None
+
+
+class ProductUpdate(BaseModel):
+    name: str | None = None
+    brand: str | None = None
+    sku: str | None = None
+    features: str | None = None
+    price: float | None = None
+    currency: str | None = None
+    stock_notes: str | None = None
+    opinions: str | None = None
+    source_url: str | None = None
+
+
+class ProductOut(OrmBase):
+    id: int
+    project_id: int
+    name: str
+    brand: str | None
+    sku: str | None
+    features: str | None
+    price: float | None
+    currency: str
+    stock_notes: str | None
+    opinions: str | None
+    source_url: str | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class ResearchJobCreate(BaseModel):
+    project_id: int
+    site_url: str | None = None
+    competitor_urls: list[str] = Field(default_factory=list)
+    seed_keywords: list[str] = Field(default_factory=list)
+    country: str = "es"
+    language: str = "es"
+    page_type: PageType = PageType.TSG
+
+
+class ResearchKeywordOut(OrmBase):
+    id: int
+    term: str
+    volume: int
+    intent: str | None
+    cpc: float
+    competition: str | None
+    source: str
+
+
+class ResearchSerpRowOut(OrmBase):
+    id: int
+    query: str
+    position: int
+    url: str
+    title: str | None
+    domain: str | None
+
+
+class ResearchPageSnapshotOut(OrmBase):
+    id: int
+    url: str
+    title: str | None
+    meta_description: str | None
+    h1_json: str
+    h2_json: str
+    h3_json: str
+    links_json: str
+
+
+class ResearchBacklinkSummaryOut(OrmBase):
+    id: int
+    domain: str
+    is_target: bool
+    backlinks_count: int
+    referring_domains: int
+    sample_json: str
+
+
+class ResearchLinkGapOut(OrmBase):
+    id: int
+    domain: str
+    linked_to_competitor: str
+    note: str | None
+
+
+class ResearchOpportunityOut(OrmBase):
+    id: int
+    kind: str
+    title: str
+    detail: str | None
+    priority: int
+
+
+class ResearchJobOut(OrmBase):
+    id: int
+    project_id: int
+    site_url: str | None
+    competitor_urls: list[str] = Field(default_factory=list)
+    seed_keywords: list[str] = Field(default_factory=list)
+    country: str
+    language: str
+    page_type: PageType
+    status: ResearchJobStatus
+    error_message: str | None
+    estimated_cost_eur: float
+    actual_cost_eur: float
+    ai_report: str | None
+    used_stub: bool
+    started_at: datetime | None
+    finished_at: datetime | None
+    created_at: datetime
+
+
+class ResearchJobDetailOut(ResearchJobOut):
+    keywords: list[ResearchKeywordOut] = Field(default_factory=list)
+    serp_rows: list[ResearchSerpRowOut] = Field(default_factory=list)
+    page_snapshots: list[ResearchPageSnapshotOut] = Field(default_factory=list)
+    backlink_summaries: list[ResearchBacklinkSummaryOut] = Field(default_factory=list)
+    link_gaps: list[ResearchLinkGapOut] = Field(default_factory=list)
+    opportunities: list[ResearchOpportunityOut] = Field(default_factory=list)
+
+
+class ResearchCapsOut(BaseModel):
+    max_competitors: int
+    max_seed_keywords: int
+    max_keywords_stored: int
+    max_serp_queries: int
+    max_serp_results_per_query: int
+    max_page_snapshots: int
+    max_backlinks_per_domain: int
+    max_referring_domains: int
+    max_link_gaps: int
+    soft_monthly_eur: float
+    hard_monthly_eur: float
+    credentials_configured: bool
+    force_stub: bool
+
+
+class ResearchBudgetOut(BaseModel):
+    year_month: str
+    runs_count: int
+    spend_eur: float
+    soft_monthly_eur: float
+    hard_monthly_eur: float
+    soft_warning: bool
+    hard_blocked: bool

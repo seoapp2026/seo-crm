@@ -25,8 +25,10 @@ from app.routers import (
     notes,
     pages,
     performance,
+    products,
     projects,
     prompts,
+    research,
     sync_jobs,
     urls,
     wordpress,
@@ -64,6 +66,8 @@ phase2_routers = [
     performance.router,
     sync_jobs.router,
     wordpress.router,
+    products.router,
+    research.router,
 ]
 
 app.include_router(auth_router.router, prefix=API_PREFIX)

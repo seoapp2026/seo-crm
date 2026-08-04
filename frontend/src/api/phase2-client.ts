@@ -13,6 +13,12 @@ import type {
   GscSite,
   GscDataRow,
   PerformanceSummary,
+  Product,
+  ResearchBudget,
+  ResearchCaps,
+  ResearchJob,
+  ResearchJobCreate,
+  ResearchJobDetail,
   SyncJob,
   SyncJobType,
   WpExportBundle,
@@ -163,6 +169,44 @@ export const phase2Api = {
   wordpress: {
     export: async (projectId: number) => {
       return apiRequest<WpExportBundle>(`${API_BASE}/wordpress/export?project_id=${projectId}`)
+    },
+  },
+
+  products: {
+    list: async (projectId: number | 'all') => {
+      return apiRequest<Product[]>(`${API_BASE}/products${projectQuery(projectId)}`)
+    },
+    create: async (data: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
+      return apiRequest<Product>(`${API_BASE}/products`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+    },
+    update: async (id: number, data: Partial<Product>) => {
+      return apiRequest<Product>(`${API_BASE}/products/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      })
+    },
+    remove: async (id: number) => {
+      await apiRequest<void>(`${API_BASE}/products/${id}`, { method: 'DELETE' })
+    },
+  },
+
+  research: {
+    caps: async () => apiRequest<ResearchCaps>(`${API_BASE}/research/caps`),
+    budget: async () => apiRequest<ResearchBudget>(`${API_BASE}/research/budget`),
+    list: async (projectId: number | 'all') => {
+      return apiRequest<ResearchJob[]>(`${API_BASE}/research/jobs${projectQuery(projectId)}`)
+    },
+    get: async (jobId: number) => {
+      return apiRequest<ResearchJobDetail>(`${API_BASE}/research/jobs/${jobId}`)
+    },
+    start: async (payload: ResearchJobCreate) => {
+      return apiRequest<ResearchJobDetail>(`${API_BASE}/research/jobs`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      })
     },
   },
 }
