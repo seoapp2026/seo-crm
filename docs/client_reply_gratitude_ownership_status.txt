@@ -1,7 +1,4 @@
-Hi,
-
-Thank you very much for your message and for your trust. I am glad you are happy with the CRM, and I would be happy to keep working with you on future projects when this one is finished.
-
+ 
 Ownership and documentation
 
 I fully agree. At the end of the project you will have:
@@ -42,5 +39,4 @@ Pending: Google Ads approval, finish Ads integration after that, final polish, o
 
 Thank you again for your confidence. My goal is a CRM that works well for you, that is truly yours, and a good base for more collaboration later.
 
-Thanks,
-Noah
+ 

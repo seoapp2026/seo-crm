@@ -1,0 +1,33 @@
+ 
+PRODUCTS TODAY
+
+1. Search/import from Amazon, eBay, or other platforms?
+No. Products are entered manually in Productos. There is no marketplace search or import.
+
+2. Collect title, image, price, availability, and affiliate link automatically?
+No. You can store name, features, price, stock notes, etc. by hand. The CRM does not pull images, live prices, availability, or affiliate links from Amazon/eBay.
+
+3. Via API, WordPress plugin, or manually?
+Manually in the CRM. Not via Amazon/eBay API and not via a WordPress product plugin connected to the CRM.
+
+4. Possible later so AI uses real products without inventing them?
+Later, yes, with new paid work (each marketplace API is a separate integration).
+Today: AI should only use facts you enter in Productos, or leave "needs data" if something is missing. It cannot discover real Amazon products by itself.
+
+ANY PLATFORM API?
+In principle yes later for platforms that offer a legal product API. Each platform is custom work (auth, fields, ToS, cost). Nothing Amazon/eBay is built now. Having Google and DataForSEO does not mean marketplaces are connected.
+
+CRM STRUCTURE + REAL PRODUCTS IN WORDPRESS (AAWP / CONTENT EGG)
+Yes. This is the best option with what already exists, without Amazon/eBay development.
+
+How it works:
+The CRM generates structure and draft content for each page.
+Prompts can be set so the draft uses clear markers such as [PRODUCT TABLE], [RECOMMENDED PRODUCT], [ALTERNATIVES], and does not invent product names, prices, or features.
+You add the real products in WordPress with AAWP, Content Egg, or a similar plugin.
+
+That is prompt/configuration work only, not new marketplace connections. It is the most economical way to work.
+
+BOTTOM LINE
+What exists now: manual Productos + AI that must not invent missing commercial facts + markers in drafts if we configure the prompts.
+What does not exist: Amazon/eBay search, auto import, affiliate link scraping, or WP plugin sync.
+What you can do without more CRM spend: CRM writes the page with placeholders; you place real products in WordPress with your plugin.
