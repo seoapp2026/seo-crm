@@ -46,6 +46,7 @@ export interface Keyword {
   note: string | null
   created_at: string
   cannibalized: boolean
+  cannibalized_on?: string[]
 }
 
 export interface Url {

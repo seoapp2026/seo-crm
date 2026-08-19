@@ -130,6 +130,7 @@ class KeywordOut(OrmBase):
     note: str | None
     created_at: datetime
     cannibalized: bool = False
+    cannibalized_on: list[str] = Field(default_factory=list)
 
 
 # --- URLs ---

@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Page
 from app.schemas import PageCreate, PageOut, PageUpdate
+from app.services.cascade_delete import purge_page
 
 router = APIRouter(prefix="/pages", tags=["pages"])
 
@@ -42,5 +44,12 @@ def delete_page(page_id: int, db: Session = Depends(get_db)):
     page = db.get(Page, page_id)
     if not page:
         raise HTTPException(status_code=404, detail="Página no encontrada")
-    db.delete(page)
-    db.commit()
+    try:
+        purge_page(db, page)
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="No se pudo eliminar la página: quedan datos relacionados.",
+        ) from exc

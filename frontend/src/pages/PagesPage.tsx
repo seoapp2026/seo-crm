@@ -60,7 +60,15 @@ export function PagesPage() {
                 <td><Badge label={PAGE_STATES[p.state].label} cls={PAGE_STATES[p.state].cls} /></td>
                 <td><div className="row-actions">
                   <button className="btn btn-sm btn-ghost" onClick={() => { setEditing(p); setForm({ title: p.title, niche_id: p.niche_id, project_id: p.project_id, type: p.type, state: p.state, objective: p.objective || '' }); setOpen(true) }}>Editar</button>
-                  <button className="btn btn-sm btn-danger" onClick={async () => { await api.pages.remove(p.id); reload(); toast('Eliminado') }}>Eliminar</button>
+                  <button className="btn btn-sm btn-danger" onClick={async () => {
+                    try {
+                      await api.pages.remove(p.id)
+                      reload()
+                      toast('Eliminado')
+                    } catch (e) {
+                      toast(e instanceof Error ? e.message : 'No se pudo eliminar la página')
+                    }
+                  }}>Eliminar</button>
                 </div></td>
               </tr>
             ))}

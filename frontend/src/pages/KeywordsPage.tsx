@@ -41,13 +41,35 @@ export function KeywordsPage() {
   const save = async () => {
     if (!form.term.trim()) return toast('El término es obligatorio')
     try {
-      if (editing) await api.keywords.update(editing.id, form)
-      else await api.keywords.create(form)
-      setOpen(false); reload(); toast('Keyword guardada')
+      const saved = editing
+        ? await api.keywords.update(editing.id, form)
+        : await api.keywords.create(form)
+      setOpen(false)
+      reload()
+      if (saved.cannibalized) {
+        const others = (saved.cannibalized_on || []).join(', ')
+        toast(
+          others
+            ? `Canibalización: «${saved.term}» también está en ${others}`
+            : `Canibalización: «${saved.term}» está en más de una página`,
+        )
+      } else {
+        toast('Keyword guardada')
+      }
     } catch (e) { toast(e instanceof Error ? e.message : 'Error') }
   }
 
   const pageTitle = (id: number) => pages.find((p) => p.id === id)?.title || '—'
+
+  const clashPages = [...new Set(
+    items
+      .filter((k) =>
+        form.term.trim()
+        && k.term.trim().toLowerCase() === form.term.trim().toLowerCase()
+        && k.id !== editing?.id,
+      )
+      .map((k) => pageTitle(k.page_id)),
+  )]
 
   return (
     <>
@@ -75,6 +97,11 @@ export function KeywordsPage() {
       <Modal title={editing ? 'Editar keyword' : 'Nueva keyword'} open={open} onClose={() => setOpen(false)}
         footer={<><button className="btn" onClick={() => setOpen(false)}>Cancelar</button><button className="btn btn-primary" onClick={save}>Guardar</button></>}>
         <div className="field"><label>Término</label><input value={form.term} onChange={(e) => setForm({ ...form, term: e.target.value })} /></div>
+        {clashPages.length > 0 && (
+          <p className="sync-error" style={{ marginTop: 0 }}>
+            Este término ya está asignado a: {clashPages.join(', ')}. Si guardas, se marcará como canibalización.
+          </p>
+        )}
         <div className="field"><label>Página</label><select value={form.page_id} onChange={(e) => {
           const pg = pages.find((p) => p.id === Number(e.target.value))
           setForm({ ...form, page_id: Number(e.target.value), niche_id: pg?.niche_id || 0, project_id: pg?.project_id || 0 })

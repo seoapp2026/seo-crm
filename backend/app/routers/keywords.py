@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Keyword
 from app.schemas import KeywordCreate, KeywordOut, KeywordUpdate
-from app.services.seo_insights import keyword_cannibalized
+from app.services.seo_insights import cannibalized_page_titles, keyword_cannibalized
 
 router = APIRouter(prefix="/keywords", tags=["keywords"])
 
@@ -12,6 +12,8 @@ router = APIRouter(prefix="/keywords", tags=["keywords"])
 def _to_out(kw: Keyword, db: Session) -> KeywordOut:
     data = KeywordOut.model_validate(kw)
     data.cannibalized = keyword_cannibalized(db, kw.term, kw.project_id)
+    if data.cannibalized:
+        data.cannibalized_on = cannibalized_page_titles(db, kw.term, kw.project_id)
     return data
 
 

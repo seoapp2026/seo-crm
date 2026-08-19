@@ -109,9 +109,13 @@ export function ProjectsPage() {
                       type="button"
                       className="btn btn-sm btn-danger"
                       onClick={async () => {
-                        await api.projects.remove(p.id)
-                        reload()
-                        toast('Eliminado')
+                        try {
+                          await api.projects.remove(p.id)
+                          reload()
+                          toast('Eliminado')
+                        } catch (e) {
+                          toast(e instanceof Error ? e.message : 'No se pudo eliminar el proyecto')
+                        }
                       }}
                     >
                       Eliminar

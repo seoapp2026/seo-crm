@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import GoogleAuth, GoogleServiceType, Project
 from app.schemas import ProjectCreate, ProjectOut, ProjectUpdate
+from app.services.cascade_delete import purge_project
 from app.services.project_targets import (
     apply_project_targets_to_auth,
     normalize_ga4_property_id,
@@ -74,5 +76,12 @@ def delete_project(project_id: int, db: Session = Depends(get_db)):
     project = db.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
-    db.delete(project)
-    db.commit()
+    try:
+        purge_project(db, project)
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="No se pudo eliminar el proyecto: quedan datos relacionados. Revisa logs.",
+        ) from exc

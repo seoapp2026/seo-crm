@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Niche
 from app.schemas import NicheCreate, NicheOut, NicheUpdate
+from app.services.cascade_delete import purge_niche
 
 router = APIRouter(prefix="/niches", tags=["niches"])
 
@@ -42,5 +44,12 @@ def delete_niche(niche_id: int, db: Session = Depends(get_db)):
     niche = db.get(Niche, niche_id)
     if not niche:
         raise HTTPException(status_code=404, detail="Nicho no encontrado")
-    db.delete(niche)
-    db.commit()
+    try:
+        purge_niche(db, niche)
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="No se pudo eliminar el nicho: quedan datos relacionados.",
+        ) from exc

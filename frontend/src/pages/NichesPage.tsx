@@ -54,7 +54,15 @@ export function NichesPage() {
                 <td>{MONETIZATION[n.monetization]}</td>
                 <td><div className="row-actions">
                   <button className="btn btn-sm btn-ghost" onClick={() => { setEditing(n); setForm({ name: n.name, topic: n.topic || '', project_id: n.project_id, state: n.state, monetization: n.monetization, notes: n.notes || '' }); setOpen(true) }}>Editar</button>
-                  <button className="btn btn-sm btn-danger" onClick={async () => { await api.niches.remove(n.id); reload(); toast('Eliminado') }}>Eliminar</button>
+                  <button className="btn btn-sm btn-danger" onClick={async () => {
+                    try {
+                      await api.niches.remove(n.id)
+                      reload()
+                      toast('Eliminado')
+                    } catch (e) {
+                      toast(e instanceof Error ? e.message : 'No se pudo eliminar el nicho')
+                    }
+                  }}>Eliminar</button>
                 </div></td>
               </tr>
             ))}
