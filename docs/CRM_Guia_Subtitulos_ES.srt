@@ -1,0 +1,143 @@
+1
+00:00:00,000 --> 00:00:10,000
+[SECCION 1 - PUBLICO] PAGINAS PUBLICAS Y LEGALES
+Acceso publico a https://crmpersonal.es (Inicio, Privacidad, Terminos)
+Nota: Comprueba que la web publica y los avisos legales cargan correctamente sin requerir login.
+
+2
+00:00:10,000 --> 00:00:40,000
+[SECCION 2 - ACCESO] AUTENTICACION Y CONTROL DE SESION
+Redireccion automatica de rutas protegidas al login e inicio de sesion
+Nota: Valida las credenciales autorizadas y crea la sesion persistente mediante cookies seguras.
+
+3
+00:00:40,000 --> 00:00:55,000
+[SECCION 3 - PANEL] PANEL PRINCIPAL Y RESUMEN GENERAL
+Revision de tarjetas de resumen (proyectos, nichos, paginas, keywords)
+Nota: Muestra el estado de la estructura, paginas recientes y selector de proyecto.
+
+4
+00:00:55,000 --> 00:01:10,000
+[SECCION 4.1 - PROYECTOS] CREACION DE PROYECTO
+Configuracion de URL de Search Console y Property ID de GA4
+Nota: La URL de Search Console es obligatoria para enlazar las integraciones de Google OAuth.
+
+5
+00:01:10,000 --> 00:01:15,000
+[SECCION 4.2 - NICHOS] CREACION DE NICHOS
+Creacion de nicho con tema, estado (En prueba) y monetizacion (Afiliacion)
+Nota: Organiza y aisla diferentes areas de negocio dentro del mismo dominio.
+
+6
+00:01:15,000 --> 00:01:50,000
+[SECCION 4.3 - PAGINAS] CREACION DE PAGINAS (TSG Y TSR)
+Creacion de pagina tipo Guia (TSG) y Comparativa (TSR) con sus objetivos
+Nota: Define la estructura del contenido y orienta la forma de los borradores generados por la IA.
+
+7
+00:01:50,000 --> 00:02:20,000
+[SECCION 4.4 - KEYWORDS] PALABRAS CLAVE Y CANIBALIZACION
+Asignacion de una misma keyword a dos paginas distintas
+Nota: El CRM detecta la duplicidad y muestra el aviso de Canibalizacion para evitar competir entre si.
+
+8
+00:02:20,000 --> 00:02:30,000
+[SECCION 4.5 - URLS] GESTION DE URLS E INDEXACION
+Configuracion de slugs y estado de indexacion (Indexada / Pendiente / No index)
+Nota: Diferencia la planificacion de contenidos de las URLs reales y su indexacion en Google.
+
+9
+00:02:30,000 --> 00:02:35,000
+[SECCION 4.6 - ENLACES] ESTRUCTURA DE ENLAZADO INTERNO
+Creacion de enlace entre pagina de origen y destino con texto ancla
+Nota: Construye la arquitectura de enlaces internos para transferir autoridad a las paginas clave.
+
+10
+00:02:35,000 --> 00:02:55,000
+[SECCION 4.7 - NOTAS] NOTAS ESTRATEGICAS DEL PROYECTO
+Creacion y edicion de notas de estrategia con verificacion de persistencia
+Nota: Almacena contexto y decisiones que son consultadas automaticamente por los Asistentes IA.
+
+11
+00:02:55,000 --> 00:03:20,000
+[SECCION 4.6/4.7 - REGLAS] VALIDACION Y PAGINAS HUERFANAS
+Comprobacion del bloqueo de autoenlaces y deteccion de paginas huerfanas
+Nota: Evita enlaces invalidos y alerta cuando un articulo no tiene enlaces entrantes.
+
+12
+00:03:20,000 --> 00:03:30,000
+[SECCION 7.1 - GSC] DATOS DE SEARCH CONSOLE
+Revision de impresiones, clics, CTR y posicion en rangos de 7, 28 y 90 dias
+Nota: Visualiza el rendimiento organico real sincronizado directamente desde Google Search Console.
+
+13
+00:03:30,000 --> 00:03:35,000
+[SECCION 7.2 - GA4] DATOS DE GOOGLE ANALYTICS
+Revision de sesiones, usuarios, porcentaje de rebote y tiempo de engagement
+Nota: Analiza la calidad del trafico y el comportamiento de los usuarios por cada URL.
+
+14
+00:03:35,000 --> 00:03:40,000
+[SECCION 7.3 - ADS] GOOGLE ADS KEYWORD PLANNER
+Consulta de volumen mensual, nivel de competencia y coste por clic (CPC)
+Nota: Obtiene metricas oficiales de Google Ads para las palabras clave asignadas en el proyecto.
+
+15
+00:03:40,000 --> 00:03:50,000
+[SECCION 7.4 - RENDIMIENTO] MATRIZ DE RENDIMIENTO (28 DIAS)
+Filtros: Ganadoras, En caida, Necesitan trabajo, Estables con grafico 14d
+Nota: Detecta rapidamente paginas en declive para aplicar optimizaciones SEO prioritarias.
+
+16
+00:03:50,000 --> 00:04:20,000
+[SECCION 8 - COMPETIDORES] GESTION DE COMPETIDORES
+Registro de dominios rivales y notas estrategicas de comparativa
+Nota: Base de datos de competidores que alimenta los analisis del Asistente de Competencia IA.
+
+17
+00:04:20,000 --> 00:04:25,000
+[SECCION 12.1 - PRODUCTOS] CATALOGO DE HECHOS REALES (PRODUCTOS)
+Registro de caracteristicas, precio oficial, disponibilidad y enlace fuente
+Nota: Garantiza que la IA redacte reseñas fundamentadas en hechos reales sin inventar precios.
+
+18
+00:04:25,000 --> 00:04:30,000
+[SECCION 13 - WORDPRESS] EXPORTACION ESTRUCTURADA PARA WP
+Generacion de JSON con titulos, slugs, tipos de contenido y metadatos
+Nota: Permite trasladar la estructura a WordPress manteniendo la publicacion bajo control manual.
+
+19
+00:04:30,000 --> 00:04:50,000
+[SECCION 4 - AUDITORIA] AUDITORIA DE ENLACES Y SALUD WEB
+Revision del grafo de enlaces y seguimiento de articulos sin enlazar
+Nota: Asegura la solidez de la red de enlaces internos antes de redactar o publicar contenido.
+
+20
+00:04:50,000 --> 00:05:05,000
+[SECCION 11.1 - ASISTENTES] LOS 5 ASISTENTES IA ESPECIALIZADOS
+Presentacion: Arquitecto, Clasificador, Contenido, Competencia y Optimizador
+Nota: Ecosistema de IA modular con roles especificos para cada fase de la estrategia SEO.
+
+21
+00:05:05,000 --> 00:05:15,000
+[SECCION 12.2 - DATAFORSEO] ANALISIS SEO (OPCION 2 DATAFORSEO)
+Consulta de resultados de SERP, volumen, snapshot de pagina y backlinks
+Nota: Analisis integral de Google bajo demanda con control riguroso del presupuesto mensual.
+
+22
+00:05:15,000 --> 00:06:10,000
+[SECCION 11.1 - WORKFLOW] EJECUCION DE ASISTENTES CON CONTEXTO
+Generacion de borradores estructurados con inyeccion de datos de SERP
+Nota: Crea contenido completo (H1/H2, meta, FAQs) fundamentado en las palabras del proyecto.
+
+23
+00:06:10,000 --> 00:06:30,000
+[SECCION 11.2 - PROMPTS] EDITOR DE PROMPTS EN VIVO
+Personalizacion de instrucciones de sistema, descripciones y modelos
+Nota: Permite ajustar las directrices de los asistentes en la base de datos sin necesidad de redeploy.
+
+24
+00:06:30,000 --> 00:06:35,000
+[SECCION 14 - AYUDA] GUIA INTEGRADA Y SOLUCION DE PROBLEMAS
+Navegacion por el manual integrado, indice y diagnosticos de integraciones
+Nota: Manual de consulta directo dentro de la plataforma con reglas de resolucion rapida.

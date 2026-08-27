@@ -1,0 +1,458 @@
+SEO CRM — RECORDING + FULL FEATURE TEST FLOW
+App: https://crmpersonal.es
+Date: 2026-08-19
+Keep this file on a second screen. Do not read it aloud word-for-word.
+
+How to use
+  - One sitting (~70–90 min) OR 6 short videos (recommended).
+  - Each step: DO = click this · SAY = one sentence · LOOK = must appear on camera.
+  - If LOOK fails, pause recording, note it, continue. Do not debug live unless it is a 10-second fix.
+  - Zoom browser to 110–125%. Hide bookmarks. Use one project in the scope bar for the whole run.
+  - Pause the recording during long AI / DataForSEO waits; resume when the result is on screen.
+
+Before you press record
+  [ ] Logged out (start from the public landing)
+  [ ] Railway logs open on another desktop (not on camera)
+  [ ] Decide: existing real project (prettier) OR create “Demo vídeo 2026” (shows CRUD)
+  [ ] Google account that already has GSC / GA4 / Ads access (skip full OAuth if already connected — just SHOW connected status)
+  [ ] DataForSEO live if you want real SERP/volume; otherwise stub is OK — say it on camera
+  [ ] Sample copy below ready to paste
+
+Sample data (paste, do not invent on camera)
+  Project:     Demo vídeo 2026
+  GSC URL:     https://www.ejemplo.com/     (or a real GSC property if you will sync)
+  GA4 ID:      412345678                    (or the real property)
+  Niche:       Botas de montaña
+  Topic:       Cómo elegir y comparar botas de trekking
+  State:       En prueba
+  Monetization: Afiliación
+  Pages:
+    1. Guía de botas de trekking          type TSG  state Borrador
+    2. Mejores botas de montaña 2026      type TSR  state Borrador
+    3. Reseña Salomon X Ultra             type TSA  state Borrador
+  Keywords (page 1):  cómo elegir botas de trekking | botas trekking guía     intent Informacional
+  Keywords (page 2):  mejores botas de montaña     | comparativa botas trekking  intent Comercial
+  Keywords (page 3):  salomon x ultra opinión      | salomon x ultra review      intent Transaccional
+  Cannibalization demo term:  botas de trekking   (assign to page 1 AND page 2)
+  Product:     Salomon X Ultra  ·  marca Salomon  ·  precio 139.99 EUR
+  Competitors: https://www.decathlon.es/   https://www.barrabes.com/
+  Seeds (Análisis SEO):
+    botas de trekking
+    mejores botas de montaña
+    cómo elegir botas de trekking
+    salomon x ultra opinión
+    botas impermeables trekking
+
+
+================================================================================
+VIDEO 1 — Landing, login, mental model   (~8 min)
+================================================================================
+
+1.1 Public landing
+  DO   Open https://crmpersonal.es/
+  SAY  “This is the public home. The CRM itself is behind login.”
+  LOOK Page loads, Sign in + Contact support, Privacy / Terms links
+
+1.2 Legal pages (10 seconds each)
+  DO   Click Privacy → skim → Terms → skim → back
+  SAY  “Privacy and Terms are public. No login required.”
+  LOOK Real policy text, not a blank page
+
+1.3 Login wall
+  DO   Open /dashboard in the same tab (or click Sign in)
+  LOOK Redirect to /login with email + password + Entrar
+
+1.4 Wrong password (optional 8 seconds — skip in client-facing cut)
+  DO   Allowed email + wrong password → Entrar
+  LOOK Error, stay on login
+
+1.5 Real login
+  DO   Allowed email + APP_AUTH_PASSWORD → Entrar
+  SAY  “Email plus the shared CRM password. Session lasts about a week.”
+  LOOK /dashboard. Sidebar groups: Trabajo, SEO, Asistente, Datos, Integraciones, IA avanzada, Publicación.
+       Topbar: your email + Sign out.
+
+1.6 Mental model (stay on Panel, point at the sidebar)
+  SAY  “One tree. Project = one website. Niche = one topic. Page = one article (TSG guide, TSR comparison, TSA review). Keywords and URL hang off the page. Google data, AI and WordPress all use that tree. The AI never publishes alone.”
+
+1.7 Panel
+  DO   Scroll the dashboard. Click “Análisis SEO” and “Ayuda / guía” CTAs, then come back.
+  LOOK Counts, onboarding card, Nichos por estado if any, Páginas recientes, cannibalization / orphan alerts if data exists.
+       If GSC data exists: “Rendimiento (28 días)” + “Ver panel completo →”
+  SAY  “This is the morning view: structure health plus what is winning or falling.”
+
+
+================================================================================
+VIDEO 2 — Build the SEO tree   (~18 min)
+================================================================================
+
+Keep the scope bar on ONE project for the rest of the recording.
+
+2.1 Proyectos
+  DO   Sidebar → Proyectos → + Nuevo proyecto
+       Name: Demo vídeo 2026
+       First try saving with EMPTY GSC URL
+  LOOK Toast: “La URL de Search Console es obligatoria por proyecto”
+  DO   Fill GSC URL (and GA4 if you will sync) → Save
+  SAY  “One project is one website. Search Console URL is required so Google OAuth knows which property to use.”
+  LOOK Row in the table with Search Console / GA4 columns. Edit modal works; hint to go to Integraciones.
+
+2.2 Nichos
+  DO   Nichos → create “Botas de montaña”
+       Tema, Estado = En prueba, Monetización = Afiliación
+  SAY  “A niche is the business unit inside the site. Several topics can live on one website without mixing strategy.”
+  LOOK List row. Edit works.
+
+2.3 Páginas
+  DO   Páginas → create the 3 pages (TSG, TSR, TSA) under that niche. Fill Objetivo on each.
+  SAY  “TSG = guide, TSR = comparison, TSA = review. The AI draft shape follows the type. States are Borrador → En revisión → Publicado → Optimizado.”
+  LOOK Type pills + state badges.
+
+2.4 Palabras clave
+  DO   Palabras clave → add the 6–8 terms above. Assign to the right page. Set intent. Optional Nota.
+  SAY  “Keywords Ads and the AI both read this table. Assign the term to the page once — you do not paste lists into ChatGPT.”
+  LOOK Página select auto-fills niche/project.
+
+  Cannibalization (must show):
+  DO   Create the SAME term “botas de trekking” on page 1, then again on page 2.
+  LOOK After save, amber badge “Canibalización” on the rows.
+  SAY  “The CRM flags it after you assign. It does not auto-merge pages. Same intent + similar SERP → one page. Different intent + different SERP → own page. That decision is yours, or a clustering prompt.”
+
+  DO   Delete one disposable extra keyword to show delete works.
+
+2.5 URLs
+  DO   URLs → add slug for the TSG page, e.g. /guia-botas-trekking, index = Pendiente
+  SAY  “The page is the plan. The URL is what is actually live. Indexada / Pendiente / No index.”
+  LOOK Row saved. Edit works.
+
+2.6 Enlazado interno
+  DO   Enlazado interno
+       First: try self-link (same origin and destination)
+  LOOK Toast: “Origen y destino deben ser distintos”
+  DO   Create Guía → Comparativa, and Comparativa → Reseña, with anchor text
+  LOOK Table rows. If a page has no incoming links, orphan banner: “N páginas huérfanas: …”
+  SAY  “Orphans are hard for Google and users to find. Money pages should receive links.”
+
+2.7 Notas
+  DO   Notas → create “Estrategia botas 2026” with 2 lines
+  LOOK Edit + later you will delete or keep
+
+2.8 Competidores
+  DO   Competidores → add decathlon.es and barrabes.com with a short note
+  SAY  “Stored here for the Competitor Analyst. No Ahrefs crawl yet.”
+
+2.9 Productos (do this before TSA AI later)
+  DO   Productos → create Salomon X Ultra, fill marca, características, precio 139.99 EUR, currency EUR, source URL
+  LOOK Toast: “Producto guardado — la IA solo usará estos hechos”
+  SAY  “Before a review draft, put real facts here. The AI must not invent price or stock. Empty price means ‘needs data’.”
+  DO   Leave a second product price empty (optional) to show the empty state
+
+
+================================================================================
+VIDEO 3 — Google: connect, sync, read   (~12 min)
+================================================================================
+
+If OAuth is already connected, do NOT disconnect on camera. Show status + run sync.
+
+3.1 Integraciones (Google OAuth)
+  DO   Scope = the demo (or real) project
+       Open Google OAuth
+  LOOK Card “Objetivos de este proyecto” with GSC URL / GA4 ID or “— sin configurar —”
+       Three blocks: Search Console, Analytics, Ads — Conectado or Conectar OAuth
+  SAY  “Connect per project, in this order: Search Console, then Analytics, then Ads. Tokens stay on the server.”
+
+  If a button is disabled:
+  LOOK Reason text: “Configura la URL de Search Console en Proyectos.” / GA4 equivalent
+  DO   Fix in Proyectos, come back.
+
+  If already connected:
+  DO   Point at Cuenta (email) + Propiedad + Última sync
+       For GSC: “Propiedades GSC de tu cuenta OAuth” + “✓ configurada”
+  SAY  “I will not reconnect now so we do not break the live token. Connecting is a normal Google consent screen.”
+
+  Optional (private test cut only): Disconnect + reconnect GSC.
+
+3.2 Sincronización
+  DO   Sincronización
+  LOOK Three job cards: GSC, GA4, Ads. Each: schedule + cron, Activo toggle, last run, last error, Próxima, Registros, badge En espera / Ejecutando / OK / Error
+  SAY  “There is no schedule editor. You only pause or run now. GSC and GA4 are daily; Ads is weekly.”
+
+  DO   Toggle Activo OFF on Ads → “Ejecutar ahora” becomes disabled → toggle ON again
+  DO   Ejecutar ahora on GSC (and GA4 / Ads if you have time)
+  LOOK Status goes Ejecutando… then OK, or a readable error (not a white screen)
+  SAY  “Ads sync only works if Ads OAuth is connected, the project has keywords, and the Ads customer / developer token is set.”
+
+3.3 Search Console
+  DO   Search Console → click 7 días / 28 días / 90 días, then a custom from/to
+  LOOK 4 cards: Impresiones, Clicks, CTR medio, Posición media. Table updates.
+       Empty range: “Sin datos GSC en este rango. Conecta Search Console.”
+  SAY  “This is your Google data copied into the CRM. The AI can read it later.”
+
+3.4 Analytics
+  DO   Analytics → same date presets
+  LOOK Cards: Sesiones / Usuarios / Rebote medio / Engagement medio (engagement as m:ss)
+
+3.5 Keywords Ads
+  DO   Keywords Ads
+  LOOK Keyword, volume/mo, competition badge Baja/Media/Alta, CPC in €, Última sync
+       Banner “Guía Keywords Ads →” — click it, land on /help#ads, then back
+  SAY  “This is Keyword Planner for the terms already in Palabras clave. It is not the DataForSEO research job. Two different sources.”
+
+3.6 Rendimiento
+  DO   Rendimiento
+  LOOK Banner says 28 días. Cards: Clicks / Impresiones / Sesiones / Posición media
+       Pills: Ganadoras / En caída / Necesitan trabajo / Estables — click one, table filters; click again = all
+       Tendencia badge, sparkline 14d
+  SAY  “Use this to pick which page to send to the Optimizador Continuo.”
+  DO   From Panel, click “Ver panel completo →” once to show the dashboard teaser links here
+
+
+================================================================================
+VIDEO 4 — Análisis SEO (Option 2) + clustering   (~15 min)
+================================================================================
+
+This is the money chapter for the current client conversation.
+
+4.1 Status strip
+  DO   Análisis SEO
+  LOOK One of: “DataForSEO live listo” / “Sin credenciales → stub” / “FORCE STUB activo”
+       Caps: 3 competitors, 20 seeds, monthly soft/hard EUR, budget strip (year_month, runs, spend)
+  SAY  “Manual only — no nightly crawl. Opening an old job is free. A new run costs API if we are live.”
+
+4.2 Validation (10 seconds)
+  DO   Type a 4th competitor URL (if the form only has 3 fields, say the cap is 3)
+       Type 21 seed lines — counter “— N ahora”
+  LOOK Rejected / cannot exceed 20
+  DO   Empty form → Analizar proyecto
+  LOOK Rejected
+
+4.3 Real run
+  DO   Scope = project
+       Site URL = the project URL  OR check “Proyecto sin web aún” (URL field hides)
+       1–2 competitor URLs
+       Paste 5 seeds
+       Country es / language es / type TSG
+       Analizar proyecto
+  LOOK Job in history: Listo (or Error with readable message). Coste est. €. “· stub” marker if stub.
+  SAY  “If this is stub mode you will see demo rows. Live mode uses your DataForSEO balance.”
+
+4.4 Result tabs (open the job, do not re-run)
+  DO   Informe IA → Keywords → SERP → Snapshot → Backlinks → Oportunidades
+  LOOK Informe readable
+       Keywords: Fuente column (seed/idea), volume/CPC if live
+       SERP: position, title, URL/domain
+       Snapshot (only if URL was set): title/meta/H tags
+       Backlinks + “Link gap (oportunidades)” if competitors were set
+       Oportunidades list
+  DO   Copiar informe
+  SAY  “DataForSEO does not decide grouping. It stores volume, intent when available, CPC, and Google results. You decide: same intent + similar SERP → one page. Different intent + different SERP → own page. Weak signals → manual review. Volume picks the main keyword, it does not force a new URL for every variant.”
+
+4.5 Re-open vs re-run
+  DO   Click the same job in history again
+  LOOK Same id, no new charge
+  SAY  “Re-opening is free. Clicking Analizar proyecto again would create a new snapshot and a new charge.”
+
+4.6 Help deep link
+  DO   Follow the page’s help link to /help#option2, then back
+
+
+================================================================================
+VIDEO 5 — AI: generator, 5 assistants, extra context, prompts   (~18 min)
+================================================================================
+
+5.1 Generador IA (simple)
+  DO   Generador IA · scope = project
+       Select the TSG page that HAS keywords
+  LOOK Context under the select: Tipo / Nicho / Keywords
+  SAY  “This is the fast draft. It uses page type + keywords. It does not inject GSC/GA4. That is the advanced Content Generator.”
+  DO   Model gpt-4o-mini → Generar borrador
+  LOOK Loading, then Spanish draft (meta, H1, body, FAQ). Copiar works.
+  DO   Repeat on the TSA page (after Productos is filled) — say you expect review structure and real price if present.
+
+  Empty-state mention (if you still have a project with no pages, or just say it):
+  LOOK “No hay páginas. Crea una primero.” + button disabled
+
+5.2 Asistentes IA — the 5 roles in order (this is the prompt workflow)
+
+  DO   Asistentes IA. Point at topbar “Editor de prompts”.
+  SAY  “Five editable assistants. You run them one by one. There is no coordinating agent. Between steps you paste the previous result into Contexto extra.”
+
+  A) Arquitecto SEO
+     DO  Tab Arquitecto SEO · Nicho = Botas de montaña · gpt-4o-mini · Generar
+     LOOK Niche select. Useful cluster / pillar output.
+     SAY  “This proposes the map. It does not create pages for you.”
+
+  B) Clasificador de Keywords  (clustering — Prompt 3)
+     DO  Copy 8–12 lines from Análisis SEO → Keywords + 4–5 SERP rows
+         Paste into Contexto extra
+         Tab Clasificador · same niche · Generar
+     LOOK Mapping: intent, priority, target page, cannibalization notes
+     SAY  “This is where grouping happens: the prompt plus the DataForSEO tables, not an automatic SERP-overlap engine. I review it, then I create or reassign pages in the CRM.”
+
+  C) Generador de Contenido (enriquecido)
+     DO  Select the TSG page. Optionally paste classifier output in Contexto extra.
+     LOOK Toast: “Análisis generado con métricas GSC/Analytics” OR plain “Borrador generado…”
+     SAY  “Same idea as Generador IA, but it can see Search Console and Analytics if we synced.”
+
+  D) Analista de Competencia
+     DO  Select a competitor
+     LOOK If none: “Añade competidores primero.”
+     SAY  “It reasons from the stored domain + notes + your structure.”
+
+  E) Optimizador Continuo
+     DO  Pick a page that has GSC/GA4 rows if possible (from Rendimiento: En caída or Necesitan trabajo)
+     LOOK Concrete title / snippet / link suggestions, not a blank essay
+
+  Model note:
+  DO  Switch assistant tabs and point at the model dropdown
+  LOOK Default model resets to that prompt’s Modelo por defecto
+
+5.3 Editor de prompts
+  DO   Editor de prompts (from topbar or sidebar)
+  LOOK 5 cards: slug, Modelo default, Actualizado
+  DO   Open one (do NOT save a destructive change on production unless you revert)
+       Point at Descripción + Modelo por defecto + system prompt
+  SAY  “Change the prompt here, next run uses it. No deploy. Today you can edit these 5, not create an 11-prompt library yet. Extra context covers custom steps.”
+  DO   Cancel / revert if you opened edit. Do not leave a half-edited production prompt.
+
+
+================================================================================
+VIDEO 6 — Publish path, help, session   (~8 min)
+================================================================================
+
+6.1 WordPress
+  DO   WordPress · Generar export WP
+  LOOK Stat cards: project name + Páginas exportadas
+       Table: Título (+H1), Slug, Tipo pill, Estado, Meta title
+       Copiar JSON / Descargar JSON
+  SAY  “Export only. You still paste and publish in WordPress yourself. The CRM never posts to the site.”
+
+6.2 Scope “all” (5 seconds)
+  DO   Scope bar → Todos
+       Open Integraciones
+  LOOK Notice “Mostrando integraciones del primer proyecto…”
+  DO   WordPress with Todos — export still works (first project)
+  DO   Put scope back on the demo project
+
+6.3 Ayuda
+  DO   Ayuda / Guía
+  LOOK TOC. Click #idea #orden #filtro #pantallas #ads #google #option2 #productos #ia #glosario #problemas
+       “Volver al panel” returns to dashboard
+  SAY  “This is the in-app manual. If something looks empty, the empty-state text usually tells you the next screen.”
+
+6.4 404
+  DO   Open https://crmpersonal.es/this-page-does-not-exist
+  LOOK Not-found page, not a crash
+
+6.5 Logout / session
+  DO   Topbar “Sign out” (next to email, NOT a sidebar item)
+  LOOK Login or public area
+  DO   Open /dashboard → must ask for login
+  DO   Log in again → data still there (project, pages, research job, drafts)
+
+6.6 Close
+  SAY  “Daily loop: structure → optional Análisis SEO → assign keywords → sync Google → AI with extra context → you review → export / publish by hand → check Rendimiento next week.”
+
+
+================================================================================
+ONE-SITTING CHEAT SHEET (if you record a single long take)
+================================================================================
+
+  00:00  Landing → Privacy/Terms flash → Login
+  01:00  Panel + sidebar tour (the tree)
+  04:00  Project → Niche → 3 Pages → Keywords + cannibalization badge
+  12:00  URLs → Links + orphan banner → Notes → Competitors → Productos
+  18:00  Google OAuth status → Sync run now → GSC / Analytics / Ads / Rendimiento
+  28:00  Análisis SEO run → all 6 tabs → clustering explanation
+  40:00  Generador IA (TSG)
+  45:00  Arquitecto → Clasificador (paste SERP/keywords) → Contenido → Analista → Optimizador
+  58:00  Prompt editor (view only)
+  62:00  WordPress export
+  65:00  Help TOC → Sign out → Sign in → still there
+
+  Cut points if the take breaks: after 2.9 Productos, after 3.6 Rendimiento, after 4.5, after 5.3.
+
+
+================================================================================
+EVERY SCREEN ONCE (tick while recording)
+================================================================================
+
+Public
+  [ ] /            Home
+  [ ] /privacy     Privacy
+  [ ] /terms       Terms
+  [ ] /login       Login
+
+App
+  [ ] /dashboard        Panel
+  [ ] /help             Ayuda / Guía
+  [ ] /projects         Proyectos
+  [ ] /niches           Nichos
+  [ ] /pages            Páginas
+  [ ] /keywords         Palabras clave  (+ Canibalización badge)
+  [ ] /urls             URLs
+  [ ] /links            Enlazado interno  (+ huérfanas)
+  [ ] /notes            Notas
+  [ ] /ai               Generador IA
+  [ ] /performance      Rendimiento
+  [ ] /gsc-data         Search Console
+  [ ] /analytics-data   Analytics
+  [ ] /ads-keywords     Keywords Ads
+  [ ] /research         Análisis SEO  (informe, keywords, SERP, snapshot, backlinks, oportunidades)
+  [ ] /products         Productos
+  [ ] /integrations     Google OAuth
+  [ ] /sync             Sincronización
+  [ ] /competitors      Competidores
+  [ ] /assistants       5 tabs
+  [ ] /prompts          Editor de prompts
+  [ ] /wordpress        WordPress
+  [ ] unknown URL       404
+
+
+================================================================================
+DO NOT TREAT THESE AS BUGS ON CAMERA
+================================================================================
+
+  - Cannibalization badge appears AFTER save, not as a create-time warning
+  - No schedule-editing UI on Sincronización (toggle only)
+  - Keywords Ads has no date filter and no search box
+  - Rendimiento range is fixed 28 days
+  - Generador IA does not pull GSC/GA4 (Asistente Generador de Contenido does)
+  - Assistants do not create pages/niches; they propose
+  - No automatic SERP-overlap clustering engine
+  - No coordinating agent that chains the 5 assistants
+  - Prompt editor: edit the 5, cannot create prompt #6–#11 yet
+  - WordPress is export only
+  - Option 2 does not run every night
+  - Snapshot H1/H2/H3 or Links may look like raw JSON — acceptable
+  - Re-running Análisis SEO charges again; re-opening a job does not
+  - Stub mode = demo DataForSEO data, €0
+  - Scope “all” on Integraciones / WP / Análisis SEO falls back to first project
+  - DELETE project can 500 if research_jobs exist — do not demo delete of a project that has analyses
+
+
+================================================================================
+IF SOMETHING BREAKS
+================================================================================
+
+  Login 401 ............... APP_AUTH_PASSWORD / AUTH_ALLOWED_EMAILS / cookie
+  Connect button disabled . set GSC URL or GA4 ID on the project first
+  Ads table empty ......... connect Ads + keywords in project + run Ads sync
+  AI error / empty ........ OPENAI_API_KEY, page has keywords, Railway logs
+  Sync error .............. last_error on the job card + Railway logs
+  Option 2 always stub .... DATAFORSEO_LOGIN/PASSWORD, FORCE_STUB, redeploy
+  Option 2 400 ............ max 3 competitors, max 20 seeds
+  Hard monthly block ...... button disabled — do not force it on camera
+  Health check (no login): https://crmpersonal.es/api/seo-crm/health
+
+
+================================================================================
+AFTER RECORDING (cleanup, not on camera)
+================================================================================
+
+  [ ] If you created “Demo vídeo 2026”, either keep it as a sandbox or rename to ZZZ DELETE ME
+  [ ] Do not delete a project that has research_jobs from the UI (known 500)
+  [ ] Revert any prompt you accidentally saved
+  [ ] Sign out on the recording browser if it is a shared machine
+
+Done.

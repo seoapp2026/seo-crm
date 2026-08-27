@@ -1,0 +1,278 @@
+ENGLISH VERSION
+
+Yes, you can already use the CRM without Phase 2.5.
+Projects, niches, pages, keywords, competitors, notes, the 5 assistants, drafts, Option 2, Google data, and the current WordPress meta export already work.
+
+Phase 2.5 is not repairing a broken CRM.
+It is upgrading the content → SEO structure → products → export workflow so it matches how you want to work.
+
+
+What already exists (we reuse, we do not rebuild)
+
+Already in the CRM today:
+- niches / architecture containers
+- pages with TSA / TSG / TSR
+- keywords + search intent
+- slugs / URLs
+- internal links + anchors
+- notes / context
+- content drafts
+- meta title / meta description on drafts
+- competitors + Option 2 research data
+- products facts catalog (manual entry: name, brand, features, price, stock notes, opinions, source URL)
+- current WordPress JSON export with basic page fields
+
+So a big part of your “Aspiradoras” example is already stored or partly stored.
+What Phase 2.5 adds is the missing workflow layer: richer SEO fields, prompt library, layout/export pack, light structure import, and official product pull from Amazon + eBay into the products catalog you already have.
+
+
+WHAT PHASE 2.5 INCLUDES (ONE PACKAGE)
+
+1. Dynamic prompt library
+Create, edit, duplicate, order Prompt 00 + masters + Maquetador + future prompts.
+
+2. Layout template per project/niche + Maquetación prompt
+Keep the same layout style and produce structured final content.
+
+3. Save final laid-out content in the CRM
+
+4. Richer SEO structure fields per page / niche (reusing what exists)
+Where useful, store and export:
+- niche architecture
+- categories / subcategories
+- parent/child / silo relationships
+- page type TSA / TSG / TSR
+- primary + secondary keywords
+- search intent
+- slug / URL
+- H1 and H2/H3 outline
+- SEO Title + Meta Description
+- final laid-out content
+- internal links + anchors
+- breadcrumbs data
+- products / CTA notes when relevant
+- WordPress category/taxonomy mapping
+- Rank Math-ready fields we can honestly prepare from the CRM
+- basic schema/structured-data payload when it makes sense
+
+5. Fuller WordPress export JSON
+One export package that carries the article + the SEO structure above.
+
+6. Better prompt context
+Prompts can use project/niche/page/keywords/competitors/notes/Option 2 research / products.
+
+7. Simple Divi / Rank Math handoff notes
+Clear guidance: CRM fills content + SEO fields; Divi template keeps design.
+
+8. Extras so nothing important is missed
+- Pre-export audit / readiness check
+- Clear primary vs secondary keywords
+- WP All Import mapping guide
+- “What this prompt used” context note
+- Light structure import into the CRM (CSV/JSON → create/populate project)
+
+9. Official products API layer (Amazon + eBay, extensible)
+- Official/authorized APIs only. No scraping.
+- Real products: IDs/references, images, affiliate links, price/availability when the API allows
+- Store into the existing CRM products catalog
+- Use in comparisons, reviews and content
+- Simple UI: search/import product → save to project → use in TSA/TSR + export
+- Extensible base so more platforms can be added later
+- Can reduce dependence on AAWP / Content Egg for product facts inside the CRM
+  (WordPress may still use a light presentation layer for on-site boxes — that is fine)
+
+Not included:
+- Full Divi visual builder inside CRM
+- Live Rank Math score UI
+- Exact Divi shortcode cloning before your model page is ready
+- Blind auto-publish
+- Full live WordPress ↔ CRM sync
+- Fake “all marketplaces forever” (we start with Amazon + eBay + extensible base)
+
+
+How export works (simple)
+
+CRM prepares niche/pages → you approve → Export WordPress → richer JSON → import with WP All Import (map once) → Divi template wraps content → Rank Math gets mapped SEO fields → you spot-check and publish.
+
+Divi role:
+- Template/design stays in Divi
+- CRM mainly fills the content area + SEO data
+- You do not rebuild the whole page design for every article
+
+
+Products notes (simple)
+
+What already helps today: manual products catalog for AI facts.
+What Phase 2.5 adds: official Amazon + eBay pull into that catalog.
+Limits: access depends on YOUR affiliate/API accounts; APIs have rate limits and eligibility rules; some fields only when the platform allows them; no scraping fallback.
+
+
+Price
+ 
+Full Phase 2.5 package (SEO/content/export + Amazon/eBay products layer + extras): 
+Fixed total: €1,200
+
+One closed price for everything above.
+Does not include unpaid previous work — that stays separate and should be closed first.
+
+
+What you get when finished (simple)
+
+Data / light structure import → SEO architecture → prompts → content → products → internal linking → pre-export audit → layout → full export → WordPress / Divi / Rank Math
+
+In plain words:
+- many prompts, not only 5
+- niche architecture kept in the CRM
+- pages with the SEO fields you listed, as far as we can prepare well
+- real Amazon/eBay products in the CRM for reviews/comparisons
+- final laid-out article saved
+- warnings before exporting incomplete pages
+- option to bring an existing site structure into the CRM without retyping everything
+- much less manual re-entry in WordPress
+- clear handoff for Divi/Rank Math
+
+
+After delivery
+
+I help fix what does not work inside this agreed scope. I will not leave you hanging.
+
+
+SPANISH VERSION
+
+Sí, el CRM ya se puede usar sin la Fase 2.5.
+Proyectos, nichos, páginas, keywords, competidores, notas, los 5 asistentes, borradores, Option 2, datos de Google y la exportación actual a WordPress (metas/estructura básica) ya funcionan.
+
+La Fase 2.5 no es arreglar un CRM roto.
+Es mejorar el flujo contenido → estructura SEO → productos → exportación para que encaje con cómo quieres trabajar.
+
+
+Qué ya existe (lo reutilizamos, no lo rehago)
+
+Hoy el CRM ya tiene:
+- nichos / contenedores de arquitectura
+- páginas con TSA / TSG / TSR
+- keywords + intención de búsqueda
+- slugs / URLs
+- enlazado interno + anchors
+- notas / contexto
+- borradores de contenido
+- SEO Title / Meta Description en borradores
+- competidores + datos de Option 2
+- catálogo de productos/hechos (entrada manual: nombre, marca, características, precio, notas de stock, opiniones, URL de origen)
+- exportación JSON actual con campos básicos de página
+
+O sea: una buena parte de tu ejemplo de “Aspiradoras” ya se guarda o se puede guardar en parte.
+Lo que añade la Fase 2.5 es la capa de flujo que falta: campos SEO más ricos, biblioteca de prompts, paquete de maquetación/exportación, importación ligera de estructura, y captura oficial de productos Amazon + eBay dentro del catálogo de productos que ya tienes.
+
+
+QUÉ INCLUYE LA FASE 2.5 (UN SOLO PAQUETE)
+
+1. Biblioteca dinámica de prompts
+Crear, editar, duplicar y ordenar Prompt 00 + maestros + Maquetador + futuros.
+
+2. Plantilla de maquetación por proyecto/nicho + prompt de Maquetación
+Mantener el mismo estilo y generar el contenido final estructurado.
+
+3. Guardar el contenido final maquetado en el CRM
+
+4. Campos SEO más completos por página/nicho (aprovechando lo existente)
+Cuando aporte, guardar y exportar:
+- arquitectura del nicho
+- categorías / subcategorías
+- relaciones padre/hijo y silos
+- tipo de página TSA / TSG / TSR
+- keyword principal y secundarias
+- intención de búsqueda
+- slug / URL
+- H1 y estructura H2/H3
+- SEO Title + Meta Description
+- contenido final maquetado
+- enlazado interno + anchors
+- datos de breadcrumbs
+- productos / CTA cuando correspondan
+- mapeo de categoría/taxonomía de WordPress
+- campos preparados para Rank Math que sí podamos sacar bien desde el CRM
+- schema / datos estructurados básicos cuando tenga sentido
+
+5. Exportación JSON a WordPress más completa
+Un paquete que lleve el artículo + la estructura SEO de arriba.
+
+6. Mejor contexto para los prompts
+Que usen proyecto/nicho/página/keywords/competidores/notas/investigación Option 2 / productos.
+
+7. Notas simples de handoff Divi / Rank Math
+Guía clara: el CRM rellena contenido + campos SEO; la plantilla Divi mantiene el diseño.
+
+8. Extras para que no se nos pase nada importante
+- Auditoría / checklist antes de exportar
+- Keyword principal vs secundarias bien marcadas
+- Guía de mapeo WP All Import
+- Nota de “qué contexto usó este prompt”
+- Importación ligera de estructura al CRM (CSV/JSON → crear/rellenar proyecto)
+
+9. Capa de productos con APIs oficiales (Amazon + eBay, ampliable)
+- Solo APIs oficiales/autorizadas. Sin scraping.
+- Productos reales: IDs/referencias, imágenes, enlaces de afiliado, precio/disponibilidad cuando la API lo permita
+- Guardarlos en el catálogo de productos del CRM que ya existe
+- Usarlos en comparativas, reseñas y contenidos
+- UI sencilla: buscar/importar producto → guardar en proyecto → usar en TSA/TSR + exportar
+- Base ampliable para sumar más plataformas después
+- Puede reducir la dependencia de AAWP / Content Egg para los datos de producto dentro del CRM
+  (en WordPress puede seguir habiendo una capa ligera de presentación para las cajas — y está bien)
+
+No incluido:
+- Constructor visual Divi dentro del CRM
+- UI live de puntuación Rank Math
+- Clonar shortcodes exactos de Divi antes de tu página modelo
+- Auto-publicación a ciegas
+- Sync completo en vivo WordPress ↔ CRM
+- Un falso “todas las tiendas del mundo” (empezamos por Amazon + eBay + base ampliable)
+
+
+Cómo funciona la exportación (sencillo)
+
+El CRM prepara nicho/páginas → apruebas → Exportar WordPress → JSON más completo → importar con WP All Import (mapear una vez) → la plantilla Divi envuelve el contenido → Rank Math recibe los campos SEO mapeados → revisas y publicas.
+
+Rol de Divi:
+- La plantilla/diseño se queda en Divi
+- El CRM rellena sobre todo la zona de contenido + datos SEO
+- No reconstruyes el diseño entero en cada artículo
+
+
+Notas de productos (sencillo)
+
+Qué ya ayuda hoy: catálogo manual de productos para hechos de la IA.
+Qué añade la Fase 2.5: captura oficial Amazon + eBay dentro de ese catálogo.
+Límites: el acceso depende de TUS cuentas de afiliado/API; las APIs tienen límites y reglas de elegibilidad; algunos campos solo si la plataforma los permite; sin scraping de respaldo.
+
+
+Precio
+
+Idea anterior más enfocada: 500 €
+Paquete completo Fase 2.5 (SEO/contenido/exportación + capa productos Amazon/eBay + extras):
+
+Total fijo: 1.200 €
+
+Un solo precio cerrado por todo lo de arriba.
+No incluye lo pendiente anterior — eso se cierra aparte y primero.
+
+
+Qué quedaría hecho al terminar (sencillo)
+
+Datos / importación ligera de estructura → arquitectura SEO → prompts → contenido → productos → enlazado → auditoría previa → maquetación → exportación completa → WordPress / Divi / Rank Math
+
+En bruto:
+- muchos prompts, no solo 5
+- arquitectura del nicho guardada en el CRM
+- páginas con los campos SEO que pediste, en lo que se pueda preparar bien
+- productos reales Amazon/eBay en el CRM para reseñas/comparativas
+- artículo final maquetado guardado
+- avisos antes de exportar páginas incompletas
+- opción de meter la estructura de una web existente en el CRM sin teclear todo otra vez
+- mucho menos relleno manual en WordPress
+- handoff claro para Divi/Rank Math
+
+
+Tras la entrega
+
+Te ayudo a corregir lo que no funcione dentro del alcance acordado. No te dejo colgado.

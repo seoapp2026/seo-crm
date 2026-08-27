@@ -301,11 +301,14 @@ class AiPrompt(Base):
     __tablename__ = "ai_prompts"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    slug: Mapped[AssistantSlug] = mapped_column(Enum(AssistantSlug), unique=True, nullable=False)
+    slug: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
     name: Mapped[str] = mapped_column(Text, nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str] = mapped_column(Text, default="", nullable=False)
     system_prompt: Mapped[str] = mapped_column(Text, nullable=False)
     model_default: Mapped[str] = mapped_column(Text, default="gpt-4o-mini")
+    sort_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    is_system: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    project_id: Mapped[int | None] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 

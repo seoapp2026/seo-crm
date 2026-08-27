@@ -1,0 +1,41 @@
+Hi,
+
+I am not proposing upgrades or quotes here. This is only what the current CRM AI includes.
+
+Does the AI only execute prompts and generate responses, or is there also an agent that performs actions inside the CRM?
+
+Today the AI only executes prompts and generates responses for you to review. There is no coordinating agent that performs actions inside the CRM by itself (create structure, save fields, chain steps with approvals, or publish to WordPress).
+
+Status of each point:
+
+1. Automatically read project data, keywords, and pages.
+Already included and functional.
+When you select a page, niche, or competitor and run Generador or an assistant, the system injects that CRM context (and GSC/GA4 metrics when synced). It does not run in the background over the whole project on its own.
+
+2. Execute a sequence of prompts in order.
+Would require additional development.
+Possible via prompt configuration only in a manual way: you run one assistant after another and paste the previous result as extra context. There is no automatic sequence.
+
+3. Save the result of each prompt into the corresponding fields.
+Would require additional development.
+Results are shown and can be copied. They are not written automatically into niches, pages, URLs, keywords, or other CRM fields.
+
+4. Create or modify families, pages, URLs, and internal links.
+Would require additional development.
+The AI only proposes text. Creating and editing structure is done manually in the CRM.
+
+5. Query DataForSEO and use the results directly.
+Already included and functional for research jobs (Análisis SEO / Option 2), when DataForSEO credentials are configured; otherwise it runs in stub/demo mode.
+Would require additional development for an AI agent that queries DataForSEO mid-flow and applies results into structure automatically. Assistants do not call DataForSEO by themselves today.
+
+6. Pause so I can approve each phase before proceeding.
+Would require additional development.
+Today you approve by reviewing each output yourself before the next manual step. There is no multi-phase agent with formal pause/approve gates.
+
+7. Prepare or subsequently send the content to WordPress.
+Already included and functional for preparation: AI drafts text, and WordPress export provides structure (JSON) for manual use.
+Would require additional development to create posts, fill product blocks, or publish automatically.
+
+Your plan fits the current foundation:
+Specialized prompts first: already supported (Editor de prompts and Generador).
+A coordinating agent later that uses those prompts inside the CRM: future enhancement, not included now.

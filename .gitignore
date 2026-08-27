@@ -24,3 +24,7 @@ frontend/dist/
 
 # Logs
 *.log
+
+# Media / Videos
+docs/*.mp4
+docs/*.mov

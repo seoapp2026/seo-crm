@@ -1,0 +1,111 @@
+RESPUESTAS TÉCNICAS Y DE FLUJO: EXPORTACIÓN WORDPRESS, PROMPTS MAESTROS Y MAQUETACIÓN DIVI
+
+PARTE 1: ¿CÓMO FUNCIONA EXACTAMENTE LA EXPORTACIÓN A WORDPRESS HOY?
+
+En la versión actual del CRM, el exportador a WordPress (/wordpress) funciona como un puente estructurado bajo el principio de supervisión humana, para evitar publicaciones automáticas accidentales de contenido no revisado:
+
+1. Qué genera actualmente:
+   Exporta un archivo JSON descargable (o copiable al portapapeles) con la lista de páginas del proyecto seleccionado.
+   Campos incluidos por página:
+   * Título de la página (title)
+   * Slug / URL amigable (slug)
+   * Meta Title SEO (meta_title)
+   * Meta Description SEO (meta_description, basado en el objetivo SEO)
+   * Tipo de página (content_type: TSG - Guía, TSR - Comparativa, TSA - Reseña)
+   * Encabezado principal (h1)
+   * Estado del flujo (status: borrador, en revisión, publicado, optimizado)
+   * Nicho / Categoría (niche_name, que mapea a la categoría de WP)
+   * Fecha y metadatos del proyecto (exported_at, project_name)
+
+2. Qué falta hoy para que el contenido vaya 100% completo en ese JSON:
+   Actualmente el exportador exporta la arquitectura y metadatos. El cuerpo de texto generado por la IA vive en la tabla de borradores (content_drafts).
+   Unir el cuerpo final maquetado (content_html / content_divi) dentro del mismo JSON de exportación es una mejora directa y muy sencilla de implementar.
+
+
+PARTE 2: RESPUESTAS A TUS 6 PREGUNTAS
+
+1. ¿Puedo crear yo nuevos asistentes/prompts desde el CRM, o necesitas modificar el programa?
+
+ESTADO ACTUAL:
+Actualmente hay 5 asistentes fijos predefinidos en la base de datos (Arquitecto SEO, Clasificador de Keywords, Generador de Contenido, Analista de Competencia, Optimizador Continuo).
+Desde la pantalla "Editor de Prompts" (/prompts) puedes editar libremente el texto del System Prompt, la descripción y el modelo de IA (gpt-4o-mini, gpt-4o) de esos 5 asistentes, y los cambios se aplican al instante sin tocar código.
+Sin embargo, para añadir un sexto o séptimo botón/pestaña independiente, actualmente requiere código porque la estructura inicial se definió con 5 slots fijos (enum).
+
+LO QUE PODEMOS HACER:
+Habilitar una "Biblioteca Dinámica de Prompts" con un botón "+ Crear Nuevo Prompt / Asistente", permitiéndote crear, nombrar y gestionar todos los prompts que quieras directamente desde la interfaz sin depender de ningún cambio de código futuro.
+
+
+2. Tengo 11 prompts maestros + Prompt 00 (validación de nichos). ¿La arquitectura actual lo permite sin rehacer el CRM?
+
+SÍ, AL 100%. NO HACE FALTA REHACER EL CRM.
+La arquitectura del backend (FastAPI + SQLAlchemy) y del frontend (React modular) es limpia y desacoplada.
+Para pasar de 5 a 12 (Prompt 00 + los 11 maestros), simplemente se flexibiliza el identificador de los prompts en la base de datos para que admita cualquier nombre/slug dinámico y se añade el formulario de creación.
+Todo lo demás (inyección automática del contexto del proyecto, nicho, página, competidores y métricas) ya está construido y funcionará exactamente igual para los 12 prompts.
+
+
+3. MAQUETACIÓN: Asistente/Prompt específico que devuelva el contenido ya estructurado (secciones, H1/H2/H3, CTA, tablas, cajas, imágenes, FAQ, productos, clases CSS).
+
+ES TOTALMENTE FACTIBLE Y ES LA FORMA CORRECTA DE TRABAJAR.
+Flujo:
+1) Los primeros prompts generan la información bruta, keywords, análisis y redacción SEO.
+2) El "Prompt de Maquetación" recibe ese texto + las reglas de diseño del nicho y lo transforma en HTML semántico enriquecido con clases CSS predefinidas (ej: <div class="caja-destacada">, <table class="tabla-comparativa">, <div class="cta-afiliado"><a class="btn-compra">...</a></div>, acordeones FAQ, etc.).
+La IA es excelente convirtiendo texto plano en estructuras con etiquetas HTML limpias y clases estándar listas para renderizarse con estilos CSS.
+
+
+4. ¿Podemos incluir esa salida maquetada en el JSON de exportación para que WordPress/Divi la importe maquetada según plantilla?
+
+SÍ.
+En el JSON de exportación añadimos el campo "content_html" (o "post_content") que contiene todo el código maquetado.
+Métodos de importación automática en WordPress:
+* MÉTODO RECOMENDADO (WP All Import): Mediante el plugin WP All Import, subes el JSON exportado del CRM y mapeas una sola vez los campos (Título -> Título, Slug -> Slug, Meta -> Yoast/RankMath, content_html -> Contenido del post, Nicho -> Categoría). Al importar, la página queda creada y maquetada al 100%.
+* MÉTODO REST API (Opcional futuro): Un botón en el CRM "Enviar a WordPress" que conecta por la API oficial de WordPress y crea la página directamente en estado borrador/publicado.
+
+
+5. Si Divi necesita otro formato distinto de HTML/JSON, ¿qué formato sería el adecuado y qué modificar en el exportador?
+
+CÓMO TRABAJA DIVI Y CUÁL ES LA MEJOR ESTRATEGIA:
+
+Divi ofrece dos vías para recibir contenido maquetado:
+
+A) VÍA 1: HTML Estructurado + Divi Theme Builder (LA MÁS LIMPIA Y RECOMENDADA)
+Cómo funciona: En WordPress creas una plantilla de diseño en "Divi Theme Builder" para las entradas/páginas del nicho (cabecera, barra lateral, tipografías, colores de botones CTA, estilos de tablas y cajas).
+El CRM exporta HTML semántico estándar con las clases CSS correspondientes.
+Ventajas: Carga ultrarrápida, código 100% limpio para Google (SEO impecable), no se rompe si Divi se actualiza, y si cambias el diseño global del nicho, todas las páginas se actualizan solas.
+
+B) VÍA 2: Divi Shortcodes en el post_content
+Divi almacena sus módulos en el contenido del post mediante shortcodes internos (ej: [et_pb_section][et_pb_row][et_pb_column][et_pb_text]...[/et_pb_text][/et_pb_column][/et_pb_row][/et_pb_section]).
+Si necesitas que cada bloque aparezca como un módulo visual editable dentro del constructor visual de Divi, el Prompt de Maquetación se programa para envolver cada sección con los shortcodes nativos de Divi.
+
+En el exportador del CRM solo habría que añadir una opción/selector:
+* "Exportar como HTML maquetado (Theme Builder)"
+* "Exportar como Divi Shortcodes nativos"
+
+
+6. ¿Podríamos guardar una plantilla de diseño por proyecto para que todas las páginas del nicho mantengan la misma estética?
+
+SÍ, ABSOLUTAMENTE.
+En el CRM podemos añadir un campo o pestaña "Plantilla de Maquetación / Estilos" en cada Proyecto o Nicho.
+Ahí defines el "esqueleto" visual del nicho (por ejemplo: estructura de encabezados, tipo de cajas para llamadas a la acción, estructura de la tabla comparativa, formato de pros/contras y shortcodes de afiliados como AAWP).
+Cuando ejecutes el Asistente de Maquetación para cualquier página de ese proyecto, el CRM inyectará automáticamente esa plantilla como contexto del prompt, garantizando que el 100% de los artículos del nicho salgan con la misma identidad visual y estructura.
+
+
+RESUMEN DEL FLUJO COMPLETO FINAL
+
+1. Datos & Nicho (CRM): Selección de proyecto, nicho, keywords y métricas.
+2. Prompts SEO (00 a 11): Investigación, intención de búsqueda, redacción de contenido enriquecido.
+3. Prompt de Maquetación: Recibe el contenido + la plantilla de diseño del proyecto -> genera el HTML/Shortcodes estructurados.
+4. Exportación JSON: Genera el paquete completo (título, metas, slug, H1, categorías, contenido maquetado).
+5. WordPress / Divi: Importación directa con la página terminada, maquetada y lista para publicar.
+
+
+ESTIMACIÓN DE TRABAJO / AMPLIACIÓN
+
+Todo lo planteado encaja perfectamente sobre la arquitectura modular que ya está construida. No hay que demoler nada.
+
+Desglose de tareas a implementar:
+1. Biblioteca dinámica de Prompts (CRUD para gestionar 12+ prompts y Prompt 00 desde el CRM UI).
+2. Campo de Plantilla de Diseño por Proyecto/Nicho en base de datos e interfaz.
+3. Asistente de Maquetación (pipeline que combina contenido + plantilla del proyecto).
+4. Actualización del Exportador JSON para incluir el contenido completo maquetado (HTML o Divi shortcodes) + soporte de importación en WP.
+
+Es un desarrollo ordenado y modular. Cuando se confirme el inicio, se implementará en fases claras y verificables.

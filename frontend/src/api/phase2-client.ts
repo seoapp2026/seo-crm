@@ -3,6 +3,8 @@ import { apiFetch } from './http'
 import type {
   AdsKeyword,
   AiPrompt,
+  AiPromptCreate,
+  AiPromptReorderItem,
   AnalyticsDataRow,
   AssistantRunRequest,
   AssistantRunResponse,
@@ -146,13 +148,38 @@ export const phase2Api = {
   },
 
   prompts: {
-    list: async () => {
-      return apiRequest<AiPrompt[]>(`${API_BASE}/ai/prompts`)
+    list: async (projectId?: number) => {
+      const q = projectId ? `?project_id=${projectId}` : ''
+      return apiRequest<AiPrompt[]>(`${API_BASE}/ai/prompts${q}`)
     },
-    update: async (id: number, payload: Partial<Pick<AiPrompt, 'system_prompt' | 'model_default' | 'description'>>) => {
+    get: async (id: number) => {
+      return apiRequest<AiPrompt>(`${API_BASE}/ai/prompts/${id}`)
+    },
+    create: async (payload: AiPromptCreate) => {
+      return apiRequest<AiPrompt>(`${API_BASE}/ai/prompts`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      })
+    },
+    update: async (id: number, payload: Partial<AiPrompt>) => {
       return apiRequest<AiPrompt>(`${API_BASE}/ai/prompts/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(payload),
+      })
+    },
+    duplicate: async (id: number) => {
+      return apiRequest<AiPrompt>(`${API_BASE}/ai/prompts/${id}/duplicate`, {
+        method: 'POST',
+      })
+    },
+    remove: async (id: number, force = false) => {
+      const q = force ? '?force=true' : ''
+      await apiRequest<void>(`${API_BASE}/ai/prompts/${id}${q}`, { method: 'DELETE' })
+    },
+    reorder: async (items: AiPromptReorderItem[]) => {
+      return apiRequest<AiPrompt[]>(`${API_BASE}/ai/prompts/reorder`, {
+        method: 'POST',
+        body: JSON.stringify(items),
       })
     },
   },

@@ -7,15 +7,7 @@ import { ScopeBar } from '../../components/ScopeBar'
 import { useApp } from '../../context/AppContext'
 import { useProjects } from '../../hooks/useProjects'
 import type { Niche, Page } from '../../types'
-import type { AiPrompt, AssistantSlug, Competitor } from '../../types/phase2'
-
-const ASSISTANT_ORDER: AssistantSlug[] = [
-  'seo_architect',
-  'keyword_classifier',
-  'content_generator',
-  'competitor_analyst',
-  'continuous_optimizer',
-]
+import type { AiPrompt, Competitor } from '../../types/phase2'
 
 export function AssistantsPage() {
   const { scopeProject, setScopeProject, setTopbarAction, toast } = useApp()
@@ -24,7 +16,7 @@ export function AssistantsPage() {
   const [pages, setPages] = useState<Page[]>([])
   const [niches, setNiches] = useState<Niche[]>([])
   const [competitors, setCompetitors] = useState<Competitor[]>([])
-  const [active, setActive] = useState<AssistantSlug>('seo_architect')
+  const [activePromptId, setActivePromptId] = useState<number>(0)
   const [pageId, setPageId] = useState(0)
   const [nicheId, setNicheId] = useState(0)
   const [competitorId, setCompetitorId] = useState(0)
@@ -39,7 +31,10 @@ export function AssistantsPage() {
     phase2Api.prompts.list()
       .then((ps) => {
         setPrompts(ps)
-        if (ps[0]) setModel(ps[0].model_default)
+        if (ps.length > 0) {
+          setActivePromptId(ps[0].id)
+          setModel(ps[0].model_default)
+        }
       })
       .catch((e) => toast(e instanceof Error ? e.message : 'No se pudieron cargar los prompts'))
   }, [toast])
@@ -65,24 +60,30 @@ export function AssistantsPage() {
 
   useEffect(() => {
     setTopbarAction(
-      <Link to="/prompts" className="btn btn-sm">Editor de prompts</Link>,
+      <Link to="/prompts" className="btn btn-sm">
+        Biblioteca de prompts
+      </Link>,
     )
     return () => setTopbarAction(null)
   }, [setTopbarAction])
 
-  useEffect(() => {
-    const p = prompts.find((x) => x.slug === active)
-    if (p) setModel(p.model_default)
-  }, [active, prompts])
+  const current = prompts.find((p) => p.id === activePromptId) || prompts[0]
 
-  const current = prompts.find((p) => p.slug === active)
+  useEffect(() => {
+    if (current) {
+      setModel(current.model_default)
+    }
+  }, [current])
 
   const run = async () => {
     if (!effectiveProject) return toast('Selecciona un proyecto')
+    if (!current) return toast('Selecciona un prompt de la biblioteca')
     setLoading(true)
     try {
       const res = await phase2Api.assistants.run({
-        assistant: active,
+        prompt_id: current.id,
+        prompt_slug: current.slug,
+        assistant: current.slug,
         project_id: effectiveProject,
         page_id: pageId || undefined,
         niche_id: nicheId || undefined,
@@ -97,34 +98,42 @@ export function AssistantsPage() {
           : 'Borrador generado — revisa antes de publicar',
       )
     } catch (e) {
-      toast(e instanceof Error ? e.message : 'Error')
+      toast(e instanceof Error ? e.message : 'Error al ejecutar el asistente')
     } finally {
       setLoading(false)
     }
   }
+
+  // Helper to determine relevant context inputs
+  const slug = current?.slug || ''
+  const showNiche = slug.includes('niche') || slug.includes('architect') || slug.includes('classifier') || niches.length > 0
+  const showPage = slug.includes('content') || slug.includes('generator') || slug.includes('optimizer') || slug.includes('maquetad') || pages.length > 0
+  const showCompetitor = slug.includes('competitor') || competitors.length > 0
 
   return (
     <>
       <ScopeBar projects={projects} value={scopeProject} onChange={setScopeProject} />
 
       <div className="banner">
-        <strong>5 asistentes IA especializados.</strong> Cada uno usa un prompt editable.
-        El Generador y el Optimizador pueden usar métricas GSC/Analytics si hay sync.
+        <strong>Asistentes IA Dinámicos.</strong> Ejecuta cualquier rol o prompt de tu biblioteca (<Link to="/prompts">editar prompts</Link>) contra los datos reales de tu proyecto, nichos, páginas o métricas.
         Siempre supervisado — el resultado se formatea para lectura; no se publica solo.{' '}
         <Link to="/help#ia">Cómo funciona la IA →</Link>
       </div>
 
-      <div className="assistant-tabs">
-        {ASSISTANT_ORDER.map((slug) => {
-          const p = prompts.find((x) => x.slug === slug)
+      <div className="assistant-tabs" style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+        {prompts.map((p) => {
+          const isActive = (current?.id === p.id)
           return (
             <button
-              key={slug}
+              key={p.id}
               type="button"
-              className={`assistant-tab${active === slug ? ' active' : ''}`}
-              onClick={() => { setActive(slug); setResult('') }}
+              className={`assistant-tab${isActive ? ' active' : ''}`}
+              onClick={() => {
+                setActivePromptId(p.id)
+                setResult('')
+              }}
             >
-              {p?.name || slug}
+              {p.name}
             </button>
           )
         })}
@@ -133,59 +142,75 @@ export function AssistantsPage() {
       <div className="card">
         <div className="ai-zone">
           <div className="ai-config">
-            <p className="t-sub" style={{ marginBottom: 16 }}>{current?.description}</p>
+            <div style={{ marginBottom: 16 }}>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: 16 }}>{current?.name || 'Asistente'}</h3>
+              <p className="t-sub" style={{ margin: 0 }}>{current?.description || 'Sin descripción'}</p>
+              <div className="muted mono" style={{ fontSize: 11, marginTop: 4 }}>
+                slug: {current?.slug}
+              </div>
+            </div>
 
-            {(active === 'seo_architect' || active === 'keyword_classifier') && (
+            {showNiche && niches.length > 0 && (
               <div className="field">
-                <label>Nicho</label>
+                <label>Nicho de referencia (opcional)</label>
                 <select value={nicheId} onChange={(e) => setNicheId(Number(e.target.value))}>
+                  <option value={0}>— Ninguno / Todo el proyecto —</option>
                   {niches.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}
                 </select>
               </div>
             )}
 
-            {(active === 'content_generator' || active === 'continuous_optimizer') && (
+            {showPage && pages.length > 0 && (
               <div className="field">
-                <label>Página</label>
+                <label>Página de destino (opcional)</label>
                 <select value={pageId} onChange={(e) => setPageId(Number(e.target.value))}>
+                  <option value={0}>— Ninguna / General —</option>
                   {pages.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
                 </select>
-                {(active === 'content_generator' || active === 'continuous_optimizer') && (
+                {pageId > 0 && (
                   <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
-                    {active === 'content_generator' ? 'Usará métricas GSC/GA4 si están sincronizadas.' : 'Analiza tendencias de la página seleccionada.'}
+                    Se incluirán keywords y métricas de rendimiento 28d si están sincronizadas.
                   </p>
                 )}
               </div>
             )}
 
-            {active === 'competitor_analyst' && (
+            {showCompetitor && competitors.length > 0 && (
               <div className="field">
-                <label>Competidor</label>
-                {competitors.length ? (
-                  <select value={competitorId} onChange={(e) => setCompetitorId(Number(e.target.value))}>
-                    {competitors.map((c) => <option key={c.id} value={c.id}>{c.domain}</option>)}
-                  </select>
-                ) : (
-                  <p className="muted">Añade competidores primero.</p>
-                )}
+                <label>Competidor de referencia (opcional)</label>
+                <select value={competitorId} onChange={(e) => setCompetitorId(Number(e.target.value))}>
+                  <option value={0}>— Ninguno —</option>
+                  {competitors.map((c) => <option key={c.id} value={c.id}>{c.domain}</option>)}
+                </select>
               </div>
             )}
 
             <div className="field">
               <label>Contexto adicional (opcional)</label>
-              <textarea value={extra} onChange={(e) => setExtra(e.target.value)} rows={3} placeholder="Instrucciones extra para esta ejecución…" />
+              <textarea
+                value={extra}
+                onChange={(e) => setExtra(e.target.value)}
+                rows={3}
+                placeholder="Instrucciones específicas o datos extra para esta ejecución…"
+              />
             </div>
 
             <div className="field">
-              <label>Modelo</label>
+              <label>Modelo LLM</label>
               <select value={model} onChange={(e) => setModel(e.target.value)}>
                 <option value="gpt-4o-mini">gpt-4o-mini</option>
                 <option value="gpt-4o">gpt-4o</option>
               </select>
             </div>
 
-            <button type="button" className="btn btn-primary" onClick={run} disabled={loading} style={{ width: '100%' }}>
-              {loading ? 'Generando…' : 'Ejecutar asistente'}
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={run}
+              disabled={loading || !current}
+              style={{ width: '100%' }}
+            >
+              {loading ? 'Generando respuesta…' : `Ejecutar "${current?.name || 'Asistente'}"`}
             </button>
           </div>
 
@@ -212,7 +237,7 @@ export function AssistantsPage() {
             </div>
             <AiResultView
               text={result}
-              emptyMessage="Selecciona un asistente y pulsa Ejecutar. El análisis se mostrará con títulos y listas legibles."
+              emptyMessage="Selecciona un asistente de la biblioteca y pulsa Ejecutar. El análisis o contenido se mostrará estructurado con títulos y listas legibles."
             />
           </div>
         </div>

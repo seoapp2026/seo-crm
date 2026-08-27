@@ -103,18 +103,41 @@ class CompetitorOut(OrmBase):
 
 class AiPromptOut(OrmBase):
     id: int
-    slug: AssistantSlug
+    slug: str
     name: str
     description: str
     system_prompt: str
     model_default: str
+    sort_order: int = 0
+    is_system: bool = False
+    project_id: int | None = None
     updated_at: datetime
 
 
+class AiPromptCreate(BaseModel):
+    slug: str
+    name: str
+    description: str = ""
+    system_prompt: str
+    model_default: str = "gpt-4o-mini"
+    sort_order: int = 0
+    is_system: bool = False
+    project_id: int | None = None
+
+
 class AiPromptUpdate(BaseModel):
+    slug: str | None = None
+    name: str | None = None
     description: str | None = None
     system_prompt: str | None = None
     model_default: str | None = None
+    sort_order: int | None = None
+    project_id: int | None = None
+
+
+class AiPromptReorderItem(BaseModel):
+    id: int
+    sort_order: int
 
 
 class SyncJobOut(OrmBase):
@@ -164,7 +187,9 @@ class PerformanceSummaryOut(BaseModel):
 
 
 class AssistantRunRequest(BaseModel):
-    assistant: AssistantSlug
+    assistant: str | None = None
+    prompt_id: int | None = None
+    prompt_slug: str | None = None
     project_id: int
     page_id: int | None = None
     niche_id: int | None = None
@@ -174,7 +199,9 @@ class AssistantRunRequest(BaseModel):
 
 
 class AssistantRunResponse(BaseModel):
-    assistant: AssistantSlug
+    assistant: str
+    prompt_id: int | None = None
+    prompt_name: str | None = None
     rendered: str
     model_used: str
     used_metrics: bool

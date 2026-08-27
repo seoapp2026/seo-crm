@@ -1,0 +1,25 @@
+1
+00:00:00,000 --> 00:00:24,000
+SEO CRM client-guide walkthrough — Part 2.
+Verify the saved keyword in the isolated test project.
+
+2
+00:00:24,000 --> 00:00:46,000
+Add the same keyword to the second page.
+The CRM identifies this as keyword cannibalization.
+
+3
+00:00:46,000 --> 00:01:06,000
+The amber Canibalización badge and explanatory message are displayed.
+
+4
+00:01:06,000 --> 00:01:24,000
+Create a page URL and set its indexing state.
+
+5
+00:01:24,000 --> 00:01:41,000
+Create an internal link between the two pages.
+
+6
+00:01:41,000 --> 00:01:41,900
+Create a project note for the recorded client-guide walkthrough.

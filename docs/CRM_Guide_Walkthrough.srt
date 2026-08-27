@@ -1,0 +1,143 @@
+1
+00:00:00,000 --> 00:00:10,000
+SECTION 1 — PUBLIC PAGES & LEGAL
+Testing public access (Home, Privacy Policy, Terms of Service)
+• Verifies that public landing and legal pages load without errors and require no login.
+
+2
+00:00:10,000 --> 00:00:40,000
+SECTION 2 — AUTHENTICATION & LOGIN WALL
+Redirecting protected routes to /login & testing authorized credentials
+• Guards private routes; verifies session cookie creation upon successful authentication.
+
+3
+00:00:40,000 --> 00:00:55,000
+SECTION 3 — DASHBOARD (PANEL)
+Summary metrics, onboarding guide, and project scope selector
+• Provides operational morning overview: structure counts, recent pages, and performance alerts.
+
+4
+00:00:55,000 --> 00:01:10,000
+SECTION 4.1 — PROJECT CREATION
+Creating test project with GSC URL & GA4 Property ID targets
+• Enforces mandatory Search Console URL and GA4 Property ID for Google OAuth integrations.
+
+5
+00:01:10,000 --> 00:01:15,000
+SECTION 4.2 — NICHE SETUP
+Creating business niche: topic, status, and monetization model
+• Niches isolate distinct topical clusters within a single domain without strategy overlap.
+
+6
+00:01:15,000 --> 00:01:50,000
+SECTION 4.3 — CONTENT PAGES (TSG / TSR / TSA)
+Creating TSG (Guide) and TSR (Comparison) pages with specific objectives
+• Page types structure the content architecture and determine AI drafting templates.
+
+7
+00:01:50,000 --> 00:02:20,000
+SECTION 4.4 — KEYWORDS & CANNIBALIZATION DETECTION
+Assigning search terms and verifying amber Cannibalization badge on duplicates
+• Flags duplicate terms across pages to prevent internal SERP competition before publishing.
+
+8
+00:02:20,000 --> 00:02:30,000
+SECTION 4.5 — URLS & INDEXING STATUS
+Managing live slugs and indexing status (Indexada, Pendiente, No index)
+• Separates editorial content planning from live URL tracking and Google indexation status.
+
+9
+00:02:30,000 --> 00:02:35,000
+SECTION 4.6 — INTERNAL LINKING
+Connecting origin and destination pages with anchor text
+• Builds internal link graphs to pass PageRank to conversion and pillar pages.
+
+10
+00:02:35,000 --> 00:02:55,000
+SECTION 4.7 — STRATEGIC PROJECT NOTES
+Creating, editing, and verifying persistence of project notes
+• Maintains persistent strategic guidelines that are automatically fed into AI assistants.
+
+11
+00:02:55,000 --> 00:03:20,000
+SECTION 4.6/4.7 — LINK VALIDATION & ORPHAN DETECTION
+Testing self-link prevention rules and verifying orphan page alerts
+• Blocks invalid circular self-links and warns when money pages lack incoming links.
+
+12
+00:03:20,000 --> 00:03:30,000
+SECTION 7.1 — SEARCH CONSOLE DATA (GSC)
+Inspecting Impressions, Clicks, CTR, and Avg Position across 7d/28d/90d ranges
+• Visualizes real synced Google Search Console performance data within the CRM.
+
+13
+00:03:30,000 --> 00:03:35,000
+SECTION 7.2 — GOOGLE ANALYTICS 4 (GA4)
+Reviewing Sessions, Users, Bounce Rate, and Average Engagement Time
+• Provides per-page traffic quality and engagement metrics synced via Google Analytics API.
+
+14
+00:03:35,000 --> 00:03:40,000
+SECTION 7.3 — GOOGLE ADS KEYWORD PLANNER
+Checking search volume/month, competition levels, and CPC (€)
+• Pulls live Google Ads Keyword Planner data for all assigned project keywords.
+
+15
+00:03:40,000 --> 00:03:50,000
+SECTION 7.4 — PERFORMANCE DASHBOARD (RENDIMIENTO)
+28-day performance matrix, status filter chips, and 14-day trend sparklines
+• Highlights winning pages, decaying URLs, and high-potential pages needing optimization.
+
+16
+00:03:50,000 --> 00:04:20,000
+SECTION 8 — COMPETITOR MANAGEMENT
+Adding and editing competitor domains with strategic assessment notes
+• Maintains a database of competitors used by the AI Competitor Analyst.
+
+17
+00:04:20,000 --> 00:04:25,000
+SECTION 12.1 — PRODUCT CATALOG (FACT GROUNDING)
+Storing verified product facts, features, pricing, and source URLs
+• Prevents AI hallucinations in review drafts by enforcing strict factual source constraints.
+
+18
+00:04:25,000 --> 00:04:30,000
+SECTION 13 — WORDPRESS STRUCTURE EXPORT
+Generating structured JSON export with slugs, types, meta tags, and headings
+• Enables seamless copy/export into WordPress while keeping publication under manual control.
+
+19
+00:04:30,000 --> 00:04:50,000
+SECTION 4 — STRUCTURE INTEGRITY & ORPHAN REVIEW
+Reviewing internal links and orphan page indicators
+• Ensures all created pages have proper link architecture prior to generation.
+
+20
+00:04:50,000 --> 00:05:05,000
+SECTION 11.1 — SPECIALIZED AI ASSISTANTS OVERVIEW
+Navigating the 5 AI roles: Architect, Classifier, Generator, Analyst, Optimizer
+• Demonstrates modular prompt-driven AI workflows tailored for each SEO milestone.
+
+21
+00:05:05,000 --> 00:05:15,000
+SECTION 12.2 — SEO RESEARCH (OPTION 2 DATAFORSEO)
+Reviewing SERP analysis, keyword volumes, snapshots, and backlink gaps
+• Provides on-demand SERP and keyword intelligence without recurrent crawl costs.
+
+22
+00:05:15,000 --> 00:06:10,000
+SECTION 11.1 — AI ASSISTANT EXECUTION & CONTEXT INJECTION
+Running assistants with extra SERP context and reviewing generated drafts
+• Produces structured Spanish drafts with H1/H2 headings, FAQs, and metadata.
+
+23
+00:06:10,000 --> 00:06:30,000
+SECTION 11.2 — PROMPT EDITOR
+Customizing system prompts, descriptions, and default models without deploy
+• Enables immediate prompt adjustments stored in the database for all 5 assistants.
+
+24
+00:06:30,000 --> 00:06:35,000
+SECTION 14 — IN-APP HELP & DOCUMENTATION
+Reviewing in-app manual, troubleshooting guide, and anchor navigation
+• Provides complete documentation and diagnostic rules directly inside the application.

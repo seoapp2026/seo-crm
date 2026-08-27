@@ -119,6 +119,9 @@ export const MOCK_AI_PROMPTS: AiPrompt[] = [
     system_prompt:
       'Eres un arquitecto SEO senior. Analiza el nicho, páginas existentes y keywords. Propón estructura de pilares/clusters, prioridades y enlazado interno. Responde en español. No publiques nada automáticamente.',
     model_default: 'gpt-4o-mini',
+    sort_order: 0,
+    is_system: true,
+    project_id: null,
     updated_at: isoNow(),
   },
   {
@@ -129,6 +132,9 @@ export const MOCK_AI_PROMPTS: AiPrompt[] = [
     system_prompt:
       'Eres un especialista en investigación de keywords. Clasifica cada término: intención (informacional/comercial/transaccional), prioridad y página sugerida. Señala canibalización. Español.',
     model_default: 'gpt-4o-mini',
+    sort_order: 10,
+    is_system: true,
+    project_id: null,
     updated_at: isoNow(),
   },
   {
@@ -139,6 +145,9 @@ export const MOCK_AI_PROMPTS: AiPrompt[] = [
     system_prompt:
       'Eres redactor SEO. Genera borradores editables (meta, H1, cuerpo, FAQ) usando contexto de página, keywords y métricas GSC/GA4 si se proporcionan. Nunca inventes datos de tráfico sin métricas. Español.',
     model_default: 'gpt-4o-mini',
+    sort_order: 20,
+    is_system: true,
+    project_id: null,
     updated_at: isoNow(),
   },
   {
@@ -149,6 +158,9 @@ export const MOCK_AI_PROMPTS: AiPrompt[] = [
     system_prompt:
       'Eres analista de competencia SEO. Compara el proyecto con dominios rivales: brechas de contenido, oportunidades de keywords y diferenciación. Español. Supervisado.',
     model_default: 'gpt-4o',
+    sort_order: 30,
+    is_system: true,
+    project_id: null,
     updated_at: isoNow(),
   },
   {
@@ -159,6 +171,9 @@ export const MOCK_AI_PROMPTS: AiPrompt[] = [
     system_prompt:
       'Eres consultor de optimización SEO continua. Usa tendencias de clicks, posición y engagement para priorizar acciones concretas (título, snippet, enlaces, actualización). Español.',
     model_default: 'gpt-4o-mini',
+    sort_order: 40,
+    is_system: true,
+    project_id: null,
     updated_at: isoNow(),
   },
 ]

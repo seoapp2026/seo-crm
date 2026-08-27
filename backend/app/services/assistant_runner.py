@@ -14,15 +14,21 @@ async def run_assistant(db: Session, payload: AssistantRunRequest) -> AssistantR
     if not settings.openai_api_key:
         raise HTTPException(status_code=503, detail="OPENAI_API_KEY no configurada")
 
-    prompt = db.query(AiPrompt).filter(AiPrompt.slug == payload.assistant).first()
+    prompt: AiPrompt | None = None
+    if payload.prompt_id:
+        prompt = db.get(AiPrompt, payload.prompt_id)
+    elif payload.prompt_slug:
+        prompt = db.query(AiPrompt).filter(AiPrompt.slug == payload.prompt_slug).first()
+    elif payload.assistant:
+        slug_val = payload.assistant.value if hasattr(payload.assistant, "value") else str(payload.assistant)
+        prompt = db.query(AiPrompt).filter(AiPrompt.slug == slug_val).first()
+
     if not prompt:
-        raise HTTPException(status_code=404, detail="Asistente no encontrado")
+        raise HTTPException(status_code=404, detail="Prompt o asistente no encontrado")
 
     model = payload.model or prompt.model_default
-    used_metrics = payload.assistant in (
-        AssistantSlug.content_generator,
-        AssistantSlug.continuous_optimizer,
-    )
+    slug_str = prompt.slug
+    used_metrics = slug_str in ("content_generator", "continuous_optimizer") or "gsc" in prompt.system_prompt.lower()
 
     context_parts = []
     if payload.niche_id:
@@ -78,7 +84,9 @@ async def run_assistant(db: Session, payload: AssistantRunRequest) -> AssistantR
 
     rendered = response.json()["choices"][0]["message"]["content"]
     return AssistantRunResponse(
-        assistant=payload.assistant,
+        assistant=prompt.slug,
+        prompt_id=prompt.id,
+        prompt_name=prompt.name,
         rendered=rendered,
         model_used=model,
         used_metrics=used_metrics and bool(context_parts),

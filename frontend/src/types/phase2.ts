@@ -63,21 +63,35 @@ export interface Competitor {
   created_at: string
 }
 
-export type AssistantSlug =
-  | 'seo_architect'
-  | 'keyword_classifier'
-  | 'content_generator'
-  | 'competitor_analyst'
-  | 'continuous_optimizer'
+export type AssistantSlug = string
 
 export interface AiPrompt {
   id: number
-  slug: AssistantSlug
+  slug: string
   name: string
   description: string
   system_prompt: string
   model_default: string
+  sort_order: number
+  is_system: boolean
+  project_id: number | null
   updated_at: string
+}
+
+export interface AiPromptCreate {
+  slug: string
+  name: string
+  description?: string
+  system_prompt: string
+  model_default?: string
+  sort_order?: number
+  is_system?: boolean
+  project_id?: number | null
+}
+
+export interface AiPromptReorderItem {
+  id: number
+  sort_order: number
 }
 
 export type SyncJobStatus = 'idle' | 'running' | 'success' | 'error'
@@ -147,7 +161,9 @@ export interface WpExportBundle {
 }
 
 export interface AssistantRunRequest {
-  assistant: AssistantSlug
+  assistant?: string
+  prompt_id?: number
+  prompt_slug?: string
   project_id: number
   page_id?: number
   niche_id?: number
@@ -157,7 +173,9 @@ export interface AssistantRunRequest {
 }
 
 export interface AssistantRunResponse {
-  assistant: AssistantSlug
+  assistant: string
+  prompt_id?: number | null
+  prompt_name?: string | null
   rendered: string
   model_used: string
   used_metrics: boolean

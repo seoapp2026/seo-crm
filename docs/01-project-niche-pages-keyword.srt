@@ -1,0 +1,23 @@
+1
+00:00:00,000 --> 00:00:16,000
+SEO CRM client-guide walkthrough — Part 1.
+Creating an isolated test project from Lumey's GSC and GA4 targets.
+
+2
+00:00:16,000 --> 00:00:39,000
+The original Lumey project is left unchanged.
+The new project is disposable and used only for the client test guide.
+
+3
+00:00:39,000 --> 00:01:02,000
+Create a niche: name, topic, status, monetization, and notes.
+
+4
+00:01:02,000 --> 00:01:24,000
+Create two content pages in the niche:
+a TSG guide and a TSR comparison.
+
+5
+00:01:24,000 --> 00:02:16,333
+Open Keywords and assign a keyword to the guide page.
+This completes the first recorded setup phase.
