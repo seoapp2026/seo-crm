@@ -1,4 +1,8 @@
 import type {
+  AutoTagIntentResponse,
+  ClusterApplyItem,
+  ClusterApplyResponse,
+  ClusterSuggestionResponse,
   DashboardStats,
   GenerateContentResponse,
   InternalLink,
@@ -84,6 +88,21 @@ export const api = {
     update: (id: number, data: Partial<Keyword>) =>
       request<Keyword>(`${API_BASE}/keywords/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     remove: (id: number) => request<void>(`${API_BASE}/keywords/${id}`, { method: 'DELETE' }),
+    autoTagIntent: (data: { project_id: number; niche_id?: number; keyword_ids?: number[] }) =>
+      request<AutoTagIntentResponse>(`${API_BASE}/keywords/auto-tag-intent`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    suggestClusters: (data: { project_id: number; niche_id?: number; unassigned_only?: boolean }) =>
+      request<ClusterSuggestionResponse>(`${API_BASE}/keywords/suggest-clusters`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    applyClusters: (data: { project_id: number; clusters: ClusterApplyItem[] }) =>
+      request<ClusterApplyResponse>(`${API_BASE}/keywords/apply-clusters`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   },
 
   urls: {

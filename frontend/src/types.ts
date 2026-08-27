@@ -135,3 +135,49 @@ export interface MaquetarResponse {
   content_html: string
   page_updated: boolean
 }
+
+export interface AutoTagIntentResponse {
+  updated_count: number
+  informational_count: number
+  commercial_count: number
+  transactional_count: number
+}
+
+export interface ClusterItem {
+  cluster_id: string
+  cluster_name: string
+  focus_keyword: string
+  secondary_keywords: string[]
+  suggested_title: string
+  suggested_h1: string
+  suggested_type: PageType
+  intent: Intent
+  keyword_ids: number[]
+  existing_page_id?: number | null
+  existing_page_title?: string | null
+}
+
+export interface ClusterSuggestionResponse {
+  total_keywords_analyzed: number
+  clusters_count: number
+  clusters: ClusterItem[]
+}
+
+export interface ClusterApplyItem {
+  cluster_name: string
+  focus_keyword_id?: number | null
+  keyword_ids: number[]
+  existing_page_id?: number | null
+  title: string
+  h1?: string | null
+  type: PageType
+  parent_page_id?: number | null
+  niche_id: number
+}
+
+export interface ClusterApplyResponse {
+  created_pages_count: number
+  updated_pages_count: number
+  linked_keywords_count: number
+  created_page_ids: number[]
+}

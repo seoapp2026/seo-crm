@@ -3,7 +3,22 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Keyword
-from app.schemas import KeywordCreate, KeywordOut, KeywordUpdate
+from app.schemas import (
+    AutoTagIntentRequest,
+    AutoTagIntentResponse,
+    ClusterApplyRequest,
+    ClusterApplyResponse,
+    ClusterSuggestionRequest,
+    ClusterSuggestionResponse,
+    KeywordCreate,
+    KeywordOut,
+    KeywordUpdate,
+)
+from app.services.clustering_service import (
+    auto_tag_keywords_intent,
+    apply_keyword_clusters,
+    suggest_keyword_clusters,
+)
 from app.services.seo_insights import cannibalized_page_titles, keyword_cannibalized
 
 router = APIRouter(prefix="/keywords", tags=["keywords"])
@@ -64,3 +79,32 @@ def delete_keyword(keyword_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Keyword no encontrada")
     db.delete(keyword)
     db.commit()
+
+
+@router.post("/auto-tag-intent", response_model=AutoTagIntentResponse)
+def auto_tag_intent(payload: AutoTagIntentRequest, db: Session = Depends(get_db)):
+    return auto_tag_keywords_intent(
+        db=db,
+        project_id=payload.project_id,
+        niche_id=payload.niche_id,
+        keyword_ids=payload.keyword_ids,
+    )
+
+
+@router.post("/suggest-clusters", response_model=ClusterSuggestionResponse)
+def suggest_clusters(payload: ClusterSuggestionRequest, db: Session = Depends(get_db)):
+    return suggest_keyword_clusters(
+        db=db,
+        project_id=payload.project_id,
+        niche_id=payload.niche_id,
+        unassigned_only=payload.unassigned_only,
+    )
+
+
+@router.post("/apply-clusters", response_model=ClusterApplyResponse)
+def apply_clusters(payload: ClusterApplyRequest, db: Session = Depends(get_db)):
+    return apply_keyword_clusters(
+        db=db,
+        project_id=payload.project_id,
+        clusters=payload.clusters,
+    )

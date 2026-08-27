@@ -185,6 +185,71 @@ class KeywordOut(OrmBase):
     cannibalized_on: list[str] = Field(default_factory=list)
 
 
+# --- Clustering & Intent ---
+
+class AutoTagIntentRequest(BaseModel):
+    project_id: int
+    niche_id: int | None = None
+    keyword_ids: list[int] | None = None
+
+
+class AutoTagIntentResponse(BaseModel):
+    updated_count: int
+    informational_count: int
+    commercial_count: int
+    transactional_count: int
+
+
+class ClusterSuggestionRequest(BaseModel):
+    project_id: int
+    niche_id: int | None = None
+    unassigned_only: bool = False
+
+
+class ClusterItemOut(BaseModel):
+    cluster_id: str
+    cluster_name: str
+    focus_keyword: str
+    secondary_keywords: list[str] = Field(default_factory=list)
+    suggested_title: str
+    suggested_h1: str
+    suggested_type: PageType
+    intent: Intent
+    keyword_ids: list[int]
+    existing_page_id: int | None = None
+    existing_page_title: str | None = None
+
+
+class ClusterSuggestionResponse(BaseModel):
+    total_keywords_analyzed: int
+    clusters_count: int
+    clusters: list[ClusterItemOut]
+
+
+class ClusterApplyItem(BaseModel):
+    cluster_name: str
+    focus_keyword_id: int | None = None
+    keyword_ids: list[int]
+    existing_page_id: int | None = None
+    title: str
+    h1: str | None = None
+    type: PageType = PageType.TSA
+    parent_page_id: int | None = None
+    niche_id: int
+
+
+class ClusterApplyRequest(BaseModel):
+    project_id: int
+    clusters: list[ClusterApplyItem]
+
+
+class ClusterApplyResponse(BaseModel):
+    created_pages_count: int
+    updated_pages_count: int
+    linked_keywords_count: int
+    created_page_ids: list[int]
+
+
 # --- URLs ---
 
 class UrlCreate(BaseModel):
