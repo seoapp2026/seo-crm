@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -205,6 +206,32 @@ class AssistantRunResponse(BaseModel):
     rendered: str
     model_used: str
     used_metrics: bool
+    context_used: dict[str, Any] | None = None
+
+
+class ContextPreviewRequest(BaseModel):
+    prompt_id: int | None = None
+    prompt_slug: str | None = None
+    assistant: str | None = None
+    project_id: int
+    page_id: int | None = None
+    niche_id: int | None = None
+    competitor_id: int | None = None
+    extra_context: str | None = None
+    model: str | None = None
+
+
+class ContextPreviewResponse(BaseModel):
+    prompt_id: int | None = None
+    prompt_name: str
+    prompt_slug: str
+    model: str
+    system_prompt: str
+    user_prompt: str
+    full_prompt_text: str
+    word_count: int
+    estimated_tokens: int
+    resolved_entities: dict[str, Any]
 
 
 class WpExportItemOut(BaseModel):

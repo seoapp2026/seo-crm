@@ -9,6 +9,8 @@ import type {
   AssistantRunRequest,
   AssistantRunResponse,
   Competitor,
+  ContextPreviewRequest,
+  ContextPreviewResponse,
   DateRange,
   GoogleAuth,
   GoogleService,
@@ -187,6 +189,12 @@ export const phase2Api = {
   assistants: {
     run: async (payload: AssistantRunRequest) => {
       return apiRequest<AssistantRunResponse>(`${API_BASE}/ai/assistants/run`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      })
+    },
+    previewContext: async (payload: ContextPreviewRequest) => {
+      return apiRequest<ContextPreviewResponse>(`${API_BASE}/ai/assistants/preview-context`, {
         method: 'POST',
         body: JSON.stringify(payload),
       })

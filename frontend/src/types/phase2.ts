@@ -179,6 +179,32 @@ export interface AssistantRunResponse {
   rendered: string
   model_used: string
   used_metrics: boolean
+  context_used?: Record<string, any> | null
+}
+
+export interface ContextPreviewRequest {
+  prompt_id?: number | null
+  prompt_slug?: string | null
+  assistant?: string | null
+  project_id: number
+  page_id?: number | null
+  niche_id?: number | null
+  competitor_id?: number | null
+  extra_context?: string | null
+  model?: string | null
+}
+
+export interface ContextPreviewResponse {
+  prompt_id?: number | null
+  prompt_name: string
+  prompt_slug: string
+  model: string
+  system_prompt: string
+  user_prompt: string
+  full_prompt_text: string
+  word_count: number
+  estimated_tokens: number
+  resolved_entities: Record<string, any>
 }
 
 export interface DateRange {
