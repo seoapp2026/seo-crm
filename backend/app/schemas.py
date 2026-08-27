@@ -51,6 +51,7 @@ class NicheCreate(BaseModel):
     state: NicheState = NicheState.nuevo
     monetization: Monetization = Monetization.afiliacion
     notes: str | None = None
+    layout_template_text: str | None = None
 
 
 class NicheUpdate(BaseModel):
@@ -59,6 +60,7 @@ class NicheUpdate(BaseModel):
     state: NicheState | None = None
     monetization: Monetization | None = None
     notes: str | None = None
+    layout_template_text: str | None = None
 
 
 class NicheOut(OrmBase):
@@ -69,6 +71,7 @@ class NicheOut(OrmBase):
     state: NicheState
     monetization: Monetization
     notes: str | None
+    layout_template_text: str | None = None
     created_at: datetime
 
 
@@ -77,10 +80,22 @@ class NicheOut(OrmBase):
 class PageCreate(BaseModel):
     niche_id: int
     project_id: int
+    parent_page_id: int | None = None
     title: str
     type: PageType
     state: PageState = PageState.borrador
     objective: str | None = None
+    breadcrumb_label: str | None = None
+    h1: str | None = None
+    outline_json: str | None = None
+    seo_title: str | None = None
+    seo_description: str | None = None
+    wp_category: str | None = None
+    wp_tags_json: str | None = None
+    content_html: str | None = None
+    content_status: str = "borrador"
+    schema_json: str | None = None
+    export_ready: bool = False
 
 
 class PageUpdate(BaseModel):
@@ -89,16 +104,41 @@ class PageUpdate(BaseModel):
     state: PageState | None = None
     objective: str | None = None
     niche_id: int | None = None
+    parent_page_id: int | None = None
+    breadcrumb_label: str | None = None
+    h1: str | None = None
+    outline_json: str | None = None
+    seo_title: str | None = None
+    seo_description: str | None = None
+    wp_category: str | None = None
+    wp_tags_json: str | None = None
+    content_html: str | None = None
+    content_status: str | None = None
+    schema_json: str | None = None
+    export_ready: bool | None = None
 
 
 class PageOut(OrmBase):
     id: int
     niche_id: int
     project_id: int
+    parent_page_id: int | None = None
+    parent_title: str | None = None
     title: str
     type: PageType
     state: PageState
-    objective: str | None
+    objective: str | None = None
+    breadcrumb_label: str | None = None
+    h1: str | None = None
+    outline_json: str | None = None
+    seo_title: str | None = None
+    seo_description: str | None = None
+    wp_category: str | None = None
+    wp_tags_json: str | None = None
+    content_html: str | None = None
+    content_status: str = "borrador"
+    schema_json: str | None = None
+    export_ready: bool = False
     created_at: datetime
 
 
@@ -111,6 +151,7 @@ class KeywordCreate(BaseModel):
     term: str
     intent: Intent = Intent.informacional
     note: str | None = None
+    is_primary: bool = False
 
 
 class KeywordUpdate(BaseModel):
@@ -118,6 +159,7 @@ class KeywordUpdate(BaseModel):
     intent: Intent | None = None
     note: str | None = None
     page_id: int | None = None
+    is_primary: bool | None = None
 
 
 class KeywordOut(OrmBase):
@@ -128,6 +170,7 @@ class KeywordOut(OrmBase):
     term: str
     intent: Intent
     note: str | None
+    is_primary: bool = False
     created_at: datetime
     cannibalized: bool = False
     cannibalized_on: list[str] = Field(default_factory=list)

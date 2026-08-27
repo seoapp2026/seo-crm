@@ -28,6 +28,8 @@ def list_keywords(project_id: int | None = Query(None), db: Session = Depends(ge
 
 @router.post("", response_model=KeywordOut, status_code=201)
 def create_keyword(payload: KeywordCreate, db: Session = Depends(get_db)):
+    if payload.is_primary:
+        db.query(Keyword).filter(Keyword.page_id == payload.page_id, Keyword.is_primary.is_(True)).update({"is_primary": False})
     keyword = Keyword(**payload.model_dump())
     db.add(keyword)
     db.commit()
@@ -40,7 +42,15 @@ def update_keyword(keyword_id: int, payload: KeywordUpdate, db: Session = Depend
     keyword = db.get(Keyword, keyword_id)
     if not keyword:
         raise HTTPException(status_code=404, detail="Keyword no encontrada")
-    for field, value in payload.model_dump(exclude_unset=True).items():
+    updates = payload.model_dump(exclude_unset=True)
+    target_page_id = updates.get("page_id", keyword.page_id)
+    if updates.get("is_primary"):
+        db.query(Keyword).filter(
+            Keyword.page_id == target_page_id,
+            Keyword.id != keyword.id,
+            Keyword.is_primary.is_(True)
+        ).update({"is_primary": False})
+    for field, value in updates.items():
         setattr(keyword, field, value)
     db.commit()
     db.refresh(keyword)

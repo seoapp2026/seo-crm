@@ -27,6 +27,43 @@ def run_light_migrations():
         if is_pg:
             statements.append("ALTER TABLE ai_prompts ALTER COLUMN slug TYPE TEXT USING slug::text")
 
+    if "pages" in insp.get_table_names():
+        page_cols = {c["name"] for c in insp.get_columns("pages")}
+        if "parent_page_id" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN parent_page_id INTEGER REFERENCES pages(id) ON DELETE SET NULL")
+        if "breadcrumb_label" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN breadcrumb_label TEXT")
+        if "h1" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN h1 TEXT")
+        if "outline_json" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN outline_json TEXT")
+        if "seo_title" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN seo_title TEXT")
+        if "seo_description" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN seo_description TEXT")
+        if "wp_category" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN wp_category TEXT")
+        if "wp_tags_json" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN wp_tags_json TEXT")
+        if "content_html" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN content_html TEXT")
+        if "content_status" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN content_status TEXT NOT NULL DEFAULT 'borrador'")
+        if "schema_json" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN schema_json TEXT")
+        if "export_ready" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN export_ready BOOLEAN NOT NULL DEFAULT FALSE")
+
+    if "keywords" in insp.get_table_names():
+        kw_cols = {c["name"] for c in insp.get_columns("keywords")}
+        if "is_primary" not in kw_cols:
+            statements.append("ALTER TABLE keywords ADD COLUMN is_primary BOOLEAN NOT NULL DEFAULT FALSE")
+
+    if "niches" in insp.get_table_names():
+        niche_cols = {c["name"] for c in insp.get_columns("niches")}
+        if "layout_template_text" not in niche_cols:
+            statements.append("ALTER TABLE niches ADD COLUMN layout_template_text TEXT")
+
     if not statements:
         return
 

@@ -22,6 +22,7 @@ export interface Niche {
   state: NicheState
   monetization: Monetization
   notes: string | null
+  layout_template_text?: string | null
   created_at: string
 }
 
@@ -29,10 +30,23 @@ export interface Page {
   id: number
   niche_id: number
   project_id: number
+  parent_page_id?: number | null
+  parent_title?: string | null
   title: string
   type: PageType
   state: PageState
   objective: string | null
+  breadcrumb_label?: string | null
+  h1?: string | null
+  outline_json?: string | null
+  seo_title?: string | null
+  seo_description?: string | null
+  wp_category?: string | null
+  wp_tags_json?: string | null
+  content_html?: string | null
+  content_status?: string
+  schema_json?: string | null
+  export_ready?: boolean
   created_at: string
 }
 
@@ -44,6 +58,7 @@ export interface Keyword {
   term: string
   intent: Intent
   note: string | null
+  is_primary: boolean
   created_at: string
   cannibalized: boolean
   cannibalized_on?: string[]

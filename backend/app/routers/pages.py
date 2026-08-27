@@ -10,12 +10,22 @@ from app.services.cascade_delete import purge_page
 router = APIRouter(prefix="/pages", tags=["pages"])
 
 
+def _to_page_out(page: Page, db: Session) -> PageOut:
+    data = PageOut.model_validate(page)
+    if page.parent_page_id:
+        parent = db.get(Page, page.parent_page_id)
+        if parent:
+            data.parent_title = parent.title
+    return data
+
+
 @router.get("", response_model=list[PageOut])
 def list_pages(project_id: int | None = Query(None), db: Session = Depends(get_db)):
     q = db.query(Page)
     if project_id is not None:
         q = q.filter(Page.project_id == project_id)
-    return q.order_by(Page.created_at.desc()).all()
+    pages = q.order_by(Page.created_at.desc()).all()
+    return [_to_page_out(p, db) for p in pages]
 
 
 @router.post("", response_model=PageOut, status_code=201)
@@ -24,7 +34,7 @@ def create_page(payload: PageCreate, db: Session = Depends(get_db)):
     db.add(page)
     db.commit()
     db.refresh(page)
-    return page
+    return _to_page_out(page, db)
 
 
 @router.patch("/{page_id}", response_model=PageOut)
@@ -36,7 +46,7 @@ def update_page(page_id: int, payload: PageUpdate, db: Session = Depends(get_db)
         setattr(page, field, value)
     db.commit()
     db.refresh(page)
-    return page
+    return _to_page_out(page, db)
 
 
 @router.delete("/{page_id}", status_code=204)
