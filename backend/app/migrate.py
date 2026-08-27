@@ -6,6 +6,7 @@ from app.database import engine
 def run_light_migrations():
     """Add columns to existing DBs without Alembic."""
     insp = inspect(engine)
+    statements = []
     if "projects" in insp.get_table_names():
         cols = {c["name"] for c in insp.get_columns("projects")}
         if "gsc_site_url" not in cols:
