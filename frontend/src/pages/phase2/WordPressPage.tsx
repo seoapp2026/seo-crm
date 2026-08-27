@@ -19,6 +19,10 @@ export function WordPressPage() {
   const [htmlModalItem, setHtmlModalItem] = useState<WpExportItem | null>(null)
   const [credsModalOpen, setCredsModalOpen] = useState(false)
   const [pushModalOpen, setPushModalOpen] = useState(false)
+  const [rankMathImportOpen, setRankMathImportOpen] = useState(false)
+  const [rankMathCsvText, setRankMathCsvText] = useState('')
+  const [importingRankMath, setImportingRankMath] = useState(false)
+  const [syncingMetas, setSyncingMetas] = useState(false)
 
   // WP Credentials state
   const [wpUrl, setWpUrl] = useState('')
@@ -155,6 +159,47 @@ export function WordPressPage() {
     }
   }
 
+  const handleImportRankMath = async () => {
+    if (!effectiveProject) return
+    if (!rankMathCsvText.trim()) return toast('Pega el contenido CSV de Rank Math')
+    setImportingRankMath(true)
+    try {
+      const res = await phase2Api.rankMath.importCsv({
+        project_id: effectiveProject,
+        csv_content: rankMathCsvText.trim(),
+      })
+      toast(
+        `✓ Rank Math Importado: ${res.updated_count} páginas actualizadas, ${res.skipped_count} omitidas`,
+      )
+      setRankMathImportOpen(false)
+      setRankMathCsvText('')
+      void loadBundle()
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Error al importar CSV de Rank Math')
+    } finally {
+      setImportingRankMath(false)
+    }
+  }
+
+  const handleBulkSyncMetas = async () => {
+    if (!effectiveProject) return
+    setSyncingMetas(true)
+    try {
+      const res = await phase2Api.rankMath.bulkSyncMetas({
+        project_id: effectiveProject,
+        overwrite_existing: false,
+      })
+      toast(
+        `✓ Metas sincronizadas: ${res.updated_titles_count} títulos y ${res.updated_descriptions_count} descripciones generadas`,
+      )
+      void loadBundle()
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Error al sincronizar metas')
+    } finally {
+      setSyncingMetas(false)
+    }
+  }
+
   const displayedPages = bundle?.pages.filter((p) => (filterOnlyReady ? p.export_ready : true)) || []
 
   const toggleSelectAll = () => {
@@ -224,15 +269,38 @@ export function WordPressPage() {
               className="btn btn-sm"
               download
             >
-              📥 Descargar CSV (WP All Import)
+              📥 CSV WP All Import
             </a>
+            <a
+              href={phase2Api.rankMath.getCsvDownloadUrl(effectiveProject)}
+              className="btn btn-sm"
+              style={{ background: '#e0f2fe', borderColor: '#bae6fd', color: '#0369a1' }}
+              download
+            >
+              📥 CSV Rank Math SEO
+            </a>
+            <button
+              type="button"
+              className="btn btn-sm btn-ghost"
+              onClick={() => setRankMathImportOpen(true)}
+            >
+              📤 Importar CSV Rank Math
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-ghost"
+              onClick={handleBulkSyncMetas}
+              disabled={syncingMetas}
+            >
+              {syncingMetas ? 'Sincronizando...' : '⚡ Auto-Metas Rank Math'}
+            </button>
             <a
               href={phase2Api.wordpress.getZipDownloadUrl(effectiveProject)}
               className="btn btn-sm"
               style={{ background: '#f1f5f9', borderColor: '#cbd5e1' }}
               download
             >
-              📦 Descargar ZIP Completo (HTML + CSV)
+              📦 Descargar ZIP (HTML + CSV)
             </a>
             <button
               type="button"
@@ -648,6 +716,56 @@ export function WordPressPage() {
                   {pushing ? 'Enviando a WordPress...' : '🚀 Confirmar y Enviar'}
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RANK MATH CSV IMPORT MODAL */}
+      {rankMathImportOpen && (
+        <div className="modal-backdrop" onClick={() => setRankMathImportOpen(false)}>
+          <div
+            className="modal-box"
+            style={{ maxWidth: 620, width: '95%' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-head">
+              <h3 style={{ margin: 0, fontSize: 17 }}>📤 Importar / Sincronizar CSV de Rank Math SEO</h3>
+              <p className="t-sub" style={{ margin: '4px 0 0 0' }}>
+                Pega el CSV exportado de Rank Math o un archivo de metas para actualizar automáticamente los títulos SEO, descripciones y focus keywords en tu base de datos.
+              </p>
+            </div>
+
+            <div style={{ margin: '16px 0' }}>
+              <div className="field">
+                <label>Contenido CSV de Rank Math</label>
+                <textarea
+                  value={rankMathCsvText}
+                  onChange={(e) => setRankMathCsvText(e.target.value)}
+                  rows={9}
+                  placeholder={`id,slug,title,h1,rank_math_title,rank_math_description,rank_math_focus_keyword\n1,/cafeteras-espresso,Cafeteras Espresso,Top Cafeteras,Las Mejores Cafeteras 2026,Guía de compra...,cafeteras espresso`}
+                  className="mono"
+                  style={{ fontSize: 12 }}
+                />
+              </div>
+
+              <div style={{ background: '#f8fafc', padding: 12, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12 }}>
+                💡 <strong>Consejo:</strong> El sincronizador empareja las filas por <code>id</code>, <code>slug</code> o <code>title</code>. Si la fila incluye <code>rank_math_focus_keyword</code>, se marcará automáticamente como palabra clave principal.
+              </div>
+            </div>
+
+            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button type="button" className="btn" onClick={() => setRankMathImportOpen(false)}>
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleImportRankMath}
+                disabled={importingRankMath || !rankMathCsvText.trim()}
+              >
+                {importingRankMath ? 'Importando...' : '📥 Procesar e Importar CSV'}
+              </button>
             </div>
           </div>
         </div>

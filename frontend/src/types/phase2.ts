@@ -457,3 +457,19 @@ export interface CompetitorScrapeResponse {
   has_comparison_table: boolean
   extracted_summary: string
 }
+
+// --- W8 Rank Math Interfaces ---
+
+export interface RankMathImportResponse {
+  total_rows: number
+  updated_count: number
+  skipped_count: number
+  error_count: number
+  messages: string[]
+}
+
+export interface RankMathBulkSyncResponse {
+  analyzed_count: number
+  updated_titles_count: number
+  updated_descriptions_count: number
+}

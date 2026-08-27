@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api/client'
+import { phase2Api } from '../api/phase2-client'
 import { Badge } from '../components/Badge'
 import { Modal } from '../components/Modal'
 import { ScopeBar } from '../components/ScopeBar'
 import { PAGE_STATES, PAGE_TYPES } from '../constants'
 import { useApp } from '../context/AppContext'
 import { useProjects } from '../hooks/useProjects'
-import type { Niche, Page, PageState, PageType } from '../types'
+import type { Niche, Page, PageBulkUpdateItem, PageState, PageType } from '../types'
 
 const CONTENT_STATUS_LABELS: Record<string, { label: string; cls: string }> = {
   borrador: { label: 'Borrador', cls: 'b-gray' },
@@ -19,11 +20,22 @@ export function PagesPage() {
   const { projects } = useProjects()
   const [items, setItems] = useState<Page[]>([])
   const [niches, setNiches] = useState<Niche[]>([])
+  const [viewMode, setViewMode] = useState<'normal' | 'grid'>('normal')
+
+  // Normal Modal State
   const [editing, setEditing] = useState<Page | null>(null)
   const [open, setOpen] = useState(false)
   const [modalTab, setModalTab] = useState<'basic' | 'seo' | 'wp' | 'content'>('basic')
   const [htmlViewMode, setHtmlViewMode] = useState<'code' | 'preview'>('code')
   const [maquetando, setMaquetando] = useState(false)
+
+  // Bulk Edit Grid State
+  const [gridEdits, setGridEdits] = useState<Record<number, PageBulkUpdateItem>>({})
+  const [selectedIds, setSelectedIds] = useState<number[]>([])
+  const [savingGrid, setSavingGrid] = useState(false)
+  const [syncingRankMath, setSyncingRankMath] = useState(false)
+
+  const effectiveProject = scopeProject === 'all' ? projects[0]?.id : scopeProject
 
   const [form, setForm] = useState({
     title: '',
@@ -46,13 +58,18 @@ export function PagesPage() {
     export_ready: false,
   })
 
-  const reload = async () => {
-    const [pages, nicheList] = await Promise.all([api.pages.list(scopeProject), api.niches.list(scopeProject)])
+  const reload = useCallback(async () => {
+    const [pages, nicheList] = await Promise.all([
+      api.pages.list(scopeProject),
+      api.niches.list(scopeProject),
+    ])
     setItems(pages)
     setNiches(nicheList)
-  }
+    setGridEdits({})
+    setSelectedIds([])
+  }, [scopeProject])
 
-  useEffect(() => { reload() }, [scopeProject])
+  useEffect(() => { reload() }, [reload])
 
   const openNew = () => {
     const n = niches[0]
@@ -81,14 +98,114 @@ export function PagesPage() {
     setOpen(true)
   }
 
+  const handleSaveGridChanges = useCallback(async () => {
+    if (!effectiveProject) return toast('Selecciona un proyecto')
+    const editsToSave = Object.values(gridEdits)
+    if (editsToSave.length === 0) return toast('No hay cambios pendientes de guardar')
+
+    setSavingGrid(true)
+    try {
+      const res = await api.pages.bulkUpdate({
+        project_id: effectiveProject,
+        pages: editsToSave,
+      })
+      toast(`✓ ${res.updated_count} páginas actualizadas correctamente`)
+      await reload()
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Error al guardar cambios masivos')
+    } finally {
+      setSavingGrid(false)
+    }
+  }, [effectiveProject, gridEdits, reload, toast])
+
+  const handleBulkSyncRankMath = async () => {
+    if (!effectiveProject) return toast('Selecciona un proyecto')
+    setSyncingRankMath(true)
+    try {
+      const targetIds = selectedIds.length > 0 ? selectedIds : undefined
+      const res = await phase2Api.rankMath.bulkSyncMetas({
+        project_id: effectiveProject,
+        page_ids: targetIds,
+        overwrite_existing: false,
+      })
+      toast(
+        `✓ Rank Math optimizado: ${res.updated_titles_count} títulos y ${res.updated_descriptions_count} descripciones generadas`,
+      )
+      await reload()
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Error al sincronizar metas Rank Math')
+    } finally {
+      setSyncingRankMath(false)
+    }
+  }
+
+  const handleBulkMarkExportReady = async () => {
+    if (!effectiveProject) return
+    if (selectedIds.length === 0) return toast('Selecciona al menos una página')
+    setSavingGrid(true)
+    try {
+      await api.pages.bulkUpdate({
+        project_id: effectiveProject,
+        pages: selectedIds.map((id) => ({ id, export_ready: true })),
+      })
+      toast(`✓ ${selectedIds.length} páginas marcadas como Export Ready`)
+      await reload()
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Error al actualizar páginas')
+    } finally {
+      setSavingGrid(false)
+    }
+  }
+
+  // Keyboard shortcut Cmd+S / Ctrl+S to save grid
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        if (viewMode === 'grid' && Object.keys(gridEdits).length > 0) {
+          e.preventDefault()
+          void handleSaveGridChanges()
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [viewMode, gridEdits, handleSaveGridChanges])
+
   useEffect(() => {
     setTopbarAction(
-      <button className="btn btn-primary" onClick={openNew}>
-        + Nueva página
-      </button>,
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button
+          type="button"
+          className={`btn btn-sm ${viewMode === 'grid' ? 'btn-primary' : 'btn-ghost'}`}
+          onClick={() => setViewMode((prev) => (prev === 'normal' ? 'grid' : 'normal'))}
+        >
+          {viewMode === 'grid' ? '📋 Vista Clásica' : '📊 Vista Cuadrícula / Edición Masiva'}
+        </button>
+        <button className="btn btn-sm btn-primary" onClick={openNew}>
+          + Nueva página
+        </button>
+      </div>,
     )
     return () => setTopbarAction(null)
-  }, [niches, projects, setTopbarAction])
+  }, [viewMode, niches, projects, setTopbarAction])
+
+  const updateGridField = (page: Page, field: keyof PageBulkUpdateItem, value: any) => {
+    setGridEdits((prev) => {
+      const existing = prev[page.id] || { id: page.id }
+      return {
+        ...prev,
+        [page.id]: { ...existing, [field]: value },
+      }
+    })
+  }
+
+  const getPageValue = (page: Page, field: keyof Page): any => {
+    const edit = gridEdits[page.id]
+    if (edit && field in edit) {
+      return (edit as any)[field]
+    }
+    return page[field]
+  }
 
   const openEdit = (p: Page) => {
     setEditing(p)
@@ -145,88 +262,316 @@ export function PagesPage() {
   const nicheName = (id: number) => niches.find((n) => n.id === id)?.name || '—'
   const parentCandidates = items.filter((p) => !editing || p.id !== editing.id)
 
+  const renderTitleCounter = (text?: string | null) => {
+    const len = (text || '').length
+    const color = len === 0 ? '#94a3b8' : len <= 60 ? '#16a34a' : len <= 70 ? '#d97706' : '#dc2626'
+    return <span style={{ fontSize: 11, fontWeight: 700, color, marginLeft: 4 }}>{len}/60</span>
+  }
+
+  const renderDescCounter = (text?: string | null) => {
+    const len = (text || '').length
+    const color = len === 0 ? '#94a3b8' : len <= 160 ? '#16a34a' : len <= 175 ? '#d97706' : '#dc2626'
+    return <span style={{ fontSize: 11, fontWeight: 700, color, marginLeft: 4 }}>{len}/160</span>
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === items.length) {
+      setSelectedIds([])
+    } else {
+      setSelectedIds(items.map((p) => p.id))
+    }
+  }
+
+  const toggleSelectRow = (id: number) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+  }
+
+  const hasPendingGridEdits = Object.keys(gridEdits).length > 0
+
   return (
     <>
       <ScopeBar projects={projects} value={scopeProject} onChange={setScopeProject} />
-      <div className="card">
-        <table>
-          <thead>
-            <tr>
-              <th>Título / SEO</th>
-              <th>Jerarquía / Silo</th>
-              <th>Nicho</th>
-              <th>Tipo</th>
-              <th>Estado CRM</th>
-              <th>Contenido</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((p) => {
-              const statusCfg = CONTENT_STATUS_LABELS[p.content_status || 'borrador'] || CONTENT_STATUS_LABELS.borrador
-              return (
-                <tr key={p.id}>
-                  <td>
-                    <div className="t-title">{p.title}</div>
-                    {p.h1 && <div className="t-sub muted">H1: {p.h1}</div>}
-                    {p.seo_title && <div className="t-sub" style={{ color: '#0369a1' }}>SEO: {p.seo_title}</div>}
-                  </td>
-                  <td>
-                    {p.parent_title ? (
-                      <span className="badge" style={{ background: '#f3e8ff', color: '#6b21a8' }}>
-                        ↳ {p.parent_title}
-                      </span>
-                    ) : (
-                      <span className="muted">— Pilar —</span>
-                    )}
-                  </td>
-                  <td>{nicheName(p.niche_id)}</td>
-                  <td><span className={`pill-type pt-${p.type}`}>{p.type}</span></td>
-                  <td><Badge label={PAGE_STATES[p.state].label} cls={PAGE_STATES[p.state].cls} /></td>
-                  <td>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <Badge label={statusCfg.label} cls={statusCfg.cls} />
-                      {p.export_ready && (
-                        <span className="badge" style={{ fontSize: 10, background: '#dcfce7', color: '#15803d' }}>
-                          ✓ Export Ready
+
+      {viewMode === 'grid' ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* BULK ACTIONS TOOLBAR */}
+          <div
+            className="card"
+            style={{
+              padding: '12px 18px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 12,
+              background: '#f8fafc',
+              border: '1px solid #cbd5e1',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>
+                📊 Modo Cuadrícula Rápida: {selectedIds.length} páginas seleccionadas
+              </span>
+              <button
+                type="button"
+                className="btn btn-sm btn-ghost"
+                onClick={handleBulkSyncRankMath}
+                disabled={syncingRankMath}
+              >
+                {syncingRankMath ? 'Generando...' : '⚡ Auto-Completar Rank Math (Metas IA)'}
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-ghost"
+                onClick={handleBulkMarkExportReady}
+                disabled={selectedIds.length === 0}
+              >
+                ✓ Marcar Export Ready
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              {hasPendingGridEdits && (
+                <span className="badge" style={{ background: '#fef3c7', color: '#92400e' }}>
+                  ⚠️ {Object.keys(gridEdits).length} páginas modificadas sin guardar
+                </span>
+              )}
+              <button
+                type="button"
+                className="btn btn-sm btn-primary"
+                onClick={handleSaveGridChanges}
+                disabled={savingGrid || !hasPendingGridEdits}
+              >
+                {savingGrid ? 'Guardando...' : '💾 Guardar Todo (Cmd+S)'}
+              </button>
+            </div>
+          </div>
+
+          {/* BULK EDIT GRID TABLE */}
+          <div className="card" style={{ overflowX: 'auto' }}>
+            <table style={{ minWidth: 1100, fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: '#f8fafc' }}>
+                  <th style={{ width: 36, textAlign: 'center' }}>
+                    <input
+                      type="checkbox"
+                      checked={items.length > 0 && selectedIds.length === items.length}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
+                  <th style={{ minWidth: 200 }}>Título de Página & H1</th>
+                  <th style={{ minWidth: 240 }}>
+                    SEO Title (Rank Math) <span className="muted" style={{ fontWeight: 400 }}>(Max 60c)</span>
+                  </th>
+                  <th style={{ minWidth: 280 }}>
+                    SEO Description <span className="muted" style={{ fontWeight: 400 }}>(Max 160c)</span>
+                  </th>
+                  <th style={{ minWidth: 100 }}>Tipo</th>
+                  <th style={{ minWidth: 110 }}>Estado</th>
+                  <th style={{ minWidth: 140 }}>Silo / Padre</th>
+                  <th style={{ minWidth: 90, textAlign: 'center' }}>Export Ready</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((p) => {
+                  const isSelected = selectedIds.includes(p.id)
+                  const isModified = Boolean(gridEdits[p.id])
+                  const currentTitle = getPageValue(p, 'title')
+                  const currentH1 = getPageValue(p, 'h1')
+                  const currentSeoTitle = getPageValue(p, 'seo_title')
+                  const currentSeoDesc = getPageValue(p, 'seo_description')
+                  const currentType = getPageValue(p, 'type')
+                  const currentState = getPageValue(p, 'state')
+                  const currentParent = getPageValue(p, 'parent_page_id')
+                  const currentExportReady = getPageValue(p, 'export_ready')
+
+                  return (
+                    <tr
+                      key={p.id}
+                      style={{
+                        background: isSelected ? '#f0f9ff' : isModified ? '#fffbeb' : undefined,
+                      }}
+                    >
+                      <td style={{ textAlign: 'center' }}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelectRow(p.id)}
+                        />
+                      </td>
+
+                      <td>
+                        <input
+                          type="text"
+                          value={currentTitle || ''}
+                          onChange={(e) => updateGridField(p, 'title', e.target.value)}
+                          style={{ width: '100%', fontSize: 12, marginBottom: 4 }}
+                          placeholder="Título..."
+                        />
+                        <input
+                          type="text"
+                          value={currentH1 || ''}
+                          onChange={(e) => updateGridField(p, 'h1', e.target.value)}
+                          style={{ width: '100%', fontSize: 11, color: '#0369a1' }}
+                          placeholder="H1..."
+                        />
+                      </td>
+
+                      <td>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 2 }}>
+                          {renderTitleCounter(currentSeoTitle)}
+                        </div>
+                        <input
+                          type="text"
+                          value={currentSeoTitle || ''}
+                          onChange={(e) => updateGridField(p, 'seo_title', e.target.value)}
+                          style={{ width: '100%', fontSize: 12 }}
+                          placeholder="Título SEO (Google / Rank Math)..."
+                        />
+                      </td>
+
+                      <td>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 2 }}>
+                          {renderDescCounter(currentSeoDesc)}
+                        </div>
+                        <textarea
+                          rows={2}
+                          value={currentSeoDesc || ''}
+                          onChange={(e) => updateGridField(p, 'seo_description', e.target.value)}
+                          style={{ width: '100%', fontSize: 11 }}
+                          placeholder="Meta description..."
+                        />
+                      </td>
+
+                      <td>
+                        <select
+                          value={currentType || 'TSG'}
+                          onChange={(e) => updateGridField(p, 'type', e.target.value as PageType)}
+                          style={{ fontSize: 12 }}
+                        >
+                          {Object.entries(PAGE_TYPES).map(([k, v]) => (
+                            <option key={k} value={k}>{v.label}</option>
+                          ))}
+                        </select>
+                      </td>
+
+                      <td>
+                        <select
+                          value={currentState || 'borrador'}
+                          onChange={(e) => updateGridField(p, 'state', e.target.value as PageState)}
+                          style={{ fontSize: 12 }}
+                        >
+                          {Object.entries(PAGE_STATES).map(([k, v]) => (
+                            <option key={k} value={k}>{v.label}</option>
+                          ))}
+                        </select>
+                      </td>
+
+                      <td>
+                        <select
+                          value={currentParent || 0}
+                          onChange={(e) => updateGridField(p, 'parent_page_id', Number(e.target.value) || null)}
+                          style={{ fontSize: 11, width: '100%' }}
+                        >
+                          <option value={0}>— Pilar (Raíz) —</option>
+                          {items
+                            .filter((cand) => cand.id !== p.id)
+                            .map((cand) => (
+                              <option key={cand.id} value={cand.id}>
+                                ↳ {cand.title}
+                              </option>
+                            ))}
+                        </select>
+                      </td>
+
+                      <td style={{ textAlign: 'center' }}>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(currentExportReady)}
+                          onChange={(e) => updateGridField(p, 'export_ready', e.target.checked)}
+                        />
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        /* NORMAL TABLE VIEW */
+        <div className="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Título / SEO</th>
+                <th>Jerarquía / Silo</th>
+                <th>Nicho</th>
+                <th>Tipo</th>
+                <th>Estado CRM</th>
+                <th>Contenido</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((p) => {
+                const statusCfg = CONTENT_STATUS_LABELS[p.content_status || 'borrador'] || CONTENT_STATUS_LABELS.borrador
+                return (
+                  <tr key={p.id}>
+                    <td>
+                      <div className="t-title">{p.title}</div>
+                      {p.h1 && <div className="t-sub muted">H1: {p.h1}</div>}
+                      {p.seo_title && <div className="t-sub" style={{ color: '#0369a1' }}>SEO: {p.seo_title}</div>}
+                    </td>
+                    <td>
+                      {p.parent_title ? (
+                        <span className="badge" style={{ background: '#f3e8ff', color: '#6b21a8' }}>
+                          ↳ {p.parent_title}
                         </span>
+                      ) : (
+                        <span className="muted">— Pilar —</span>
                       )}
-                    </div>
-                  </td>
-                  <td>
-                    <div className="row-actions">
-                      <button className="btn btn-sm btn-ghost" onClick={() => openEdit(p)}>
-                        Editar
-                      </button>
-                      <button
-                        className="btn btn-sm btn-danger"
-                        onClick={async () => {
-                          try {
+                    </td>
+                    <td>{nicheName(p.niche_id)}</td>
+                    <td><span className={`pill-type pt-${p.type}`}>{p.type}</span></td>
+                    <td><Badge label={PAGE_STATES[p.state].label} cls={PAGE_STATES[p.state].cls} /></td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <Badge label={statusCfg.label} cls={statusCfg.cls} />
+                        {p.export_ready && (
+                          <span className="badge" style={{ fontSize: 10, background: '#dcfce7', color: '#15803d' }}>
+                            ✓ Export Ready
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="row-actions">
+                        <button className="btn btn-sm btn-ghost" onClick={() => openEdit(p)}>
+                          Editar
+                        </button>
+                        <button
+                          className="btn btn-sm btn-danger"
+                          onClick={async () => {
                             await api.pages.remove(p.id)
                             reload()
                             toast('Página eliminada')
-                          } catch (e) {
-                            toast(e instanceof Error ? e.message : 'No se pudo eliminar la página')
-                          }
-                        }}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )
-            })}
-            {items.length === 0 && (
-              <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: 24 }} className="muted">
-                  No hay páginas registradas.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                          }}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+              {!items.length && (
+                <tr><td colSpan={7} className="empty">No hay páginas en este proyecto.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <Modal
         title={editing ? `Editar — ${editing.title}` : 'Nueva página'}

@@ -521,3 +521,68 @@ class CompetitorScrapeResponse(BaseModel):
     detected_keywords: list[str] = Field(default_factory=list)
     has_comparison_table: bool = False
     extracted_summary: str = ""
+
+
+# --- Workstream 8 (W8) — Rank Math SEO Import / Export & Bulk Sync ---
+
+class RankMathExportItemOut(BaseModel):
+    page_id: int
+    title: str
+    slug: str
+    rank_math_title: str
+    rank_math_description: str
+    rank_math_focus_keyword: str
+    rank_math_canonical_url: str | None = None
+    rank_math_robots_meta: str = "index, follow"
+    rank_math_schema_type: str = "Article"
+
+
+class RankMathImportRequest(BaseModel):
+    project_id: int
+    csv_content: str
+
+
+class RankMathImportResponse(BaseModel):
+    total_rows: int
+    updated_count: int
+    skipped_count: int
+    error_count: int
+    messages: list[str] = Field(default_factory=list)
+
+
+class RankMathBulkSyncRequest(BaseModel):
+    project_id: int
+    page_ids: list[int] | None = None
+    overwrite_existing: bool = False
+    title_suffix: str | None = " | Especialistas"
+
+
+class RankMathBulkSyncResponse(BaseModel):
+    analyzed_count: int
+    updated_titles_count: int
+    updated_descriptions_count: int
+
+
+# --- Workstream 9 (W9) — Bulk Page Edit & Grid Actions ---
+
+class PageBulkUpdateItem(BaseModel):
+    id: int
+    title: str | None = None
+    h1: str | None = None
+    seo_title: str | None = None
+    seo_description: str | None = None
+    type: PageType | None = None
+    state: str | None = None
+    parent_page_id: int | None = None
+    export_ready: bool | None = None
+    wp_category: str | None = None
+
+
+class PageBulkUpdateRequest(BaseModel):
+    project_id: int
+    pages: list[PageBulkUpdateItem]
+
+
+class PageBulkUpdateResponse(BaseModel):
+    updated_count: int
+    updated_ids: list[int]

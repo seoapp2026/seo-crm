@@ -28,6 +28,7 @@ from app.routers import (
     products,
     projects,
     prompts,
+    rank_math,
     research,
     sync_jobs,
     urls,
@@ -66,6 +67,7 @@ phase2_routers = [
     performance.router,
     sync_jobs.router,
     wordpress.router,
+    rank_math.router,
     products.router,
     research.router,
 ]

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Page
 from app.schemas import PageCreate, PageOut, PageUpdate
+from app.schemas_phase2 import PageBulkUpdateRequest, PageBulkUpdateResponse
 from app.services.cascade_delete import purge_page
 
 router = APIRouter(prefix="/pages", tags=["pages"])
@@ -63,3 +64,29 @@ def delete_page(page_id: int, db: Session = Depends(get_db)):
             status_code=500,
             detail="No se pudo eliminar la página: quedan datos relacionados.",
         ) from exc
+
+
+@router.post("/bulk-update", response_model=PageBulkUpdateResponse)
+def bulk_update_pages(
+    payload: PageBulkUpdateRequest,
+    db: Session = Depends(get_db),
+):
+    updated_ids: list[int] = []
+    for item in payload.pages:
+        page = db.get(Page, item.id)
+        if not page or page.project_id != payload.project_id:
+            continue
+        data = item.model_dump(exclude={"id"}, exclude_unset=True)
+        for field, value in data.items():
+            if value is not None:
+                if field == "type" and hasattr(value, "value"):
+                    setattr(page, field, value.value)
+                else:
+                    setattr(page, field, value)
+        updated_ids.append(page.id)
+
+    db.commit()
+    return PageBulkUpdateResponse(
+        updated_count=len(updated_ids),
+        updated_ids=updated_ids,
+    )

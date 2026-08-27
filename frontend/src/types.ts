@@ -181,3 +181,21 @@ export interface ClusterApplyResponse {
   linked_keywords_count: number
   created_page_ids: number[]
 }
+
+export interface PageBulkUpdateItem {
+  id: number
+  title?: string
+  h1?: string | null
+  seo_title?: string | null
+  seo_description?: string | null
+  type?: PageType
+  state?: PageState
+  parent_page_id?: number | null
+  export_ready?: boolean
+  wp_category?: string | null
+}
+
+export interface PageBulkUpdateResponse {
+  updated_count: number
+  updated_ids: number[]
+}

@@ -10,6 +10,8 @@ import type {
   Niche,
   Note,
   Page,
+  PageBulkUpdateItem,
+  PageBulkUpdateResponse,
   Project,
   Url,
 } from '../types'
@@ -78,6 +80,11 @@ export const api = {
     update: (id: number, data: Partial<Page>) =>
       request<Page>(`${API_BASE}/pages/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     remove: (id: number) => request<void>(`${API_BASE}/pages/${id}`, { method: 'DELETE' }),
+    bulkUpdate: (data: { project_id: number; pages: PageBulkUpdateItem[] }) =>
+      request<PageBulkUpdateResponse>(`${API_BASE}/pages/bulk-update`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   },
 
   keywords: {

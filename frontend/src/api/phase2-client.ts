@@ -22,6 +22,8 @@ import type {
   GscDataRow,
   PerformanceSummary,
   Product,
+  RankMathBulkSyncResponse,
+  RankMathImportResponse,
   ResearchBudget,
   ResearchCaps,
   ResearchJob,
@@ -244,6 +246,28 @@ export const phase2Api = {
       return apiRequest<WpTestConnectionResponse>(`${API_BASE}/wordpress/test-connection`, {
         method: 'POST',
         body: JSON.stringify(payload),
+      })
+    },
+  },
+
+  rankMath: {
+    getCsvDownloadUrl: (projectId: number) =>
+      `${API_BASE}/rank-math/export/csv?project_id=${projectId}`,
+    importCsv: async (data: { project_id: number; csv_content: string }) => {
+      return apiRequest<RankMathImportResponse>(`${API_BASE}/rank-math/import/csv`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+    },
+    bulkSyncMetas: async (data: {
+      project_id: number
+      page_ids?: number[]
+      overwrite_existing?: boolean
+      title_suffix?: string
+    }) => {
+      return apiRequest<RankMathBulkSyncResponse>(`${API_BASE}/rank-math/bulk-sync-metas`, {
+        method: 'POST',
+        body: JSON.stringify(data),
       })
     },
   },
