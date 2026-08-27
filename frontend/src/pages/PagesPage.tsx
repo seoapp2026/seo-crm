@@ -22,6 +22,8 @@ export function PagesPage() {
   const [editing, setEditing] = useState<Page | null>(null)
   const [open, setOpen] = useState(false)
   const [modalTab, setModalTab] = useState<'basic' | 'seo' | 'wp' | 'content'>('basic')
+  const [htmlViewMode, setHtmlViewMode] = useState<'code' | 'preview'>('code')
+  const [maquetando, setMaquetando] = useState(false)
 
   const [form, setForm] = useState({
     title: '',
@@ -431,6 +433,69 @@ export function PagesPage() {
 
         {modalTab === 'content' && (
           <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  type="button"
+                  className={`btn btn-sm${htmlViewMode === 'code' ? ' btn-primary' : ' btn-ghost'}`}
+                  onClick={() => setHtmlViewMode('code')}
+                >
+                  Editor Código
+                </button>
+                <button
+                  type="button"
+                  className={`btn btn-sm${htmlViewMode === 'preview' ? ' btn-primary' : ' btn-ghost'}`}
+                  onClick={() => setHtmlViewMode('preview')}
+                >
+                  Vista Previa
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: 8 }}>
+                {editing && (
+                  <button
+                    type="button"
+                    className="btn btn-sm"
+                    style={{ background: '#4f46e5', color: '#fff', border: 'none' }}
+                    disabled={maquetando}
+                    onClick={async () => {
+                      setMaquetando(true)
+                      try {
+                        const res = await api.ai.maquetar({
+                          page_id: editing.id,
+                          save_to_page: true,
+                        })
+                        setForm((prev) => ({
+                          ...prev,
+                          content_html: res.content_html,
+                          content_status: 'revisado',
+                        }))
+                        toast('Maquetación generada con éxito y aplicada')
+                      } catch (e) {
+                        toast(e instanceof Error ? e.message : 'Error al maquetar')
+                      } finally {
+                        setMaquetando(false)
+                      }
+                    }}
+                  >
+                    {maquetando ? 'Generando...' : '⚡ Generar Maquetación IA'}
+                  </button>
+                )}
+                {form.content_html && (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-ghost"
+                    onClick={() => {
+                      navigator.clipboard.writeText(form.content_html)
+                      toast('HTML copiado al portapapeles')
+                    }}
+                  >
+                    Copiar HTML
+                  </button>
+                )}
+              </div>
+            </div>
+
             <div className="field">
               <label>Estructura / Outline JSON (H2/H3)</label>
               <textarea
@@ -444,13 +509,28 @@ export function PagesPage() {
 
             <div className="field">
               <label>Contenido HTML Final (Maquetado listo para WP)</label>
-              <textarea
-                value={form.content_html}
-                onChange={(e) => setForm({ ...form, content_html: e.target.value })}
-                rows={10}
-                placeholder="<article><section class='intro'>...</section></article>"
-                className="mono"
-              />
+              {htmlViewMode === 'code' ? (
+                <textarea
+                  value={form.content_html}
+                  onChange={(e) => setForm({ ...form, content_html: e.target.value })}
+                  rows={12}
+                  placeholder="<article><section class='intro'>...</section></article>"
+                  className="mono"
+                />
+              ) : (
+                <div
+                  style={{
+                    border: '1px solid var(--c-border, #e2e8f0)',
+                    borderRadius: 6,
+                    padding: 16,
+                    minHeight: 250,
+                    maxHeight: 400,
+                    overflowY: 'auto',
+                    background: '#fff',
+                  }}
+                  dangerouslySetInnerHTML={{ __html: form.content_html || '<p class="muted">No hay HTML para previsualizar.</p>' }}
+                />
+              )}
             </div>
           </>
         )}

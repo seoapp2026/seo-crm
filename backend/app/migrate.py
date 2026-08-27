@@ -64,6 +64,17 @@ def run_light_migrations():
         if "layout_template_text" not in niche_cols:
             statements.append("ALTER TABLE niches ADD COLUMN layout_template_text TEXT")
 
+    if "content_drafts" in insp.get_table_names():
+        draft_cols = {c["name"] for c in insp.get_columns("content_drafts")}
+        if "content_html" not in draft_cols:
+            statements.append("ALTER TABLE content_drafts ADD COLUMN content_html TEXT")
+        if "draft_kind" not in draft_cols:
+            statements.append("ALTER TABLE content_drafts ADD COLUMN draft_kind TEXT NOT NULL DEFAULT 'texto'")
+        if "source_prompt_id" not in draft_cols:
+            statements.append("ALTER TABLE content_drafts ADD COLUMN source_prompt_id INTEGER REFERENCES ai_prompts(id) ON DELETE SET NULL")
+        if "context_used_json" not in draft_cols:
+            statements.append("ALTER TABLE content_drafts ADD COLUMN context_used_json TEXT")
+
     if not statements:
         return
 

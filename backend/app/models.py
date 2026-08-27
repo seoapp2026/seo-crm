@@ -199,11 +199,16 @@ class ContentDraft(Base):
     draft_body: Mapped[str | None] = mapped_column(Text)
     meta_title: Mapped[str | None] = mapped_column(Text)
     meta_description: Mapped[str | None] = mapped_column(Text)
+    content_html: Mapped[str | None] = mapped_column(Text)
+    draft_kind: Mapped[str] = mapped_column(Text, default="texto", nullable=False)
+    source_prompt_id: Mapped[int | None] = mapped_column(ForeignKey("ai_prompts.id", ondelete="SET NULL"), nullable=True)
+    context_used_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     model_used: Mapped[str | None] = mapped_column(Text)
     status: Mapped[DraftStatus] = mapped_column(Enum(DraftStatus), default=DraftStatus.borrador)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     page: Mapped["Page"] = relationship(back_populates="content_drafts")
+    source_prompt: Mapped["AiPrompt | None"] = relationship("AiPrompt")
 
 
 # --- Phase 2 ---

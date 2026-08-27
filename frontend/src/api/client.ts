@@ -116,5 +116,23 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ page_id: pageId, model }),
       }),
+    maquetar: (data: {
+      page_id: number
+      draft_id?: number | null
+      custom_layout_template?: string | null
+      model?: string
+      save_to_page?: boolean
+    }) =>
+      request<{ draft: any; content_html: string; page_updated: boolean }>(`${API_BASE}/ai/maquetar`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    listDrafts: (pageId?: number, draftKind?: string) => {
+      const params = new URLSearchParams()
+      if (pageId) params.append('page_id', String(pageId))
+      if (draftKind) params.append('draft_kind', draftKind)
+      const q = params.toString() ? `?${params.toString()}` : ''
+      return request<any[]>(`${API_BASE}/ai/drafts${q}`)
+    },
   },
 }

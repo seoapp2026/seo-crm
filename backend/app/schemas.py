@@ -258,6 +258,10 @@ class ContentDraftOut(OrmBase):
     draft_body: str | None
     meta_title: str | None
     meta_description: str | None
+    content_html: str | None = None
+    draft_kind: str = "texto"
+    source_prompt_id: int | None = None
+    context_used_json: str | None = None
     model_used: str | None
     status: DraftStatus
     created_at: datetime
@@ -271,6 +275,20 @@ class GenerateContentRequest(BaseModel):
 class GenerateContentResponse(BaseModel):
     draft: ContentDraftOut
     rendered: str
+
+
+class MaquetarRequest(BaseModel):
+    page_id: int
+    draft_id: int | None = None
+    custom_layout_template: str | None = None
+    model: str = "gpt-4o"
+    save_to_page: bool = True
+
+
+class MaquetarResponse(BaseModel):
+    draft: ContentDraftOut
+    content_html: str
+    page_updated: bool
 
 
 # --- Dashboard ---

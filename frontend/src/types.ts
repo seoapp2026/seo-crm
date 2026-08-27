@@ -107,16 +107,28 @@ export interface DashboardStats {
   cannibalized_terms: string[]
 }
 
+export interface ContentDraft {
+  id: number
+  page_id: number
+  draft_body: string | null
+  meta_title: string | null
+  meta_description: string | null
+  content_html: string | null
+  draft_kind: string
+  source_prompt_id?: number | null
+  context_used_json?: string | null
+  model_used: string | null
+  status: 'borrador' | 'en_revision' | 'aprobado' | 'publicado'
+  created_at: string
+}
+
 export interface GenerateContentResponse {
-  draft: {
-    id: number
-    page_id: number
-    draft_body: string | null
-    meta_title: string | null
-    meta_description: string | null
-    model_used: string | null
-    status: string
-    created_at: string
-  }
+  draft: ContentDraft
   rendered: string
+}
+
+export interface MaquetarResponse {
+  draft: ContentDraft
+  content_html: string
+  page_updated: boolean
 }
