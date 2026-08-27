@@ -1,6 +1,7 @@
 import csv
 import io
 import json
+import re
 import zipfile
 from datetime import datetime, timezone
 
@@ -22,6 +23,13 @@ from app.schemas_phase2 import (
 )
 
 router = APIRouter(prefix="/wordpress", tags=["wordpress"])
+
+
+def _safe_download_name(name: str, fallback: str = "export") -> str:
+    """ASCII-only filename for Content-Disposition (Starlette encodes headers as latin-1)."""
+    ascii_name = (name or "").encode("ascii", "ignore").decode("ascii")
+    ascii_name = re.sub(r"[^A-Za-z0-9._-]+", "_", ascii_name).strip("._-")
+    return ascii_name or fallback
 
 
 def _build_export_items(project_id: int, db: Session) -> tuple[Project, list[WpExportItemOut]]:
@@ -170,7 +178,7 @@ def export_wordpress_csv(project_id: int = Query(...), db: Session = Depends(get
         })
 
     csv_data = output.getvalue().encode("utf-8")
-    safe_name = project.name.lower().replace(" ", "_")
+    safe_name = _safe_download_name(project.name.lower().replace(" ", "_"), fallback=f"project_{project_id}")
     filename = f"wp_export_{safe_name}_{project_id}.csv"
 
     return Response(
@@ -183,7 +191,7 @@ def export_wordpress_csv(project_id: int = Query(...), db: Session = Depends(get
 @router.get("/export/zip")
 def export_wordpress_zip(project_id: int = Query(...), db: Session = Depends(get_db)):
     project, items = _build_export_items(project_id, db)
-    safe_name = project.name.lower().replace(" ", "_")
+    safe_name = _safe_download_name(project.name.lower().replace(" ", "_"), fallback=f"project_{project_id}")
 
     zip_buffer = io.BytesIO()
 
@@ -250,7 +258,10 @@ def export_wordpress_zip(project_id: int = Query(...), db: Session = Depends(get
 
         # 4. Individual HTML Files
         for item in items:
-            clean_slug = item.slug.strip("/").replace("/", "_") or f"page_{item.page_id}"
+            clean_slug = _safe_download_name(
+                item.slug.strip("/").replace("/", "_"),
+                fallback=f"page_{item.page_id}",
+            )
             file_name = f"html_pages/{clean_slug}.html"
             html_content = item.content_html or f"<!-- Sin contenido maquetado para {item.title} -->"
             zip_file.writestr(file_name, html_content.encode("utf-8"))
