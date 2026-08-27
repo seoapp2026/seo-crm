@@ -15,6 +15,12 @@ def run_light_migrations():
             statements.append("ALTER TABLE projects ADD COLUMN gsc_site_url TEXT")
         if "ga4_property_id" not in cols:
             statements.append("ALTER TABLE projects ADD COLUMN ga4_property_id TEXT")
+        if "wp_url" not in cols:
+            statements.append("ALTER TABLE projects ADD COLUMN wp_url TEXT")
+        if "wp_username" not in cols:
+            statements.append("ALTER TABLE projects ADD COLUMN wp_username TEXT")
+        if "wp_app_password" not in cols:
+            statements.append("ALTER TABLE projects ADD COLUMN wp_app_password TEXT")
 
     if "ai_prompts" in insp.get_table_names():
         prompt_cols = {c["name"] for c in insp.get_columns("ai_prompts")}

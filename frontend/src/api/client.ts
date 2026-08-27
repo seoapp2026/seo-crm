@@ -38,6 +38,9 @@ export const api = {
       description?: string
       gsc_site_url?: string
       ga4_property_id?: string
+      wp_url?: string
+      wp_username?: string
+      wp_app_password?: string
     }) =>
       request<Project>(`${API_BASE}/projects`, { method: 'POST', body: JSON.stringify(data) }),
     update: (id: number, data: Partial<{
@@ -45,6 +48,9 @@ export const api = {
       description: string
       gsc_site_url: string
       ga4_property_id: string
+      wp_url: string
+      wp_username: string
+      wp_app_password: string
     }>) =>
       request<Project>(`${API_BASE}/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     remove: (id: number) => request<void>(`${API_BASE}/projects/${id}`, { method: 'DELETE' }),

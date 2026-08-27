@@ -238,18 +238,68 @@ class WpExportItemOut(BaseModel):
     page_id: int
     title: str
     slug: str
-    meta_title: str
-    meta_description: str
+    h1: str | None = None
+    meta_title: str | None = None
+    meta_description: str | None = None
+    focus_keyword: str | None = None
+    secondary_keywords: list[str] = Field(default_factory=list)
+    content_html: str | None = None
     content_type: str
-    h1: str
     status: str
+    content_status: str = "borrador"
+    export_ready: bool = False
     niche_name: str
+    wp_category: str | None = None
+    wp_tags: list[str] = Field(default_factory=list)
+    parent_slug: str | None = None
+    parent_title: str | None = None
+    schema_json: str | None = None
 
 
 class WpExportBundleOut(BaseModel):
     project_name: str
     exported_at: datetime
     pages: list[WpExportItemOut]
+
+
+class WpPushRequest(BaseModel):
+    project_id: int
+    page_ids: list[int] | None = None
+    post_type: str = "pages"  # "pages" or "posts"
+    post_status: str = "draft"  # "draft" or "publish"
+    wp_url: str | None = None
+    wp_username: str | None = None
+    wp_app_password: str | None = None
+
+
+class WpPushResultItem(BaseModel):
+    page_id: int
+    title: str
+    wp_post_id: int | None = None
+    wp_url: str | None = None
+    status: str  # "success", "error", "skipped"
+    message: str | None = None
+
+
+class WpPushResponse(BaseModel):
+    total_pushed: int
+    success_count: int
+    error_count: int
+    items: list[WpPushResultItem]
+
+
+class WpTestConnectionRequest(BaseModel):
+    project_id: int | None = None
+    wp_url: str | None = None
+    wp_username: str | None = None
+    wp_app_password: str | None = None
+
+
+class WpTestConnectionResponse(BaseModel):
+    success: bool
+    site_name: str | None = None
+    site_url: str | None = None
+    message: str
 
 
 # ── Option 2: products + research ───────────────────────────────────────────

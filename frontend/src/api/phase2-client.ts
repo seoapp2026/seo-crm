@@ -26,6 +26,10 @@ import type {
   SyncJob,
   SyncJobType,
   WpExportBundle,
+  WpPushRequest,
+  WpPushResponse,
+  WpTestConnectionRequest,
+  WpTestConnectionResponse,
 } from '../types/phase2'
 
 async function parseApiError(res: Response): Promise<string> {
@@ -204,6 +208,24 @@ export const phase2Api = {
   wordpress: {
     export: async (projectId: number) => {
       return apiRequest<WpExportBundle>(`${API_BASE}/wordpress/export?project_id=${projectId}`)
+    },
+    getCsvDownloadUrl: (projectId: number) => {
+      return `${API_BASE}/wordpress/export/csv?project_id=${projectId}`
+    },
+    getZipDownloadUrl: (projectId: number) => {
+      return `${API_BASE}/wordpress/export/zip?project_id=${projectId}`
+    },
+    push: async (payload: WpPushRequest) => {
+      return apiRequest<WpPushResponse>(`${API_BASE}/wordpress/push`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      })
+    },
+    testConnection: async (payload: WpTestConnectionRequest) => {
+      return apiRequest<WpTestConnectionResponse>(`${API_BASE}/wordpress/test-connection`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      })
     },
   },
 

@@ -61,6 +61,9 @@ class Project(Base):
     description: Mapped[str | None] = mapped_column(Text)
     gsc_site_url: Mapped[str | None] = mapped_column(Text)
     ga4_property_id: Mapped[str | None] = mapped_column(Text)
+    wp_url: Mapped[str | None] = mapped_column(Text)
+    wp_username: Mapped[str | None] = mapped_column(Text)
+    wp_app_password: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     niches: Mapped[list["Niche"]] = relationship(back_populates="project")

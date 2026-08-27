@@ -11,6 +11,9 @@ export interface Project {
   description: string | null
   gsc_site_url: string | null
   ga4_property_id: string | null
+  wp_url?: string | null
+  wp_username?: string | null
+  wp_app_password?: string | null
   created_at: string
 }
 

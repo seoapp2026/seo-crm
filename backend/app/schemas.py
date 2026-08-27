@@ -24,6 +24,9 @@ class ProjectCreate(BaseModel):
     description: str | None = None
     gsc_site_url: str | None = None
     ga4_property_id: str | None = None
+    wp_url: str | None = None
+    wp_username: str | None = None
+    wp_app_password: str | None = None
 
 
 class ProjectUpdate(BaseModel):
@@ -31,6 +34,9 @@ class ProjectUpdate(BaseModel):
     description: str | None = None
     gsc_site_url: str | None = None
     ga4_property_id: str | None = None
+    wp_url: str | None = None
+    wp_username: str | None = None
+    wp_app_password: str | None = None
 
 
 class ProjectOut(OrmBase):
@@ -39,6 +45,9 @@ class ProjectOut(OrmBase):
     description: str | None
     gsc_site_url: str | None
     ga4_property_id: str | None
+    wp_url: str | None = None
+    wp_username: str | None = None
+    wp_app_password: str | None = None
     created_at: datetime
 
 

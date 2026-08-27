@@ -146,18 +146,68 @@ export interface WpExportItem {
   page_id: number
   title: string
   slug: string
-  meta_title: string
-  meta_description: string
+  h1?: string | null
+  meta_title?: string | null
+  meta_description?: string | null
+  focus_keyword?: string | null
+  secondary_keywords?: string[]
+  content_html?: string | null
   content_type: string
-  h1: string
   status: string
+  content_status?: string
+  export_ready?: boolean
   niche_name: string
+  wp_category?: string | null
+  wp_tags?: string[]
+  parent_slug?: string | null
+  parent_title?: string | null
+  schema_json?: string | null
 }
 
 export interface WpExportBundle {
   project_name: string
   exported_at: string
   pages: WpExportItem[]
+}
+
+export interface WpPushRequest {
+  project_id: number
+  page_ids?: number[] | null
+  post_type?: 'pages' | 'posts'
+  post_status?: 'draft' | 'publish'
+  wp_url?: string | null
+  wp_username?: string | null
+  wp_app_password?: string | null
+}
+
+export interface WpPushResultItem {
+  page_id: number
+  title: string
+  wp_post_id?: number | null
+  wp_url?: string | null
+  status: 'success' | 'error' | 'skipped'
+  message?: string | null
+}
+
+export interface WpPushResponse {
+  total_pushed: number
+  success_count: number
+  error_count: number
+  items: WpPushResultItem[]
+}
+
+export interface WpTestConnectionRequest {
+  project_id?: number | null
+  wp_url?: string | null
+  wp_username?: string | null
+  wp_app_password?: string | null
+}
+
+export interface WpTestConnectionResponse {
+  success: boolean
+  site_name?: string | null
+  site_url?: string | null
+  message: string
 }
 
 export interface AssistantRunRequest {
