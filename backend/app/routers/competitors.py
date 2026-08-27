@@ -2,8 +2,18 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Competitor
-from app.schemas_phase2 import CompetitorCreate, CompetitorOut, CompetitorUpdate
+from app.models import Competitor, Page
+from app.schemas_phase2 import (
+    ComparisonTableGenerateRequest,
+    ComparisonTableGenerateResponse,
+    CompetitorCreate,
+    CompetitorOut,
+    CompetitorScrapeRequest,
+    CompetitorScrapeResponse,
+    CompetitorUpdate,
+)
+from app.services.comparison_table_service import generate_comparison_table_html
+from app.services.competitor_scraper_service import scrape_competitor_structure
 
 router = APIRouter(prefix="/competitors", tags=["competitors"])
 
@@ -44,3 +54,25 @@ def delete_competitor(competitor_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Competidor no encontrado")
     db.delete(row)
     db.commit()
+
+
+@router.post("/scrape-structure", response_model=CompetitorScrapeResponse)
+def scrape_competitor(payload: CompetitorScrapeRequest):
+    return scrape_competitor_structure(payload)
+
+
+@router.post("/generate-comparison-table", response_model=ComparisonTableGenerateResponse)
+def generate_comparison_table(
+    payload: ComparisonTableGenerateRequest,
+    db: Session = Depends(get_db),
+):
+    result = generate_comparison_table_html(payload)
+    if payload.target_page_id:
+        page = db.get(Page, payload.target_page_id)
+        if page:
+            # If page exists and doesn't have content_html or user wants to append
+            current_html = page.content_html or ""
+            if "<!-- TABLA COMPARATIVA SEO CRM - INICIO -->" not in current_html:
+                page.content_html = current_html + "\n\n" + result.html_table
+                db.commit()
+    return result

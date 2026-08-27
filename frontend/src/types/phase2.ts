@@ -399,3 +399,61 @@ export interface ResearchJobCreate {
   language: string
   page_type: PageTypeCode
 }
+
+// --- W7 Interfaces ---
+
+export interface ProductItem {
+  name: string
+  brand?: string | null
+  model?: string | null
+  badge?: string | null
+  price?: string | null
+  rating?: string | null
+  image_url?: string | null
+  pros: string[]
+  cons: string[]
+  specs: Record<string, string>
+  cta_text: string
+  affiliate_url?: string | null
+}
+
+export interface ComparisonTableGenerateRequest {
+  products: ProductItem[]
+  table_title?: string | null
+  show_badges?: boolean
+  show_pros_cons?: boolean
+  show_ratings?: boolean
+  target_page_id?: number | null
+}
+
+export interface ComparisonTableGenerateResponse {
+  html_table: string
+  preview_cards_html: string
+  spec_columns: string[]
+  products_count: number
+}
+
+export interface CompetitorHeadingItem {
+  level: number
+  tag: string
+  text: string
+}
+
+export interface CompetitorScrapeRequest {
+  url?: string | null
+  raw_html?: string | null
+  project_id: number
+  niche_id?: number | null
+}
+
+export interface CompetitorScrapeResponse {
+  title: string
+  meta_description?: string | null
+  h1?: string | null
+  headings: CompetitorHeadingItem[]
+  word_count: number
+  detected_products: ProductItem[]
+  detected_keywords: string[]
+  has_comparison_table: boolean
+  extracted_summary: string
+}

@@ -8,7 +8,11 @@ import type {
   AnalyticsDataRow,
   AssistantRunRequest,
   AssistantRunResponse,
+  ComparisonTableGenerateRequest,
+  ComparisonTableGenerateResponse,
   Competitor,
+  CompetitorScrapeRequest,
+  CompetitorScrapeResponse,
   ContextPreviewRequest,
   ContextPreviewResponse,
   DateRange,
@@ -150,6 +154,21 @@ export const phase2Api = {
     },
     remove: async (id: number) => {
       await apiRequest<void>(`${API_BASE}/competitors/${id}`, { method: 'DELETE' })
+    },
+    scrapeStructure: async (data: CompetitorScrapeRequest) => {
+      return apiRequest<CompetitorScrapeResponse>(`${API_BASE}/competitors/scrape-structure`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+    },
+    generateComparisonTable: async (data: ComparisonTableGenerateRequest) => {
+      return apiRequest<ComparisonTableGenerateResponse>(
+        `${API_BASE}/competitors/generate-comparison-table`,
+        {
+          method: 'POST',
+          body: JSON.stringify(data),
+        },
+      )
     },
   },
 

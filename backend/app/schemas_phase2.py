@@ -463,3 +463,61 @@ class ResearchBudgetOut(BaseModel):
     hard_monthly_eur: float
     soft_warning: bool
     hard_blocked: bool
+
+
+# --- Workstream 7 (W7) — Competitor Comparison & Product Entity ---
+
+class ProductItemIn(BaseModel):
+    name: str
+    brand: str | None = None
+    model: str | None = None
+    badge: str | None = None  # e.g., "Nuestra Elección ⭐", "Mejor Calidad-Precio", "Opción Económica"
+    price: str | None = None  # e.g., "299,00 €"
+    rating: str | None = None  # e.g., "4.8/5"
+    image_url: str | None = None
+    pros: list[str] = Field(default_factory=list)
+    cons: list[str] = Field(default_factory=list)
+    specs: dict[str, str] = Field(default_factory=dict)
+    cta_text: str = "Ver Mejor Precio"
+    affiliate_url: str | None = None
+
+
+class ComparisonTableGenerateRequest(BaseModel):
+    products: list[ProductItemIn]
+    table_title: str | None = "Tabla Comparativa de los Mejores Modelos"
+    show_badges: bool = True
+    show_pros_cons: bool = True
+    show_ratings: bool = True
+    target_page_id: int | None = None
+
+
+class ComparisonTableGenerateResponse(BaseModel):
+    html_table: str
+    preview_cards_html: str
+    spec_columns: list[str]
+    products_count: int
+
+
+class CompetitorHeadingItem(BaseModel):
+    level: int
+    tag: str
+    text: str
+
+
+class CompetitorScrapeRequest(BaseModel):
+    url: str | None = None
+    raw_html: str | None = None
+    project_id: int
+    niche_id: int | None = None
+
+
+class CompetitorScrapeResponse(BaseModel):
+    title: str
+    meta_description: str | None = None
+    h1: str | None = None
+    headings: list[CompetitorHeadingItem] = Field(default_factory=list)
+    word_count: int = 0
+    detected_products: list[ProductItemIn] = Field(default_factory=list)
+    detected_keywords: list[str] = Field(default_factory=list)
+    has_comparison_table: bool = False
+    extracted_summary: str = ""
