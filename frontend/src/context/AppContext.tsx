@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 
 interface AppContextValue {
   scopeProject: number | 'all'
@@ -22,26 +22,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [toastMsg, setToastMsg] = useState('')
   const [toastVisible, setToastVisible] = useState(false)
 
-  const toast = (msg: string) => {
+  const toast = useCallback((msg: string) => {
     setToastMsg(msg)
     setToastVisible(true)
     setTimeout(() => setToastVisible(false), 2600)
-  }
+  }, [])
+
+  const value = useMemo(
+    () => ({
+      scopeProject,
+      setScopeProject,
+      crumb,
+      setCrumb,
+      crumbSub,
+      setCrumbSub,
+      topbarAction,
+      setTopbarAction,
+      toast,
+    }),
+    [scopeProject, crumb, crumbSub, topbarAction, toast],
+  )
 
   return (
-    <AppContext.Provider
-      value={{
-        scopeProject,
-        setScopeProject,
-        crumb,
-        setCrumb,
-        crumbSub,
-        setCrumbSub,
-        topbarAction,
-        setTopbarAction,
-        toast,
-      }}
-    >
+    <AppContext.Provider value={value}>
       {children}
       <div className={`toast ${toastVisible ? 'show' : 'hide'}`}>{toastMsg}</div>
     </AppContext.Provider>

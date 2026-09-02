@@ -21,7 +21,7 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      '/api/seo-crm': 'http://localhost:8000',
+      '/api/seo-crm': 'http://127.0.0.1:8000',
     },
   },
 })
