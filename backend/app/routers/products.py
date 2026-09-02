@@ -3,9 +3,49 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Product, Project
-from app.schemas_phase2 import ProductCreate, ProductOut, ProductUpdate
+from app.schemas_phase2 import (
+    ProductCreate,
+    ProductImportRequest,
+    ProductImportResponse,
+    ProductOut,
+    ProductProviderStatusOut,
+    ProductSearchRequest,
+    ProductSearchResponse,
+    ProductUpdate,
+)
+from app.services.product_providers import product_registry
 
 router = APIRouter(prefix="/products", tags=["products"])
+
+
+@router.get("/providers", response_model=ProductProviderStatusOut)
+def get_providers_status():
+    """Returns official provider status (Amazon PA-API, eBay Browse API)."""
+    return product_registry.get_status()
+
+
+@router.post("/search", response_model=ProductSearchResponse)
+def search_external_products(payload: ProductSearchRequest):
+    """Search live products across Amazon, eBay, or all official providers."""
+    if not payload.query.strip():
+        raise HTTPException(status_code=400, detail="El término de búsqueda es obligatorio")
+    return product_registry.search(
+        query=payload.query.strip(),
+        provider=payload.provider,
+        limit=payload.limit,
+    )
+
+
+@router.post("/import", response_model=ProductImportResponse)
+def import_product_to_catalog(payload: ProductImportRequest, db: Session = Depends(get_db)):
+    """Import an external product into the CRM catalog for the given project."""
+    try:
+        prod, is_new, msg = product_registry.import_product(db, payload)
+        return ProductImportResponse(imported=is_new, message=msg, product=ProductOut.model_validate(prod))
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al importar producto: {str(e)}")
 
 
 @router.get("", response_model=list[ProductOut])

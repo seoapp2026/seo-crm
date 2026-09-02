@@ -1,0 +1,762 @@
+EXHAUSTIVE & COMPLETE COMPILATION: CHAT MESSAGES, REQUIREMENTS, QUESTIONS & DETAILED IMAGE TRANSCRIPTION (100% ENGLISH)
+Date of Record: August 30, 2026
+Project: SEO CRM (Phase 2 / Evolution towards Ecosystem: Notion + Make/n8n + WordPress + Future ERP)
+Sender of Messages: Bro Noah Olulenu
+
+TABLE OF CONTENTS
+1. CHRONOLOGICAL RECORD OF ALL CHAT MESSAGES (FULL ENGLISH TRANSLATION)
+   1.1. Message 1 (15:22:56) - Concerns regarding usability, UI clarity, CRM from scratch summary & AI validation.
+   1.2. Message 2 (15:22:56) - Request for prompt/summary for external AI review.
+   1.3. Message 3 (15:22:57) - WordPress integration scope, product robots/connectors & non-technical end-to-end workflow.
+   1.4. Message 4 (15:22:57) - Usability feature request: "Tools / Quick Access" Tab (Professional Favorites).
+   1.5. Message 5 (15:22:57) - CRM work audit log & Competitor intelligence tracking (What was done -> What was discovered -> What changed -> Result -> Next action).
+   1.6. Message 6 (15:22:57) - Conceptual vision for CRM <-> Notion connection (Roles & data boundary).
+   1.7. Message 7 (15:22:58) - Notion integration options, budget, and controlled growth.
+   1.8. Message 8 (15:22:58) - Informal comment on budget / costs.
+   1.9. Message 9 (19:07:30) - Global ecosystem architecture vision (CRM + Notion + Make/n8n + WordPress + Future ERP) & 10 Technical Architecture Questions.
+   1.10. Message 10 (19:07:30) - Prompt builder, structured JSONs, and visual layout reference.
+
+2. DETAILED TRANSCRIPTION OF ALL 5 REFERENCE IMAGES (NOTION MASTER V2)
+   2.1. Image 1 (media_1788121704973.jpg): "HOW WE ARE GOING TO BUILD IT - Clear, visual, step-by-step process"
+   2.2. Image 2 (media_1788121704985.jpg): "MASTER PROMPT LIBRARY - Organized and versioned workflows"
+   2.3. Image 3 (media_1788121704993.jpg): "AUTOMATIONS & INTEGRATIONS - How Notion connects with your CRM & WordPress"
+   2.4. Image 4 (media_1788121705003.jpg): "CONTENT & PUBLICATIONS - What you will publish, where and when"
+   2.5. Image 5 (media_1788121705012.jpg): "MASTER DASHBOARD - Command center for your entire ecosystem"
+
+3. STRUCTURED REQUIREMENTS, ARCHITECTURE QUESTIONS & ROADMAP MATRIX
+   3.1. Immediate Functional & Usability Requirements.
+   3.2. WordPress Integration & Product Connector Specs.
+   3.3. Competitor Intelligence & CRM Action Audit Framework.
+   3.4. The 10 Technical Architecture Questions for Noah.
+   3.5. Four-Phase Evolution Plan (Current CRM -> Automations -> AI & Marketing -> Full ERP).
+
+SECTION 1: CHRONOLOGICAL RECORD OF ALL CHAT MESSAGES
+
+[30/08/2026, 15:22:56] Bro Noah Olulenu:
+"Look, I can't think of many more things. I spend a lot of time asking questions to ChatGPT, other AIs, courses, and notes. From what I see, I do a lot of things until I hit upon something worth including or how it should be done. If you think of something that should be there or that smells off, tell me what comes to mind. What matters is that the screens look clear and I don't get lost. Give me a summary and explain how the CRM works from zero; I'll pass it to ChatGPT to see what it says about what I'll encounter and how it will develop. Surely something will be corrected so that later we barely have to make any adjustments to the CRM steps. That's what scares me most, and that I know how to use it."
+
+[30/08/2026, 15:22:56] Bro Noah Olulenu:
+"If you like, write something for your AI that I can review and test to see what comes out."
+
+[30/08/2026, 15:22:57] Bro Noah Olulenu:
+"Noah, before closing this part, I just want to be clear about how far the CRM currently goes with WordPress, because WordPress is the CMS I will use and for me it's important that the integration remains as simple and compatible as possible.
+
+I don't want to add more features right now or complicate Phase 2 V2. I just need you to explain very clearly:
+
+- What the CRM can currently do with WordPress.
+- What it cannot do yet.
+- What part is already done.
+- What part is prepared but pending.
+- How content and products are sent or synchronized.
+- How far the product robots/connectors reach: whether they only research and select products, import data, prepare references for plugins like AAWP or others, or if they also create/update content in WordPress.
+- If the system is ready to work in the future with CSV, JSON, APIs, WooCommerce, and other providers without having to rebuild the CRM.
+
+And I also want to understand a very practical thing:
+
+HOW WOULD I WORK WITH ALL THIS?
+
+That is, imagine I'm a normal person, not a technical professional like you. Explain to me what my workflow would look like from start to finish: what I do, what the CRM does, what happens next in WordPress, and what part I would have to review or do manually.
+
+No need to explain with technical jargon. I prefer you explain it simply, as if teaching me daily real-world operations.
+
+The most important thing for me is that the CRM is 'WordPress-friendly': that I can easily understand what I send, what WordPress receives, what happens next, and what I have to do.
+
+If you can, explain it simply like this:
+
+WHAT WE HAVE → WHAT I CAN DO → WHAT I CANNOT DO → HOW I WOULD WORK → WHAT REMAINS PREPARED FOR LATER.
+
+That is perfectly enough for me to close this part."
+
+[30/08/2026, 15:22:57] Bro Noah Olulenu:
+"Noah, a small usability item.
+
+Can we have inside the CRM a simple tab for Tools / Quick Access where we can save important links and open them directly without having to search for them outside every time?
+
+For example:
+- Google Analytics
+- Search Console
+- Tag Manager
+- Google Trends
+- WordPress
+- Hosting
+- SEO Tools
+- and in the future any other tool like Filmora, Canva, etc.
+
+The idea is just to have them classified by type/project, with name + link + perhaps a short note, and be able to open them from the CRM.
+
+Nothing complex, simply a sort of 'professional bookmarks' inside the CRM.
+
+If something similar is already done, tell me where it is and how it's used."
+
+[30/08/2026, 15:22:57] Bro Noah Olulenu:
+"Noah, I want to mention a control and tracking improvement that would be very useful for me.
+
+I would like to be able to see inside each project a clear summary of what work the CRM has done: research performed, competitors analyzed, opportunities detected, pages/keywords/clusters worked on, improvements proposed or executed, and subsequent results.
+
+Regarding competition, I'd like something simple:
+- Being able to have, for example, 3 active competitors per project.
+- Analyze them and save that analysis into a historical library.
+- Being able to remove one from the active group and add another without deleting what was already learned.
+- Save URL, name, date, summary, strengths, weaknesses, opportunities, and detected improvements.
+- If possible, enter a specific URL to analyze whatever is visible on that website: structure, page types, blog, reviews, FAQ, CTA, UX, detectable technologies, etc.
+
+What's important for me is being able to read later:
+
+WHAT WAS DONE → WHAT WAS DISCOVERED → WHAT CHANGED → WHAT RESULT IT PRODUCED → WHAT IS MISSING → NEXT ACTION.
+
+And also distinguish two things:
+1. SEO/Business performance: traffic, rankings, CTR, leads, conversions, revenue.
+2. Work performed by the CRM: analyses made, competitors reviewed, opportunities found, improvements proposed and executed.
+
+I don't want to complicate the CRM or create a new module if this can be integrated into some existing screen, Notes, History, or Reports you already have.
+
+Explain simply what part of this is already contemplated and how you would solve it in the simplest way."
+
+[30/08/2026, 15:22:57] Bro Noah Olulenu:
+"Noah, forgive me for sending another idea 😅, but I don't want you to develop it now out of obligation. I just want your opinion to know if it makes sense to leave it prepared.
+
+Notion will be my organization and knowledge center, while the CRM will continue to be where data and execution reside.
+
+We had thought that in the future a connection could exist:
+CRM → Notion: send reports, competition, opportunities, decisions, tasks, learnings, etc.
+
+And perhaps Notion → CRM, but very limited, for example to change a status, priority, approve an opportunity, add a note or a decision.
+
+I do NOT want Notion to be able to modify technical data, keywords, clusters, IDs, JSON, metrics, or critical CRM elements.
+
+The idea would rather be:
+NOTION ORGANIZES / PROPOSES → CRM VALIDATES / EXECUTES.
+
+Please just tell me:
+- Is this technically feasible with the architecture you have?
+- Is it advisable to leave something prepared now?
+- Would you leave it completely for a later phase?
+- Does a simple connection of this type represent low, medium, or high work/cost?
+
+I don't want to complicate or delay Phase 2 V2. I just want your opinion and to keep the path well planned."
+
+[30/08/2026, 15:22:58] Bro Noah Olulenu:
+"Hello Noah 😊
+
+I wanted to ask you a question to understand well how this could be approached in the future.
+
+I've been looking at organization ideas with Notion and I wonder if some things could connect with the CRM we are developing.
+
+For example: reports, analyses, tasks, decisions, opportunities, projects, clients, budgets, accounting, action plans, etc.
+
+My question is whether that would be:
+1. A simple connection between CRM and Notion.
+2. An automation with an external tool.
+3. A separate development within the CRM itself.
+4. Or a mix of several things.
+
+I don't know if these functions can be done easily or if they would be new modules that need to be developed and budgeted separately.
+
+I'm not asking you to do it now. I just want to understand it well to know what possibilities exist, how you would approach it, and if it would have additional cost in the future.
+
+I'm asking because I want to go step by step, without getting tangled up or spending a lot all at once. Right now my priority is finishing the current CRM well, but I also want to know if what we're building can grow later in an orderly fashion.
+
+Thank you very much for your patience and for explaining it to me. 😊🤝"
+
+[30/08/2026, 15:22:58] Bro Noah Olulenu:
+"I see that in the end it's more money 🤣🤣🤣"
+
+[30/08/2026, 19:07:30] Bro Noah Olulenu:
+"Hello Noah 😊
+
+I want to show you an idea so you better understand where I'd like the CRM to evolve in the future, without changing or expanding what we have already approved now.
+
+I attach some reference images because visually they explain quite well what I want to achieve.
+
+The general idea would be:
+- CRM = Operational data and execution.
+- Notion = Master center for organization, knowledge, decisions, tasks, reports, and tracking.
+- Make / n8n = Connection and automation layer between systems.
+- WordPress = Web publishing and execution.
+- Future ERP = Expansion for clients, projects, orders, budgets, inventory/warehouse, accounting, marketing, etc.
+
+What I DO NOT want is to turn Notion into a copy of the CRM.
+
+I want the CRM to remain the operational system where real data and processes live, and Notion to receive only information that helps me organize and make decisions.
+
+For example:
+- Reports.
+- Analyses.
+- Opportunities.
+- Tasks.
+- Decisions.
+- Action plans.
+- Learnings.
+- Projects.
+- Summaries.
+- Important metrics.
+- Documentation.
+
+An example of a future workflow could be:
+CRM detects an opportunity
+→ a task or project is created in Notion.
+
+CRM generates a report
+→ a summary is sent to Notion.
+
+Content approved in Notion
+→ Make / n8n
+→ WordPress.
+
+New important information from CRM
+→ Notion displays it on my master dashboard.
+
+Results and metrics
+→ summarized in Notion so I can view them and make decisions.
+
+The goal is to have in Notion a visual dashboard where I can control:
+- Active projects.
+- Tasks.
+- Businesses.
+- Marketing.
+- Content.
+- Campaigns.
+- Prompts.
+- GPTs / Agents.
+- Automations.
+- Reports.
+- Metrics.
+- Decisions.
+
+I don't want you to develop this now. My priority remains finishing the current CRM properly.
+
+What I need to understand is if it's advisable to prepare some technical foundation from now so that this is easy to add later.
+
+Specifically, I would like to know:
+
+1. Will the CRM be able to provide an API to export and import data?
+2. Could it work with webhooks?
+3. Could it connect in the future with Notion?
+4. Could it connect with Make or n8n without modifying the core CRM?
+5. Could it also connect with WordPress via API?
+6. Which things would be simple integrations and which would require new modules or custom development?
+7. Is it advisable to prepare any technical structure now to avoid rewriting code later?
+8. Can future integrations be added in phases?
+9. Would they have an additional cost independent of the current CRM?
+10. Does the current architecture we are building allow growing later into a more complete ERP without rebuilding the entire system?
+
+My intention is to advance in phases:
+- CURRENT PHASE → Properly finish the CRM we are developing.
+- AFTERWARDS → Integrations and automations.
+- LATER ON → Marketing, AI agents, Notion, n8n/Make, and other modules.
+- FUTURE → Evolution towards a complete ERP.
+
+I do not want to add unnecessary functions now.
+I just want to ensure that the foundation we are building is open and modular enough to grow later.
+
+The images I'm sending are purely visual references of how I imagine the future dashboard and connections between CRM, Notion, WordPress, and automations.
+
+I am especially interested in your technical opinion on what is recommended to leave prepared now and what we can safely leave for later phases.
+
+Thank you for your patience and for helping me approach this properly 😊🤝"
+
+[30/08/2026, 19:07:30] Bro Noah Olulenu:
+"And look at the images that I want to think my builder will make for my prompts, the JSONs I think it will give me, and how it will lay it out."
+
+SECTION 2: DETAILED TRANSCRIPTION OF ALL 5 REFERENCE IMAGES
+
+2.1. IMAGE 1 (media_1788121704973.jpg):
+NOTION MASTER V2 - "HOW WE ARE GOING TO BUILD IT"
+• Header Section:
+  - App Logo/Brand: Notion Master V2
+  - Main Title: "HOW WE ARE GOING TO BUILD IT"
+  - Subtitle: "Clear, visual, step-by-step process"
+  - Top Right Badge: "From zero to your control center in 6 simple steps"
+
+• Left Sidebar Navigation:
+  - Master Dashboard (Active)
+  - Businesses
+  - Projects
+  - Tasks
+  - Knowledge Base
+  - Prompt Library
+  - GPTs and Agents
+  - Campaigns
+  - Content
+  - Automations
+  - Metrics
+  - Button: "+ Quick New Page"
+  - Bottom Icons: Settings (gear), Notifications (bell), Help (question mark), Collapse menu (<<).
+
+• The 6 Step-by-Step Construction Cards:
+
+  STEP 1: "1. Create Master Dashboard"
+  - Mockup Card: "MASTER DASHBOARD"
+    - Quick Action Buttons: [+ New Task] [+ New Project] [+ New Prompt] [+ New Content]
+    - Visible Columns: TODAY | ACTIVE PROJECTS | PRIORITY TASKS
+  - WHERE: Create a new page in Notion.
+  - WHAT TO CREATE: Dashboard-type page.
+  - PURPOSE: It is your primary control center.
+  - WHAT YOU MUST SEE: Cards, filtered views, and quick shortcuts.
+
+  STEP 2: "2. Create Businesses Database"
+  - Mockup Card: Table "Businesses"
+    - Columns: Name | Status | Niche | Clients | Revenue
+    - Row 1: Business 1 | Active | Consulting | 12 | $15,000
+    - Row 2: Business 2 | Active | Marketing | 8 | $8,200
+    - Row 3: Business 3 | Active | Education | 6 | $5,400
+    - Row 4: + New
+  - WHERE: New Database -> Table.
+  - WHAT TO CREATE: Name, Status, Niche, Clients, Revenue.
+  - PURPOSE: Gain clarity over all your business entities.
+  - WHAT YOU MUST SEE: List of businesses with key operational and financial data.
+
+  STEP 3: "3. Create Projects Database"
+  - Mockup Card: Table "Projects"
+    - Columns: Name | Business | Status | Date | Progress
+    - Row 1: Web Launch | Business 1 | In Progress | 20/05/2024 | 60%
+    - Row 2: Online Academy | Business 2 | In Progress | 10/05/2024 | 70%
+    - Row 3: Sales System | Business 1 | In Review | 05/05/2024 | 40%
+    - Row 4: + New
+  - WHERE: New Database -> Table.
+  - WHAT TO CREATE: Name, Business (relation), Status, Date, Progress bar.
+  - PURPOSE: Manage everything you are actively building.
+  - WHAT YOU MUST SEE: Projects linked directly to their parent business.
+
+  STEP 4: "4. Create Tasks Database"
+  - Mockup Card: Table "Tasks"
+    - Columns: Name | Project | Status | Priority | Date
+    - Row 1: Metrics Review | Web Launch | Pending | High | 20/05
+    - Row 2: Design Lead Magnet | Online Academy | Pending | High | 21/05
+    - Row 3: Record YouTube Video | Sales System | In Progress | Medium | 22/05
+    - Row 4: + New
+  - WHERE: New Database -> Table.
+  - WHAT TO CREATE: Name, Project (relation), Status, Priority, Due Date.
+  - PURPOSE: Execute and track your daily actions.
+  - WHAT YOU MUST SEE: Tasks categorized by project with priority indicators.
+
+  STEP 5: "5. Create Prompt Library"
+  - Mockup Card: Table "Prompt Library"
+    - Columns: Name | Category | Use Case | Example Snippet
+    - Row 1: Email Prompt | Marketing | Email | "Write an email..."
+    - Row 2: Ideas Prompt | Content | Ideas | "Give me 10 ideas..."
+    - Row 3: Sales Prompt | Sales | Offer | "Create an offer..."
+    - Row 4: + New
+  - WHERE: New Database -> Table.
+  - WHAT TO CREATE: Name, Category, Use Case, Example text.
+  - PURPOSE: Save and reuse winning, proven prompts.
+  - WHAT YOU MUST SEE: Ready-to-use prompts filterable by category.
+
+  STEP 6: "6. Relate Everything and Create Views"
+  - Relational Diagram:
+    [Businesses] > [Projects] > [Tasks]
+          ^                   ^
+          |                   |
+          + [Prompt Library] +
+  - WHERE: Connect relationships across databases.
+  - WHAT TO CREATE: Relations + Filtered rollup views on the Master Dashboard.
+  - PURPOSE: See everything interconnected and take prompt action.
+  - WHAT YOU MUST SEE: Real-time, integrated operational information.
+
+• Bottom Result Section:
+  - RESULT:
+    "Your complete system, connected and ready to scale your business."
+    ✓ Everything in one place
+    ✓ Connected information
+    ✓ Clear vision and total control
+    ✓ Focused on what matters
+  - Master Dashboard Preview Cards:
+    - TODAY | ACTIVE PROJECTS | PRIORITY TASKS
+    - KEY METRICS:
+      • TOTAL LEADS: 4,520 (+18.7% vs. last week)
+      • SALES: 128 (+12.3% vs. last week)
+      • PENDING TASKS: 23 (-8 vs. yesterday)
+      • REVENUE: $24,850 (+24.5% vs. last week)
+  - Footer Slogan: "Build once. Use forever. Scale without limits."
+
+2.2. IMAGE 2 (media_1788121704985.jpg):
+NOTION MASTER V2 - "MASTER PROMPT LIBRARY"
+• Header Section:
+  - Main Title: "MASTER PROMPT LIBRARY"
+  - Subtitle: "Organized and versioned work methodologies"
+  - Date Stamp: May 20, 2024
+  - Controls: [Search prompts...] [Filter] [Tags] [+ New Prompt (Blue Button)]
+
+• Top Table: "ALL PROMPTS" (128 Prompts Total)
+  - Columns: ID | Name | Domain | Project | Version | Status | Last Edit | Actions
+  - Row 1 (Selected - Radio button active):
+    • ID: SEO-00
+    • Name: Economic Researcher
+    • Domain: SEO (Green badge)
+    • Project: Web Launch
+    • Version: v2.1
+    • Status: Active (Green badge)
+    • Last Edit: May 20, 2024, 10:42
+    • Actions: [...]
+  - Row 2:
+    • ID: SEO-04
+    • Name: TSA / TSG / TSR Architecture
+    • Domain: SEO (Green badge)
+    • Project: Lead Magnet SEO
+    • Version: v1.3
+    • Status: Active (Green badge)
+    • Last Edit: May 19, 2024, 17:15
+    • Actions: [...]
+  - Row 3:
+    • ID: MKT-03
+    • Name: Multichannel Posts
+    • Domain: Marketing (Pink badge)
+    • Project: Free Webinar
+    • Version: v3.0
+    • Status: Active (Green badge)
+    • Last Edit: May 18, 2024, 14:33
+    • Actions: [...]
+  - Row 4:
+    • ID: VID-04
+    • Name: Video Producer
+    • Domain: Content (Orange badge)
+    • Project: Web Launch
+    • Version: v2.2
+    • Status: Active (Green badge)
+    • Last Edit: May 18, 2024, 09:21
+    • Actions: [...]
+  - Row 5:
+    • ID: MUE-02
+    • Name: Product Catalog
+    • Domain: Sales (Blue badge)
+    • Project: Sales System
+    • Version: v1.0
+    • Status: Under Review (Orange badge)
+    • Last Edit: May 17, 2024, 16:08
+    • Actions: [...]
+  - Pagination: "Showing 1 to 5 of 128 prompts" | [<] [1] [2] [3] ... [26] [>]
+
+• Bottom Left Panel: "SELECTED PROMPT VIEW"
+  - Card Header: [Green Folder] SEO Economic Researcher | Status: [Active] | Version Selector: [v2.1 ▼]
+  - Schema / JSON Fields Specification / Prompt Builder:
+    1. Objective:
+       "Research and analyze economic trends to support strategic decision-making with current, reliable, and actionable data."
+    2. Input:
+       "Topic or industry to research, country/region, analysis timeframe, preferred data sources."
+    3. Process (Execution Steps):
+       1. Search recent data in official and private repositories.
+       2. Analyze key indicators and trendlines.
+       3. Compare against previous time periods.
+       4. Generate actionable insights and strategic recommendations.
+    4. Output Format:
+       "Structured report featuring an executive summary, granular breakdown, data tables/graphs, and strategic recommendations."
+    5. Associated GPT / Agent:
+       "GPT SEO (Research and Strategy)" [External Link Icon]
+  - Version Changelog:
+    • v2.1 | May 20, 2024, 10:42 | "Improvements in comparative analysis and new data sources." | Author: Maria G.
+    • v2.0 | May 12, 2024, 11:20 | "Optimized output schema and visual layouts." | Author: Javier R.
+    • v1.0 | May 03, 2024, 09:15 | "Initial prompt release." | Author: Javier R.
+
+• Bottom Right Panel: "RELATED GPTS AND AGENTS"
+  - Card 1 (Green):
+    - Robot Icon: Green
+    - Name: GPT SEO
+    - Role: Research & Strategy
+    - Description: "Uses this prompt to produce data-backed analyses and recommendations."
+    - Status: Active
+    - Button: [Open ↗]
+  - Card 2 (Purple):
+    - Robot Icon: Purple
+    - Name: GPT Marketing
+    - Role: Strategy & Content
+    - Description: "Reuses this prompt for comprehensive market trend reports."
+    - Status: Active
+    - Button: [Open ↗]
+  - Card 3 (Orange):
+    - Robot Icon: Orange
+    - Name: Video Producer
+    - Role: Audiovisual Content
+    - Description: "Converts insights from this prompt into scripts and audiovisual media."
+    - Status: Active
+    - Button: [Open ↗]
+  - Bottom Link: "View all GPTs and agents ->"
+
+2.3. IMAGE 3 (media_1788121704993.jpg):
+NOTION MASTER V2 - "AUTOMATIONS AND INTEGRATIONS"
+• Header Section:
+  - Main Title: "AUTOMATIONS AND INTEGRATIONS"
+  - Subtitle: "How Notion connects with your CRM and WordPress"
+  - Date Stamp: May 20, 2024
+
+• Core Architecture Diagram (The 4 Ecosystem Nodes):
+  1. Node 1: CRM
+     - Role: "Operational data and execution"
+     - Entities Managed:
+       • Leads and contacts
+       • Opportunities
+       • Activities
+       • Sales pipeline / funnel
+       • Deals closed and results
+  2. Node 2: NOTION
+     - Role: "Master organization hub"
+     - Entities Managed:
+       • Tasks and projects
+       • Content and creative assets
+       • Marketing campaigns and strategies
+       • Central knowledge base
+       • Metrics and executive reports
+       • Decisions and operational tracking
+  3. Node 3: WORDPRESS
+     - Role: "External web publishing"
+     - Entities Managed:
+       • Blog posts
+       • Static pages
+       • Landing pages
+       • Content marketing
+       • Site updates and modifications
+  4. Node 4: MAKE / N8N
+     - Role: "Integration and automation middleware"
+     - Capabilities:
+       • Data synchronization
+       • Webhook triggering
+       • Payload transformation
+       • System cross-connection
+
+• Right Panel: "PRIMARY AUTOMATED FLOWS"
+  - Flow 1: [Lead Icon] New lead in CRM > [Task Icon] Task in Notion
+    - Description: "Automatically generates a follow-up task containing all lead details."
+  - Flow 2: [Checkmark Icon] Content approved in Notion > [WordPress Icon] Publishing in WordPress
+    - Description: "Publishes live to the website as soon as content is marked Approved."
+  - Flow 3: [Chart Icon] Weekly Metrics > [Document Icon] Report in Notion
+    - Description: "Consolidates metrics across CRM, campaigns, and content into automatic summaries."
+  - Flow 4: [Money Icon] Opportunity detected in CRM > [Project Icon] Project & Tasks in Notion
+    - Description: "Converts qualified opportunities into structured projects with assignees."
+
+• Bottom Panel: "WHAT YOU CAN CONTROL DIRECTLY FROM NOTION"
+  - Card TASKS: "Create, assign, and track all your operational tasks."
+  - Card CAMPAIGNS: "Plan, execute, and monitor marketing campaign ROI."
+  - Card CONTENT: "Create, review/approve, and publish multi-channel content."
+  - Card REPORTS: "Receive automated, real-time executive summaries."
+  - Card DECISIONS: "Make strategic decisions backed by consolidated business data."
+  - Card TRACKING: "Monitor leads, projects, teams, and financial outcomes."
+  - Card AUTOMATIONS: "Control and fine-tune all webhook pipelines and integrations."
+
+• Footer Banner:
+  - "You have complete control. Notion is your command center: organize, decide, automate, and scale your business."
+  - Action Link: [View advanced flows ↗]
+
+2.4. IMAGE 4 (media_1788121705003.jpg):
+NOTION MASTER V2 - "CONTENT AND PUBLICATIONS"
+• Header Section:
+  - Main Title: "CONTENT AND PUBLICATIONS"
+  - Subtitle: "What you will publish, where, and when"
+  - Date Stamp: May 20, 2024
+
+• Top KPI Cards:
+  - TOTAL REACH: 32,450 (↑ 18.6% vs. last week) [Users Icon]
+  - LEADS GENERATED: 1,250 (↑ 12.4% vs. last week) [Lead Icon]
+  - CLICKS: 2,860 (↑ 15.2% vs. last week) [Cursor Icon]
+  - PUBLISHED ASSETS: 24 (↑ 9% vs. last week) [Document Icon]
+
+• Middle Left: "EDITORIAL CONTENT CALENDAR"
+  - View Modes: [Week] [Month] | Month: May 2024 | Days: Monday 20 to Sunday 26
+  - Schedule:
+    • Monday 20:
+      - 09:00 YouTube Video (Red)
+      - 15:00 TikTok Shorts (Black)
+    • Tuesday 21:
+      - 09:00 Instagram Reel (Pink)
+    • Wednesday 22:
+      - 12:00 Blog Article (Green)
+    • Thursday 23:
+      - 09:00 Facebook Post (Blue)
+    • Friday 24:
+      - 15:00 Google Business Post (Light Blue)
+    • Saturday 25: (Open / No scheduled post)
+    • Sunday 26:
+      - 18:00 Pinterest Pin (Dark Red)
+  - Link: "View full calendar ->"
+
+• Middle Right: "CONTENT KANBAN PIPELINE"
+  - Stage 1: Idea (3 items)
+    • Video: 5 Mistakes When Launching Your Website [YouTube]
+    • Guide: SEO for Beginners [Blog]
+    • Post: Behind the Scenes [Instagram]
+    • [+ Add card]
+  - Stage 2: Production (4 items)
+    • Reel: 3 Quick SEO Tips [Instagram]
+    • Video: Customer Success Case Study [YouTube]
+    • Post: New Feature Announcement [Facebook]
+    • Article: SEO Checklist 2024 [Blog]
+    • [+ Add card]
+  - Stage 3: Review (2 items)
+    • Video: Complete Tutorial [YouTube]
+    • Post: Motivational Quote [Instagram]
+    • [+ Add card]
+  - Stage 4: Scheduled (3 items)
+    • Post: Productivity Tips [Facebook, May 23, 09:00]
+    • Pin: SEO Infographic [Pinterest, May 23, 18:00]
+    • Reel: Customer Testimonial [Instagram, May 24, 12:00]
+    • [+ Add card]
+  - Stage 5: Published (5 items)
+    • Video: How to Start in SEO [YouTube, May 18]
+    • Post: Benefits of Automation [Facebook, May 17]
+    • Article: What is Technical SEO? [Blog, May 16]
+    • [+ Add card]
+
+• Bottom Left: "DISTRIBUTION CHANNELS"
+  - YouTube: 12 videos | 12.4K reach | 320 clicks
+  - Instagram: 18 posts | 8.6K reach | 450 clicks
+  - Facebook: 15 posts | 6.1K reach | 210 clicks
+  - Pinterest: 10 pins | 4.2K reach | 180 clicks
+  - Google Business: 8 posts | 3.1K reach | 95 clicks
+  - Link: "View all channels ->"
+
+• Bottom Middle: "ACTIVE CAMPAIGNS"
+  - Campaign 1: SEO Course Launch | May 10 - Jun 10 | Status: Active (68%) | Reach: 18,450 | Leads: 650
+  - Campaign 2: Webinar Promotion | May 1 - May 31 | Status: Active (42%) | Reach: 9,230 | Leads: 320
+  - Campaign 3: Automation Ebook | Apr 25 - May 25 | Status: Active (75%) | Reach: 12,890 | Leads: 280
+  - Link: "View all campaigns ->"
+
+• Bottom Right: "MULTI-CHANNEL CONTENT REPURPOSING" (1 Master Video -> Multi-Format)
+  - Master Format: YouTube Video
+  - Derived Formats:
+    • YouTube Shorts (60s vertical)
+    • Instagram Reel (30-60s vertical)
+    • Facebook Post (Image + link)
+    • Pinterest Pin (Vertical infographic)
+  - Link: "View repurposing history ->"
+
+• Footer Slogan: "Strategic content, delivered at the right time."
+
+2.5. IMAGE 5 (media_1788121705012.jpg):
+NOTION MASTER V2 - "MASTER DASHBOARD"
+• Header Section:
+  - Main Title: "MASTER DASHBOARD"
+  - Subtitle: "Command center for your entire ecosystem"
+  - Date Stamp: May 20, 2024
+  - Top Quick Action Buttons:
+    • [+ New Task (Blue)]
+    • [+ New Project (Green)]
+    • [+ New Prompt (Purple)]
+    • [+ New Content (Orange)]
+
+• Row 1 of Dashboard Widgets:
+  1. Widget "TODAY" (Daily Agenda):
+     - 09:00 KPI & Metrics Review
+     - 10:00 Content Planning
+     - 11:30 Client Meeting
+     - 14:00 Build Email Marketing Campaign
+     - 16:00 Deep Focus Block: Web Project
+     - 18:00 Daily Review and Close
+     - Link: "View full schedule ->"
+
+  2. Widget "ACTIVE PROJECTS":
+     - Web Launch | Design & Development | Status: In Progress (Blue)
+     - Online Academy | Platform & Content | Status: In Progress (Blue)
+     - Sales System | CRM & Automations | Status: In Review (Orange)
+     - Personal Brand | Positioning & Content | Status: Planned (Gray)
+     - Link: "View all projects ->"
+
+  3. Widget "PRIORITY TASKS":
+     - [ ] Build launch campaign | Priority: High (Red)
+     - [ ] Design lead magnet | Priority: High (Red)
+     - [ ] Audit sales funnel | Priority: Medium (Orange)
+     - [ ] Publish YouTube video | Priority: Medium (Orange)
+     - [ ] Analyze weekly metrics | Priority: Low (Green)
+     - Link: "View all tasks ->"
+
+• Row 2 of Dashboard Widgets:
+  4. Widget "RECENT PROMPTS":
+     - Generate 10 content ideas for... | Today
+     - Write a product launch email for... | Yesterday
+     - Create a script for a YouTube video... | Yesterday
+     - Audit this offer and provide improvements... | 2 days ago
+     - Formulate a unique value proposition for... | 2 days ago
+     - Link: "View full prompt library ->"
+
+  5. Widget "ACTIVE CAMPAIGNS":
+     - Web Launch | Status: Active | Leads: 1,250 | Conv: 8.2%
+     - Lead Magnet SEO | Status: Active | Leads: 850 | Conv: 12.4%
+     - Free Webinar | Status: Scheduled | Leads: 320 | Conv: -
+     - Weekly Newsletter | Status: Active | Leads: 2,100 | Conv: 18.6%
+     - Link: "View all campaigns ->"
+
+  6. Widget "KEY PERFORMANCE METRICS":
+     - TOTAL LEADS: 4,520 (↑ 18.7% vs. last week) [Users Icon]
+     - TOTAL SALES: 128 (↑ 12.3% vs. last week) [Cart Icon]
+     - PENDING TASKS: 23 (↓ 8 vs. yesterday) [Task Icon]
+     - TOTAL REVENUE: $24,850 (↑ 24.5% vs. last week) [Revenue Icon]
+     - Link: "View all metrics ->"
+
+• Bottom Value Chain: THE 6-STEP INTEGRATED LIFECYCLE
+  1. [Business]: "Define your vision and business model"
+     >
+  2. [Project]: "Plan and organize your initiatives"
+     >
+  3. [Task]: "Execute high-impact actions with focus"
+     >
+  4. [Campaign]: "Attract and convert your target audience"
+     >
+  5. [Content]: "Craft messages that deliver genuine value"
+     >
+  6. [Metric]: "Measure, analyze, and make data-driven decisions"
+
+• Footer Slogan: "Order, control, and overall clarity."
+
+SECTION 3: STRUCTURED REQUIREMENTS, ARCHITECTURE QUESTIONS & ROADMAP MATRIX
+
+3.1. IMMEDIATE USABILITY AND UI REQUIREMENTS
+• "Tools / Quick Access" Tab (Professional Bookmarks):
+  - Categorized by Tool Category and Project.
+  - Required Fields: Tool Name + Direct URL + Short Note/Description.
+  - Initial Toolset:
+    1. Google Search Console
+    2. Google Analytics
+    3. Google Tag Manager
+    4. Google Trends
+    5. WordPress Admin Dashboard (WP-Admin)
+    6. Hosting / Server Control Panel (cPanel, Cloudways, Plesk, etc.)
+    7. External SEO Tools (Ahrefs, Semrush, Screaming Frog, etc.)
+    8. Media/Design Software (Filmora, Canva, Photoshop, etc.)
+
+3.2. COMPETITOR AUDIT & CRM ACTIVITY TRACKING
+• Competitor Intelligence System:
+  - 3 Active Competitors monitored simultaneously per project.
+  - Historical Competitor Archive / Library: Rotate active competitors without losing historical data, notes, or learnings.
+  - Competitor Profile Schema: URL, Name, Date, Executive Summary, Strengths, Weaknesses, Opportunities, Identified Improvements.
+  - On-Demand URL Deep-Scan: Analyze visible web elements (structure, page types, blog posts, reviews, FAQ, CTA buttons, UX layout, detectable technology stack).
+• Core Tracking Framework:
+  WHAT WAS DONE → WHAT WAS DISCOVERED → WHAT CHANGED → WHAT RESULT IT PRODUCED → WHAT IS MISSING → NEXT ACTION.
+• Metric & Activity Separation:
+  1. Business/SEO Performance Metrics: Traffic, SERP Rankings, Impressions, CTR, Leads, Conversions, Sales Revenue.
+  2. CRM Internal Activity Log: Scraping jobs run, competitor audits completed, keyword clusters generated, content drafts pushed, automated tasks executed.
+
+3.3. WORDPRESS INTEGRATION & WORKFLOW SPECIFICATION
+• Explanatory Framework for Non-Technical End Users:
+  WHAT WE HAVE → WHAT I CAN DO → WHAT I CANNOT DO → HOW I WOULD WORK → WHAT REMAINS PREPARED FOR LATER.
+• Product Connectors & Catalog Scope:
+  - Scrape/Research product data, specifications, and prices.
+  - Generate formatted affiliate references (e.g. AAWP shortcodes, Amazon Product Advertising API payloads, custom schema cards).
+  - Synchronize draft articles, landing pages, and WooCommerce product entries via WordPress REST API / Application Passwords without breaking existing templates.
+  - Maintain CSV/JSON import/export interoperability.
+
+3.4. SYSTEM ARCHITECTURE & ROLES
+• CRM: Operational engine, automated scraper, database of keywords, SERP clusters, and backend task execution.
+• Notion: High-level visual dashboard, project and task management, strategic decisions, prompt library, and knowledge documentation.
+• Make / n8n: Automation middleware, webhook listener, and data transformation pipeline.
+• WordPress: Public website publishing engine, customer-facing content, and eCommerce storefront.
+• Future ERP: Extended business modules (Invoicing, Clients/CRM, Accounting, Inventory/Warehouse, Purchasing).
+• Core Integration Principle:
+  "NOTION ORGANIZES / PROPOSES → CRM VALIDATES / EXECUTES"
+  (Notion does NOT directly mutate raw technical fields, database primary keys, or internal scraping logic).
+
+3.5. THE 10 TECHNICAL ARCHITECTURE QUESTIONS (SUMMARY)
+1. Will the CRM offer an open REST API to pull and push data?
+2. Can the CRM trigger and receive Webhooks upon state changes?
+3. Can the CRM integrate seamlessly with Notion databases in the future?
+4. Can Make or n8n connect to the CRM without modifying core backend code?
+5. Can the CRM connect with WordPress via REST API / Application Passwords?
+6. Which capabilities are straightforward integrations vs. full custom modules?
+7. What technical structures should be prepared right now to avoid future rewrites?
+8. Can future integrations and connectors be rolled out incrementally in phases?
+9. Will future modules have an independent cost separate from the current Phase 2 build?
+10. Is the current architecture modular enough to scale into a full ERP system without rebuilding from scratch?
+
+3.6. FOUR-PHASE EVOLUTION ROADMAP
+• PHASE 1 & 2 (CURRENT): Complete and polish the SEO CRM core (Usable, clear UI, scraping, clusters, WordPress-ready connector).
+• PHASE 3 (INTEGRATIONS): Open Webhooks & REST API, Make/n8n connection, automated WordPress publishing sync.
+• PHASE 4 (AI & NOTION ECOSYSTEM): Notion Master Dashboard sync, Versioned Prompt Library, Autonomous GPT Agents & Marketing multi-channel campaigns.
+• PHASE 5 (MODULAR ERP): Full business management expansion (Invoicing, Accounting, Client Portal, Inventory & Purchasing).
+
+END OF DOCUMENT

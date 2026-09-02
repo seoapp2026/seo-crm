@@ -379,6 +379,13 @@ class Product(Base):
     stock_notes: Mapped[str | None] = mapped_column(Text)
     opinions: Mapped[str | None] = mapped_column(Text)
     source_url: Mapped[str | None] = mapped_column(Text)
+    provider: Mapped[str] = mapped_column(Text, default="manual", nullable=False)
+    external_id: Mapped[str | None] = mapped_column(Text, nullable=True)  # ASIN / eBay item ID
+    image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    affiliate_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    rating: Mapped[str | None] = mapped_column(Text, nullable=True)
+    raw_payload_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    last_synced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

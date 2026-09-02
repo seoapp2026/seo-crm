@@ -59,6 +59,19 @@ class Settings(BaseSettings):
     dataforseo_max_link_gaps: int = 100
     dataforseo_max_concurrent_global: int = 2
 
+    # ── Official Product Providers (Amazon PA-API & eBay Browse API) ───────
+    amazon_paapi_access_key: str = ""
+    amazon_paapi_secret_key: str = ""
+    amazon_paapi_partner_tag: str = ""
+    amazon_marketplace: str = "www.amazon.es"
+
+    ebay_app_id: str = ""
+    ebay_cert_id: str = ""
+    ebay_campaign_id: str = ""
+    ebay_marketplace: str = "EBAY-ES"
+
+    product_providers_force_stub: bool = False
+
     @field_validator("database_url", mode="before")
     @classmethod
     def normalize_database_url(cls, v: str) -> str:

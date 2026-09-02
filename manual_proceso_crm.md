@@ -2,8 +2,6 @@
 
 Este documento explica, en lenguaje sencillo, cómo funciona el sistema por dentro. No hace falta que entiendas de programación — solo la lógica del flujo, para que sepas qué hace cada parte y qué te toca hacer a ti.
 
----
-
 ## 1. La idea general
 
 El sistema organiza tu trabajo de SEO en una estructura simple:
@@ -13,8 +11,6 @@ El sistema organiza tu trabajo de SEO en una estructura simple:
 Un Proyecto agrupa tus webs. Dentro de cada proyecto hay Nichos (temas). Dentro de cada nicho hay Páginas (guías, comparativas, reseñas). Cada página tiene sus Palabras clave asignadas. Y cada página tiene una URL con su estado de indexación.
 
 Todo lo que haces en el sistema cuelga de esta estructura.
-
----
 
 ## 2. Qué hace la Fase 1 (ya funcionando)
 
@@ -27,8 +23,6 @@ La Fase 1 es el esqueleto: donde guardas y organizas toda tu información.
 - Generas borradores de contenido con IA según el tipo de página.
 
 En esta fase, tú metes la información y el sistema la organiza. Todavía no hay datos reales de Google conectados — eso llega en la Fase 2.
-
----
 
 ## 3. Qué añade la Fase 2 (en desarrollo, ~50% hecho)
 
@@ -49,7 +43,7 @@ Estos datos se guardan automáticamente en el sistema, vinculados a cada página
 En vez de un solo generador de contenido, la Fase 2 tiene varios "asistentes", cada uno especializado en una tarea:
 
 | Asistente | Qué hace |
-|---|---|
+|||
 | Arquitecto SEO | Propone qué páginas y categorías crear |
 | Clasificador de keywords | Decide qué keyword va en qué página y con qué prioridad |
 | Generador de contenido | Escribe el contenido, ahora usando los datos reales de Google |
@@ -80,8 +74,6 @@ Una pantalla donde ves de un vistazo qué páginas van bien y cuáles necesitan 
 
 Cada asistente tiene su prompt guardado en el sistema (no está "cableado" en el código). Esto significa que si en el futuro quieres cambiar cómo escribe o qué prioriza un asistente, se edita el texto del prompt sin tener que rehacer el programa.
 
----
-
 ## 4. Flujo completo, de principio a fin
 
 ```
@@ -100,8 +92,6 @@ Tú revisas, editas si hace falta, y apruebas
 Se publica en WordPress
 ```
 
----
-
 ## 5. Preguntas frecuentes
 
 **¿Necesito usar Make, Zapier o algo parecido?**
@@ -115,7 +105,5 @@ No. El sistema es supervisado: la IA propone, tú apruebas. Nunca publica nada s
 
 **¿Puedo cambiar cómo escribe un asistente más adelante?**
 Sí, editando su prompt desde el propio sistema, sin tocar el código ni rehacer nada.
-
----
 
 Cualquier duda que te surja mientras avanzamos, dímelo y lo aclaramos aquí mismo, en texto simple, para que siempre tengas claro qué hace cada parte.

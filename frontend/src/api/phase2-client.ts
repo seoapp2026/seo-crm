@@ -22,6 +22,11 @@ import type {
   GscDataRow,
   PerformanceSummary,
   Product,
+  ProductImportRequest,
+  ProductImportResponse,
+  ProductProviderStatus,
+  ProductSearchRequest,
+  ProductSearchResponse,
   RankMathBulkSyncResponse,
   RankMathImportResponse,
   ResearchBudget,
@@ -29,6 +34,8 @@ import type {
   ResearchJob,
   ResearchJobCreate,
   ResearchJobDetail,
+  StructureImportRequest,
+  StructureImportResponse,
   SyncJob,
   SyncJobType,
   WpExportBundle,
@@ -273,6 +280,21 @@ export const phase2Api = {
   },
 
   products: {
+    getProviders: async () => {
+      return apiRequest<ProductProviderStatus>(`${API_BASE}/products/providers`)
+    },
+    search: async (data: ProductSearchRequest) => {
+      return apiRequest<ProductSearchResponse>(`${API_BASE}/products/search`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+    },
+    import: async (data: ProductImportRequest) => {
+      return apiRequest<ProductImportResponse>(`${API_BASE}/products/import`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+    },
     list: async (projectId: number | 'all') => {
       return apiRequest<Product[]>(`${API_BASE}/products${projectQuery(projectId)}`)
     },
@@ -290,6 +312,15 @@ export const phase2Api = {
     },
     remove: async (id: number) => {
       await apiRequest<void>(`${API_BASE}/products/${id}`, { method: 'DELETE' })
+    },
+  },
+
+  projects: {
+    importStructure: async (data: StructureImportRequest) => {
+      return apiRequest<StructureImportResponse>(`${API_BASE}/projects/import-structure`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
     },
   },
 

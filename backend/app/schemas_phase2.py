@@ -316,6 +316,12 @@ class ProductCreate(BaseModel):
     stock_notes: str | None = None
     opinions: str | None = None
     source_url: str | None = None
+    provider: str = "manual"
+    external_id: str | None = None
+    image_url: str | None = None
+    affiliate_url: str | None = None
+    rating: str | None = None
+    raw_payload_json: str | None = None
 
 
 class ProductUpdate(BaseModel):
@@ -328,20 +334,33 @@ class ProductUpdate(BaseModel):
     stock_notes: str | None = None
     opinions: str | None = None
     source_url: str | None = None
+    provider: str | None = None
+    external_id: str | None = None
+    image_url: str | None = None
+    affiliate_url: str | None = None
+    rating: str | None = None
+    raw_payload_json: str | None = None
 
 
 class ProductOut(OrmBase):
     id: int
     project_id: int
     name: str
-    brand: str | None
-    sku: str | None
-    features: str | None
-    price: float | None
-    currency: str
-    stock_notes: str | None
-    opinions: str | None
-    source_url: str | None
+    brand: str | None = None
+    sku: str | None = None
+    features: str | None = None
+    price: float | None = None
+    currency: str = "EUR"
+    stock_notes: str | None = None
+    opinions: str | None = None
+    source_url: str | None = None
+    provider: str = "manual"
+    external_id: str | None = None
+    image_url: str | None = None
+    affiliate_url: str | None = None
+    rating: str | None = None
+    raw_payload_json: str | None = None
+    last_synced_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -586,3 +605,104 @@ class PageBulkUpdateRequest(BaseModel):
 class PageBulkUpdateResponse(BaseModel):
     updated_count: int
     updated_ids: list[int]
+
+
+# --- Official Product Providers (Amazon PA-API & eBay Browse API) ---
+
+class ProviderStatusItem(BaseModel):
+    provider: str
+    name: str
+    configured: bool
+    marketplace: str
+    using_stub: bool
+    partner_tag: str | None = None
+    campaign_id: str | None = None
+
+
+class ProductProviderStatusOut(BaseModel):
+    providers: list[ProviderStatusItem]
+
+
+class ProductSearchItemOut(BaseModel):
+    provider: str  # "amazon" | "ebay"
+    external_id: str  # ASIN or eBay Item ID
+    name: str
+    brand: str | None = None
+    price: float | None = None
+    currency: str = "EUR"
+    image_url: str | None = None
+    rating: str | None = None
+    affiliate_url: str | None = None
+    features: str | None = None
+    availability: str | None = None
+    is_prime: bool = False
+    condition: str | None = None
+
+
+class ProductSearchRequest(BaseModel):
+    provider: str = "all"  # "all" | "amazon" | "ebay"
+    query: str
+    limit: int = 10
+    project_id: int | None = None
+
+
+class ProductSearchResponse(BaseModel):
+    query: str
+    provider_used: str
+    total_found: int
+    is_stub: bool
+    results: list[ProductSearchItemOut]
+
+
+class ProductImportRequest(BaseModel):
+    project_id: int
+    provider: str  # "amazon" | "ebay" | "manual"
+    external_id: str | None = None
+    name: str
+    brand: str | None = None
+    price: float | None = None
+    currency: str = "EUR"
+    image_url: str | None = None
+    rating: str | None = None
+    affiliate_url: str | None = None
+    features: str | None = None
+    opinions: str | None = None
+    stock_notes: str | None = None
+
+
+class ProductImportResponse(BaseModel):
+    imported: bool
+    message: str
+    product: ProductOut
+
+
+# --- Light Site Structure Importer (CSV / JSON) ---
+
+class StructureImportItem(BaseModel):
+    title: str
+    slug: str
+    niche_name: str
+    parent_slug: str | None = None
+    page_type: PageType = PageType.TSG
+    h1: str | None = None
+    seo_title: str | None = None
+    seo_description: str | None = None
+    focus_keyword: str | None = None
+
+
+class StructureImportRequest(BaseModel):
+    project_id: int | None = None
+    project_name: str | None = None
+    csv_content: str | None = None
+    items: list[StructureImportItem] | None = None
+
+
+class StructureImportResponse(BaseModel):
+    project_id: int
+    project_name: str
+    niches_created: int
+    pages_created: int
+    urls_created: int
+    silos_linked: int
+    keywords_linked: int
+    errors: list[str] = Field(default_factory=list)

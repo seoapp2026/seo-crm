@@ -8,6 +8,7 @@ import { PAGE_STATES, PAGE_TYPES } from '../constants'
 import { useApp } from '../context/AppContext'
 import { useProjects } from '../hooks/useProjects'
 import type { Niche, Page, PageBulkUpdateItem, PageState, PageType } from '../types'
+import type { StructureImportResponse } from '../types/phase2'
 
 const CONTENT_STATUS_LABELS: Record<string, { label: string; cls: string }> = {
   borrador: { label: 'Borrador', cls: 'b-gray' },
@@ -34,6 +35,18 @@ export function PagesPage() {
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [savingGrid, setSavingGrid] = useState(false)
   const [syncingRankMath, setSyncingRankMath] = useState(false)
+
+  // Light Structure Import State
+  const [structureModalOpen, setStructureModalOpen] = useState(false)
+  const [structureCsv, setStructureCsv] = useState(
+`title,slug,niche_name,parent_slug,page_type,h1,seo_title,seo_description,focus_keyword
+Cafeteras Espresso,/cafeteras-espresso,Cafeteras,,TSG,Guía Completa de Cafeteras Espresso,Mejores Cafeteras Espresso 2026,Comparativa y análisis,cafeteras espresso
+Cafeteras Superautomáticas,/cafeteras-espresso/superautomaticas,Cafeteras,/cafeteras-espresso,TSR,Mejores Cafeteras Superautomáticas,Cafeteras Superautomáticas Top,Guía de compra,cafeteras superautomaticas
+Cafeteras Manuales,/cafeteras-espresso/manuales,Cafeteras,/cafeteras-espresso,TSR,Cafeteras Manuales para Baristas,Cafeteras Manuales Profesionales,Análisis detallado,cafeteras manuales
+Robot Aspirador Conga,/aspiradoras/conga,Aspiradoras,,TSA,Análisis Cecotec Conga,Opiniones Cecotec Conga 2026,Review con pros y contras,robot aspirador conga`
+  )
+  const [importingStructure, setImportingStructure] = useState(false)
+  const [structureImportResult, setStructureImportResult] = useState<StructureImportResponse | null>(null)
 
   const effectiveProject = scopeProject === 'all' ? projects[0]?.id : scopeProject
 
@@ -171,9 +184,38 @@ export function PagesPage() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [viewMode, gridEdits, handleSaveGridChanges])
 
+  const handleImportStructure = async () => {
+    if (!effectiveProject) return toast('Selecciona un proyecto')
+    if (!structureCsv.trim()) return toast('Pega el contenido CSV de la estructura')
+    setImportingStructure(true)
+    try {
+      const res = await phase2Api.projects.importStructure({
+        project_id: effectiveProject,
+        csv_content: structureCsv,
+      })
+      setStructureImportResult(res)
+      toast(`✓ Estructura importada: ${res.pages_created} páginas creadas, ${res.silos_linked} silos vinculados`)
+      await reload()
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Error al importar estructura')
+    } finally {
+      setImportingStructure(false)
+    }
+  }
+
   useEffect(() => {
     setTopbarAction(
       <div style={{ display: 'flex', gap: 8 }}>
+        <button
+          type="button"
+          className="btn btn-sm btn-secondary"
+          onClick={() => {
+            setStructureImportResult(null)
+            setStructureModalOpen(true)
+          }}
+        >
+          📥 Importar Estructura (CSV)
+        </button>
         <button
           type="button"
           className={`btn btn-sm ${viewMode === 'grid' ? 'btn-primary' : 'btn-ghost'}`}
@@ -878,6 +920,107 @@ export function PagesPage() {
               )}
             </div>
           </>
+        )}
+      </Modal>
+
+      {/* LIGHT SITE STRUCTURE IMPORTER MODAL */}
+      <Modal
+        title="📥 Importador Rápido de Estructura de Sitio (CSV / Silos / Nichos)"
+        open={structureModalOpen}
+        onClose={() => setStructureModalOpen(false)}
+        footer={
+          <>
+            <button type="button" className="btn" onClick={() => setStructureModalOpen(false)}>
+              Cerrar
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleImportStructure}
+              disabled={importingStructure}
+            >
+              {importingStructure ? 'Importando...' : '⚡ Procesar e Importar Estructura'}
+            </button>
+          </>
+        }
+      >
+        <div style={{ marginBottom: 14 }}>
+          <p style={{ fontSize: 13, color: '#475569', margin: '0 0 10px 0' }}>
+            Importa masivamente la arquitectura completa de tu web. El importador crea automáticamente los <strong>nichos</strong>, <strong>páginas (TSG/TSR/TSA)</strong>, <strong>URLs limpias</strong>, vincula la jerarquía de <strong>Silos Padre-Hijo</strong> y etiqueta las <strong>Keywords Principales</strong> en un solo paso.
+          </p>
+
+          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+            <button
+              type="button"
+              className="btn btn-sm btn-ghost"
+              onClick={() => {
+                setStructureCsv(
+`title,slug,niche_name,parent_slug,page_type,h1,seo_title,seo_description,focus_keyword
+Cafeteras Espresso,/cafeteras-espresso,Cafeteras,,TSG,Guía Completa de Cafeteras Espresso,Mejores Cafeteras Espresso 2026,Comparativa y análisis,cafeteras espresso
+Cafeteras Superautomáticas,/cafeteras-espresso/superautomaticas,Cafeteras,/cafeteras-espresso,TSR,Mejores Cafeteras Superautomáticas,Cafeteras Superautomáticas Top,Guía de compra,cafeteras superautomaticas
+Cafeteras Manuales,/cafeteras-espresso/manuales,Cafeteras,/cafeteras-espresso,TSR,Cafeteras Manuales para Baristas,Cafeteras Manuales Profesionales,Análisis detallado,cafeteras manuales
+Robot Aspirador Conga,/aspiradoras/conga,Aspiradoras,,TSA,Análisis Cecotec Conga,Opiniones Cecotec Conga 2026,Review con pros y contras,robot aspirador conga`
+                )
+              }}
+            >
+              🔄 Cargar Ejemplo Multinicho & Silos
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-ghost"
+              onClick={() => {
+                setStructureCsv(
+`title,slug,niche_name,parent_slug,page_type,h1,seo_title,seo_description,focus_keyword
+`
+                )
+              }}
+            >
+              🧹 Limpiar
+            </button>
+          </div>
+
+          <textarea
+            value={structureCsv}
+            onChange={(e) => setStructureCsv(e.target.value)}
+            rows={10}
+            className="mono"
+            placeholder="title,slug,niche_name,parent_slug,page_type,h1,seo_title,seo_description,focus_keyword..."
+            style={{ width: '100%', fontSize: 12 }}
+          />
+        </div>
+
+        {structureImportResult && (
+          <div
+            style={{
+              marginTop: 14,
+              padding: 14,
+              borderRadius: 8,
+              background: '#f0fdf4',
+              border: '1px solid #bbf7d0',
+            }}
+          >
+            <h4 style={{ margin: '0 0 8px 0', color: '#166534', fontSize: 14 }}>
+              ✓ Importación Completada con Éxito
+            </h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, fontSize: 12 }}>
+              <div>🏢 Proyecto: <strong>{structureImportResult.project_name}</strong></div>
+              <div>📂 Nichos creados: <strong>{structureImportResult.niches_created}</strong></div>
+              <div>📄 Páginas creadas: <strong>{structureImportResult.pages_created}</strong></div>
+              <div>🔗 Silos vinculados: <strong>{structureImportResult.silos_linked}</strong></div>
+              <div>🔑 Keywords enlazadas: <strong>{structureImportResult.keywords_linked}</strong></div>
+              <div>🌐 URLs registradas: <strong>{structureImportResult.urls_created}</strong></div>
+            </div>
+            {structureImportResult.errors.length > 0 && (
+              <div style={{ marginTop: 10, color: '#dc2626', fontSize: 12 }}>
+                <strong>Avisos / Errores leves:</strong>
+                <ul>
+                  {structureImportResult.errors.map((err, i) => (
+                    <li key={i}>{err}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         )}
       </Modal>
     </>

@@ -277,6 +277,11 @@ export interface Product {
   stock_notes: string | null
   opinions: string | null
   source_url: string | null
+  provider?: string
+  external_id?: string | null
+  image_url?: string | null
+  affiliate_url?: string | null
+  rating?: string | null
   created_at: string
   updated_at: string
 }
@@ -472,4 +477,103 @@ export interface RankMathBulkSyncResponse {
   analyzed_count: number
   updated_titles_count: number
   updated_descriptions_count: number
+}
+
+// --- Official Product Providers (Amazon & eBay) & Structure Importer ---
+
+export interface ProviderStatusItem {
+  provider: string
+  name: string
+  configured: boolean
+  marketplace: string
+  using_stub: boolean
+  partner_tag?: string | null
+  campaign_id?: string | null
+}
+
+export interface ProductProviderStatus {
+  providers: ProviderStatusItem[]
+}
+
+export interface ProductSearchItem {
+  provider: string
+  external_id: string
+  name: string
+  brand?: string | null
+  price?: number | null
+  currency: string
+  image_url?: string | null
+  rating?: string | null
+  affiliate_url?: string | null
+  features?: string | null
+  availability?: string | null
+  is_prime?: boolean
+  condition?: string | null
+}
+
+export interface ProductSearchRequest {
+  provider?: 'all' | 'amazon' | 'ebay'
+  query: string
+  limit?: number
+  project_id?: number | null
+}
+
+export interface ProductSearchResponse {
+  query: string
+  provider_used: string
+  total_found: number
+  is_stub: boolean
+  results: ProductSearchItem[]
+}
+
+export interface ProductImportRequest {
+  project_id: number
+  provider: string
+  external_id?: string | null
+  name: string
+  brand?: string | null
+  price?: number | null
+  currency?: string
+  image_url?: string | null
+  rating?: string | null
+  affiliate_url?: string | null
+  features?: string | null
+  opinions?: string | null
+  stock_notes?: string | null
+}
+
+export interface ProductImportResponse {
+  imported: boolean
+  message: string
+  product: Product
+}
+
+export interface StructureImportItem {
+  title: string
+  slug: string
+  niche_name: string
+  parent_slug?: string | null
+  page_type?: 'TSG' | 'TSR' | 'TSA'
+  h1?: string | null
+  seo_title?: string | null
+  seo_description?: string | null
+  focus_keyword?: string | null
+}
+
+export interface StructureImportRequest {
+  project_id?: number | null
+  project_name?: string | null
+  csv_content?: string | null
+  items?: StructureImportItem[] | null
+}
+
+export interface StructureImportResponse {
+  project_id: number
+  project_name: string
+  niches_created: number
+  pages_created: number
+  urls_created: number
+  silos_linked: number
+  keywords_linked: number
+  errors: string[]
 }

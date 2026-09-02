@@ -2,8 +2,6 @@
 
 This document explains, in plain language, how the system works behind the scenes. You don’t need to understand programming — only the flow and logic, so you know what each part does and what you need to do yourself.
 
----
-
 ## 1. The big picture
 
 The system organizes your SEO work in a simple structure:
@@ -13,8 +11,6 @@ The system organizes your SEO work in a simple structure:
 A Project groups your websites. Within each project there are Niches (topics). Within each niche there are Pages (guides, comparisons, reviews). Each page has its assigned Keywords. And each page has a URL with its indexing status.
 
 Everything you do in the system hangs off this structure.
-
----
 
 ## 2. What Phase 1 does (already working)
 
@@ -27,8 +23,6 @@ Phase 1 is the skeleton: where you store and organize all your information.
 - You generate content drafts with AI based on page type.
 
 In this phase, you enter the information and the system organizes it. Real Google data is not connected yet — that comes in Phase 2.
-
----
 
 ## 3. What Phase 2 adds (in development, ~50% complete)
 
@@ -49,7 +43,7 @@ This data is saved automatically in the system, linked to each page and each key
 Instead of a single content generator, Phase 2 has several “assistants,” each specialized in one task:
 
 | Assistant | What it does |
-|---|---|
+|||
 | SEO Architect | Proposes which pages and categories to create |
 | Keyword classifier | Decides which keyword goes on which page and with what priority |
 | Content generator | Writes content, now using real Google data |
@@ -80,8 +74,6 @@ A screen where you see at a glance which pages are doing well and which need wor
 
 Each assistant has its prompt stored in the system (it isn’t hard-coded). That means if later you want to change how an assistant writes or what it prioritizes, you edit the prompt text without having to rebuild the application.
 
----
-
 ## 4. End-to-end flow
 
 ```
@@ -100,8 +92,6 @@ You review, edit if needed, and approve
 It is published to WordPress
 ```
 
----
-
 ## 5. Frequently asked questions
 
 **Do I need Make, Zapier, or something similar?**
@@ -115,7 +105,5 @@ No. The system is supervised: the AI proposes, you approve. It never publishes a
 
 **Can I change how an assistant writes later?**
 Yes, by editing its prompt in the system itself, without touching code or rebuilding anything.
-
----
 
 If anything is unclear as we move forward, tell me and we’ll clarify it here in plain language, so you always know what each part does.

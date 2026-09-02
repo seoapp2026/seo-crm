@@ -81,6 +81,23 @@ def run_light_migrations():
         if "context_used_json" not in draft_cols:
             statements.append("ALTER TABLE content_drafts ADD COLUMN context_used_json TEXT")
 
+    if "products" in insp.get_table_names():
+        prod_cols = {c["name"] for c in insp.get_columns("products")}
+        if "provider" not in prod_cols:
+            statements.append("ALTER TABLE products ADD COLUMN provider TEXT NOT NULL DEFAULT 'manual'")
+        if "external_id" not in prod_cols:
+            statements.append("ALTER TABLE products ADD COLUMN external_id TEXT")
+        if "image_url" not in prod_cols:
+            statements.append("ALTER TABLE products ADD COLUMN image_url TEXT")
+        if "affiliate_url" not in prod_cols:
+            statements.append("ALTER TABLE products ADD COLUMN affiliate_url TEXT")
+        if "rating" not in prod_cols:
+            statements.append("ALTER TABLE products ADD COLUMN rating TEXT")
+        if "raw_payload_json" not in prod_cols:
+            statements.append("ALTER TABLE products ADD COLUMN raw_payload_json TEXT")
+        if "last_synced_at" not in prod_cols:
+            statements.append("ALTER TABLE products ADD COLUMN last_synced_at TIMESTAMP WITH TIME ZONE" if is_pg else "ALTER TABLE products ADD COLUMN last_synced_at DATETIME")
+
     if not statements:
         return
 

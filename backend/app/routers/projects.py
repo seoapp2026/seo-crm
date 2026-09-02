@@ -5,14 +5,27 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import GoogleAuth, GoogleServiceType, Project
 from app.schemas import ProjectCreate, ProjectOut, ProjectUpdate
+from app.schemas_phase2 import StructureImportRequest, StructureImportResponse
 from app.services.cascade_delete import purge_project
 from app.services.project_targets import (
     apply_project_targets_to_auth,
     normalize_ga4_property_id,
     normalize_gsc_site_url,
 )
+from app.services.structure_import_service import import_site_structure
 
 router = APIRouter(prefix="/projects", tags=["projects"])
+
+
+@router.post("/import-structure", response_model=StructureImportResponse)
+def import_project_structure(payload: StructureImportRequest, db: Session = Depends(get_db)):
+    """Import an entire site architecture from CSV or JSON into a project."""
+    try:
+        return import_site_structure(db, payload)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al importar estructura: {str(e)}")
 
 
 def _apply_payload(project: Project, payload: ProjectCreate | ProjectUpdate):

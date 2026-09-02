@@ -2,7 +2,6 @@ CRM SEO — User Manual and How It Works
 
 This document explains, in plain language, how the system works behind the scenes. You don't need to understand programming — only the flow and logic, so you know what each part does and what you need to do yourself.
 
-
 1. THE BIG PICTURE
 
 The system organizes your SEO work in a simple structure:
@@ -12,7 +11,6 @@ Project → Niche → Page → Keyword → URL
 A Project groups your websites. Within each project there are Niches (topics). Within each niche there are Pages (guides, comparisons, reviews). Each page has its assigned Keywords. And each page has a URL with its indexing status.
 
 Everything you do in the system hangs off this structure.
-
 
 2. WHAT PHASE 1 DOES (ALREADY WORKING)
 
@@ -25,7 +23,6 @@ Phase 1 is the skeleton: where you store and organize all your information.
 - You generate content drafts with AI based on page type.
 
 In this phase, you enter the information and the system organizes it. Real Google data is not connected yet — that comes in Phase 2.
-
 
 3. WHAT PHASE 2 ADDS (IN DEVELOPMENT, ~50% COMPLETE)
 
@@ -84,7 +81,6 @@ A screen where you see at a glance which pages are doing well and which need wor
 
 Each assistant has its prompt stored in the system (it isn't hard-coded). That means if later you want to change how an assistant writes or what it prioritizes, you edit the prompt text without having to rebuild the application.
 
-
 4. END-TO-END FLOW
 
 Google (real data)
@@ -101,7 +97,6 @@ You review, edit if needed, and approve
   ↓
 It is published to WordPress
 
-
 5. FREQUENTLY ASKED QUESTIONS
 
 Do I need Make, Zapier, or something similar?
@@ -115,6 +110,5 @@ No. The system is supervised: the AI proposes, you approve. It never publishes a
 
 Can I change how an assistant writes later?
 Yes, by editing its prompt in the system itself, without touching code or rebuilding anything.
-
 
 If anything is unclear as we move forward, tell me and we'll clarify it here in plain language, so you always know what each part does.

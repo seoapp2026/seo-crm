@@ -21,7 +21,10 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      '/api/seo-crm': 'http://127.0.0.1:8000',
+      '/api/seo-crm': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
     },
   },
 })

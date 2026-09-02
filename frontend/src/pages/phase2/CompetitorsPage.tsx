@@ -11,6 +11,7 @@ import type {
   Competitor,
   CompetitorScrapeResponse,
   ProductItem,
+  ProductSearchItem,
 } from '../../types/phase2'
 
 const SAMPLE_PRODUCTS: ProductItem[] = [
@@ -92,6 +93,13 @@ export function CompetitorsPage() {
   const [rawHtml, setRawHtml] = useState('')
   const [scraping, setScraping] = useState(false)
   const [scrapeResult, setScrapeResult] = useState<CompetitorScrapeResponse | null>(null)
+
+  // Product Search Modal inside Table Builder
+  const [productSearchModalOpen, setProductSearchModalOpen] = useState(false)
+  const [providerSearchQuery, setProviderSearchQuery] = useState('')
+  const [providerSearchType, setProviderSearchType] = useState<'all' | 'amazon' | 'ebay'>('all')
+  const [searchingProducts, setSearchingProducts] = useState(false)
+  const [providerResults, setProviderResults] = useState<ProductSearchItem[]>([])
 
   const effectiveProject = scopeProject === 'all' ? projects[0]?.id : scopeProject
 
@@ -239,6 +247,38 @@ export function CompetitorsPage() {
     })
   }
 
+  const runProviderProductSearch = async (q: string, prov: 'all' | 'amazon' | 'ebay') => {
+    if (!q.trim()) return toast('Introduce un término de búsqueda')
+    setSearchingProducts(true)
+    try {
+      const data = await phase2Api.products.search({ query: q.trim(), provider: prov, limit: 6 })
+      setProviderResults(data.results)
+      toast(`Encontrados ${data.results.length} productos`)
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Error al buscar productos')
+    } finally {
+      setSearchingProducts(false)
+    }
+  }
+
+  const addExternalProductToTable = (item: ProductSearchItem) => {
+    const newProd: ProductItem = {
+      name: item.name,
+      brand: item.brand || (item.provider === 'amazon' ? 'Amazon' : 'eBay'),
+      badge: item.is_prime ? 'Mejor Opción ⭐' : 'Destacado',
+      price: item.price != null ? `${item.price.toFixed(2)} ${item.currency}` : 'Consultar',
+      rating: item.rating || '4.5/5',
+      pros: item.features ? item.features.split('|').map((s) => s.trim()).filter(Boolean) : ['Excelente rendimiento', 'Buena relación calidad-precio'],
+      cons: ['Consultar disponibilidad'],
+      specs: { Proveedor: item.provider === 'amazon' ? 'Amazon ES' : 'eBay ES', ID: item.external_id },
+      cta_text: item.provider === 'amazon' ? 'Ver en Amazon' : 'Ver en eBay',
+      affiliate_url: item.affiliate_url || '',
+      image_url: item.image_url || undefined,
+    }
+    setProducts((prev) => [...prev, newProd])
+    toast(`✓ "${item.name.slice(0, 30)}..." añadido a la tabla`)
+  }
+
   return (
     <>
       <ScopeBar projects={projects} value={scopeProject} onChange={setScopeProject} />
@@ -316,8 +356,21 @@ export function CompetitorsPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h3 style={{ margin: 0, fontSize: 16 }}>Configuración de la Tabla Comparativa</h3>
               <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-secondary"
+                  onClick={() => {
+                    setProductSearchModalOpen(true)
+                    if (!providerResults.length && !providerSearchQuery) {
+                      setProviderSearchQuery('cafetera express')
+                      void runProviderProductSearch('cafetera express', providerSearchType)
+                    }
+                  }}
+                >
+                  🔍 Buscar en Amazon / eBay
+                </button>
                 <button type="button" className="btn btn-sm" onClick={addProduct}>
-                  + Añadir Producto
+                  + Añadir Manual
                 </button>
                 <button type="button" className="btn btn-sm btn-primary" onClick={handleGenerateTable} disabled={generatingTable}>
                   {generatingTable ? 'Generando...' : '⚡ Generar / Actualizar HTML'}
@@ -605,6 +658,114 @@ export function CompetitorsPage() {
           </select>
         </div>
         <div className="field"><label>Notas</label><textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+      </Modal>
+
+      {/* SEARCH PRODUCTS MODAL FOR COMPARISON TABLE */}
+      <Modal
+        title="🔍 Buscar Productos Oficiales (Amazon PA-API & eBay)"
+        open={productSearchModalOpen}
+        onClose={() => setProductSearchModalOpen(false)}
+        footer={
+          <button type="button" className="btn" onClick={() => setProductSearchModalOpen(false)}>
+            Cerrar
+          </button>
+        }
+      >
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <select
+            value={providerSearchType}
+            onChange={(e) => {
+              const p = e.target.value as 'all' | 'amazon' | 'ebay'
+              setProviderSearchType(p)
+              if (providerSearchQuery.trim()) void runProviderProductSearch(providerSearchQuery, p)
+            }}
+            style={{ width: 180 }}
+          >
+            <option value="all">📦 Todos (Amazon + eBay)</option>
+            <option value="amazon">📦 Amazon PA-API 5.0</option>
+            <option value="ebay">🛒 eBay Browse API</option>
+          </select>
+          <input
+            type="text"
+            placeholder="Buscar por término o modelo..."
+            value={providerSearchQuery}
+            onChange={(e) => setProviderSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void runProviderProductSearch(providerSearchQuery, providerSearchType)
+            }}
+            style={{ flex: 1 }}
+          />
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => void runProviderProductSearch(providerSearchQuery, providerSearchType)}
+            disabled={searchingProducts}
+          >
+            {searchingProducts ? 'Buscando...' : 'Buscar'}
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14, maxHeight: '60vh', overflowY: 'auto', padding: 4 }}>
+          {providerResults.map((item) => {
+            const key = `${item.provider}-${item.external_id}`
+            return (
+              <div
+                key={key}
+                style={{
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 8,
+                  padding: 12,
+                  background: '#ffffff',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <span
+                      className={`badge ${item.provider === 'amazon' ? 'badge-warning' : 'badge-info'}`}
+                      style={{ fontSize: 10, textTransform: 'uppercase' }}
+                    >
+                      {item.provider === 'amazon' ? 'Amazon ES' : 'eBay ES'}
+                    </span>
+                    {item.rating && (
+                      <span style={{ fontSize: 11, color: '#d97706', fontWeight: 600 }}>⭐ {item.rating}</span>
+                    )}
+                  </div>
+
+                  {item.image_url && (
+                    <div style={{ textAlign: 'center', marginBottom: 8, background: '#f8fafc', padding: 6, borderRadius: 6 }}>
+                      <img
+                        src={item.image_url}
+                        alt={item.name}
+                        style={{ height: 90, maxWidth: '100%', objectFit: 'contain' }}
+                      />
+                    </div>
+                  )}
+
+                  <h5 style={{ fontSize: 12, fontWeight: 600, margin: '0 0 4px 0', lineHeight: 1.3, color: '#1e293b' }}>
+                    {item.name}
+                  </h5>
+
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>
+                    {item.price != null ? `${item.price.toFixed(2)} ${item.currency}` : 'Consultar'}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="btn btn-sm btn-primary"
+                  style={{ width: '100%', marginTop: 8 }}
+                  onClick={() => addExternalProductToTable(item)}
+                >
+                  + Añadir a la Tabla
+                </button>
+              </div>
+            )
+          })}
+        </div>
       </Modal>
     </>
   )
