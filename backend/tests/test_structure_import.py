@@ -102,3 +102,71 @@ Robot Aspirador Cecotec,/aspiradoras/cecotec,Aspiradoras,,TSA,Análisis Cecotec 
         self.assertEqual(data["project_name"], "Nuevo Proyecto Tech")
         self.assertEqual(data["pages_created"], 1)
         self.assertEqual(data["keywords_linked"], 1)
+
+    def test_import_structure_json_hierarchy_resolves_parents(self):
+        import json as jsonlib
+
+        rows = [
+            {
+                "title": "Cafeteras Espresso",
+                "slug": "/cafeteras-espresso",
+                "niche_name": "Cafeteras",
+                "page_type": "TSG",
+                "focus_keyword": "cafeteras espresso",
+            },
+            {
+                "title": "Cafeteras Superautomáticas",
+                "slug": "/cafeteras-espresso/superautomaticas",
+                "niche_name": "Cafeteras",
+                "parent_slug": "cafeteras-espresso",
+                "page_type": "TSR",
+                "focus_keyword": "cafeteras superautomaticas",
+            },
+            {
+                "title": "Cecotec Power Matic",
+                "slug": "/cafeteras-espresso/superautomaticas/cecotec",
+                "niche_name": "Cafeteras",
+                "parent_slug": "/cafeteras-espresso/superautomaticas",
+                "page_type": "TSA",
+            },
+        ]
+        resp = self.client.post(
+            f"{API_PREFIX}/projects/import-structure",
+            json={
+                "project_id": self.project_id,
+                "json_content": jsonlib.dumps(rows),
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertEqual(data["niches_created"], 1)
+        self.assertEqual(data["pages_created"], 3)
+        self.assertEqual(data["urls_created"], 3)
+        self.assertEqual(data["silos_linked"], 2)
+        self.assertEqual(data["keywords_linked"], 2)
+        self.assertEqual(len(data["errors"]), 0)
+
+        parent = self.db.query(Page).filter(Page.title == "Cafeteras Espresso").first()
+        mid = self.db.query(Page).filter(Page.title == "Cafeteras Superautomáticas").first()
+        leaf = self.db.query(Page).filter(Page.title == "Cecotec Power Matic").first()
+        self.assertIsNone(parent.parent_page_id)
+        self.assertEqual(mid.parent_page_id, parent.id)
+        self.assertEqual(leaf.parent_page_id, mid.id)
+
+    def test_import_structure_rejects_csv_and_json_together(self):
+        resp = self.client.post(
+            f"{API_PREFIX}/projects/import-structure",
+            json={
+                "project_id": self.project_id,
+                "csv_content": "title,slug\nA,/a\n",
+                "json_content": '[{"title": "B", "slug": "/b"}]',
+            },
+        )
+        self.assertEqual(resp.status_code, 422)
+
+    def test_import_structure_rejects_missing_content(self):
+        resp = self.client.post(
+            f"{API_PREFIX}/projects/import-structure",
+            json={"project_id": self.project_id},
+        )
+        self.assertEqual(resp.status_code, 422)

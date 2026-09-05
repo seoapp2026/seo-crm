@@ -19,6 +19,7 @@ from app.models import (
     SyncJobType,
 )
 from app.services.ads_config import require_ads_sync_config
+from app.services.crypto_service import read_secret
 from app.services.google_oauth import credentials_from_auth, save_credentials
 
 logger = logging.getLogger(__name__)
@@ -233,7 +234,7 @@ def sync_ads_for_project(db: Session, project_id: int) -> int:
         .filter(GoogleAuth.project_id == project_id, GoogleAuth.service == GoogleServiceType.ads)
         .first()
     )
-    if not auth or not auth.refresh_token:
+    if not auth or not read_secret(auth.refresh_token):
         msg = (
             f"Google Ads no conectado para proyecto {project_id}. "
             "Ve a Integraciones → Keyword Planner → Conectar OAuth."

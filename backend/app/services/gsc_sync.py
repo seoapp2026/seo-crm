@@ -4,6 +4,7 @@ from googleapiclient.discovery import build
 from sqlalchemy.orm import Session
 
 from app.models import GoogleAuth, GoogleServiceType, GscData, SyncJob, SyncJobStatus, SyncJobType, Url
+from app.services.crypto_service import read_secret
 from app.services.google_oauth import credentials_from_auth, save_credentials
 from app.services.gsc_sites import validate_gsc_site_access
 from app.services.project_targets import resolve_gsc_site
@@ -16,7 +17,7 @@ def sync_gsc_for_project(db: Session, project_id: int) -> int:
         .first()
     )
     site = resolve_gsc_site(db, project_id, auth)
-    if not auth or not auth.refresh_token or not site:
+    if not auth or not read_secret(auth.refresh_token) or not site:
         raise ValueError("GSC no conectado — configura la URL de Search Console en el proyecto")
 
     job = (

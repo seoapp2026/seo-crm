@@ -27,18 +27,20 @@ async def generate_content(payload: GenerateContentRequest, db: Session = Depend
 
 @router.post("/maquetar", response_model=MaquetarResponse)
 async def maquetar_content(payload: MaquetarRequest, db: Session = Depends(get_db)):
-    draft, html, updated = await run_maquetador(
+    draft, html, updated, message = await run_maquetador(
         db=db,
         page_id=payload.page_id,
         draft_id=payload.draft_id,
         custom_layout_template=payload.custom_layout_template,
         model=payload.model,
         save_to_page=payload.save_to_page,
+        replace_existing=payload.replace_existing,
     )
     return MaquetarResponse(
         draft=ContentDraftOut.model_validate(draft),
         content_html=html,
         page_updated=updated,
+        message=message,
     )
 
 

@@ -47,7 +47,7 @@ class ProjectOut(OrmBase):
     ga4_property_id: str | None
     wp_url: str | None = None
     wp_username: str | None = None
-    wp_app_password: str | None = None
+    # wp_app_password is write-only: never returned by the API (stored encrypted at rest).
     created_at: datetime
 
 
@@ -103,6 +103,7 @@ class PageCreate(BaseModel):
     wp_tags_json: str | None = None
     content_html: str | None = None
     content_status: str = "borrador"
+    brief_text: str | None = None
     schema_json: str | None = None
     export_ready: bool = False
 
@@ -123,6 +124,7 @@ class PageUpdate(BaseModel):
     wp_tags_json: str | None = None
     content_html: str | None = None
     content_status: str | None = None
+    brief_text: str | None = None
     schema_json: str | None = None
     export_ready: bool | None = None
 
@@ -146,6 +148,7 @@ class PageOut(OrmBase):
     wp_tags_json: str | None = None
     content_html: str | None = None
     content_status: str = "borrador"
+    brief_text: str | None = None
     schema_json: str | None = None
     export_ready: bool = False
     created_at: datetime
@@ -357,12 +360,14 @@ class MaquetarRequest(BaseModel):
     custom_layout_template: str | None = None
     model: str = "gpt-4o"
     save_to_page: bool = True
+    replace_existing: bool = False
 
 
 class MaquetarResponse(BaseModel):
     draft: ContentDraftOut
     content_html: str
     page_updated: bool
+    message: str | None = None
 
 
 # --- Dashboard ---

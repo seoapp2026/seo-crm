@@ -13,7 +13,7 @@ from app.schemas_phase2 import (
     ProductSearchResponse,
     ProductUpdate,
 )
-from app.services.product_providers import product_registry
+from app.services.product_providers import ProviderError, product_registry
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -29,11 +29,16 @@ def search_external_products(payload: ProductSearchRequest):
     """Search live products across Amazon, eBay, or all official providers."""
     if not payload.query.strip():
         raise HTTPException(status_code=400, detail="El término de búsqueda es obligatorio")
-    return product_registry.search(
-        query=payload.query.strip(),
-        provider=payload.provider,
-        limit=payload.limit,
-    )
+    try:
+        return product_registry.search(
+            query=payload.query.strip(),
+            provider=payload.provider,
+            limit=payload.limit,
+        )
+    except ProviderError as e:
+        # Fail-closed: a configured provider that fails must not silently
+        # return demo fixtures; surface the vendor error to the user.
+        raise HTTPException(status_code=502, detail=f"Error del proveedor de productos: {str(e)}")
 
 
 @router.post("/import", response_model=ProductImportResponse)

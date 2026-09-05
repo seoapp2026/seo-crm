@@ -29,6 +29,7 @@ export function PagesPage() {
   const [modalTab, setModalTab] = useState<'basic' | 'seo' | 'wp' | 'content'>('basic')
   const [htmlViewMode, setHtmlViewMode] = useState<'code' | 'preview'>('code')
   const [maquetando, setMaquetando] = useState(false)
+  const [briefLoading, setBriefLoading] = useState(false)
 
   // Bulk Edit Grid State
   const [gridEdits, setGridEdits] = useState<Record<number, PageBulkUpdateItem>>({})
@@ -67,6 +68,7 @@ Robot Aspirador Conga,/aspiradoras/conga,Aspiradoras,,TSA,Análisis Cecotec Cong
     wp_tags_json: '',
     content_html: '',
     content_status: 'borrador',
+    brief_text: '',
     schema_json: '',
     export_ready: false,
   })
@@ -104,6 +106,7 @@ Robot Aspirador Conga,/aspiradoras/conga,Aspiradoras,,TSA,Análisis Cecotec Cong
       wp_tags_json: '',
       content_html: '',
       content_status: 'borrador',
+      brief_text: '',
       schema_json: '',
       export_ready: false,
     })
@@ -268,6 +271,7 @@ Robot Aspirador Conga,/aspiradoras/conga,Aspiradoras,,TSA,Análisis Cecotec Cong
       wp_tags_json: p.wp_tags_json || '',
       content_html: p.content_html || '',
       content_status: p.content_status || 'borrador',
+      brief_text: (p as Page & { brief_text?: string | null }).brief_text || '',
       schema_json: p.schema_json || '',
       export_ready: Boolean(p.export_ready),
     })
@@ -289,6 +293,7 @@ Robot Aspirador Conga,/aspiradoras/conga,Aspiradoras,,TSA,Análisis Cecotec Cong
         wp_category: form.wp_category.trim() || null,
         wp_tags_json: form.wp_tags_json.trim() || null,
         content_html: form.content_html || null,
+        brief_text: form.brief_text.trim() || null,
         schema_json: form.schema_json.trim() || null,
       }
       if (editing) await api.pages.update(editing.id, payload)
@@ -715,6 +720,51 @@ Robot Aspirador Conga,/aspiradoras/conga,Aspiradoras,,TSA,Análisis Cecotec Cong
               <label>Objetivo de la página</label>
               <textarea value={form.objective} onChange={(e) => setForm({ ...form, objective: e.target.value })} rows={2} />
             </div>
+
+            <div className="field">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <label style={{ margin: 0 }}>Brief de contenido (instrucciones para la redacción)</label>
+                {editing && (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-ghost"
+                    disabled={briefLoading}
+                    onClick={async () => {
+                      if (!editing) return
+                      setBriefLoading(true)
+                      try {
+                        const ps = await phase2Api.prompts.list()
+                        const gen = ps.find((p) => p.slug === 'content_generator')
+                        if (!gen) return toast('No se encontró el prompt de generación de contenido')
+                        const data = await phase2Api.assistants.previewContext({
+                          prompt_id: gen.id,
+                          prompt_slug: gen.slug,
+                          project_id: editing.project_id,
+                          page_id: editing.id,
+                        })
+                        setForm((prev) => ({ ...prev, brief_text: data.user_prompt }))
+                        toast('Brief sugerido generado desde el contexto — revísalo y pulsa Guardar')
+                      } catch (e) {
+                        toast(e instanceof Error ? e.message : 'Error al generar el brief sugerido')
+                      } finally {
+                        setBriefLoading(false)
+                      }
+                    }}
+                  >
+                    {briefLoading ? 'Generando...' : '✨ Generar brief sugerido'}
+                  </button>
+                )}
+              </div>
+              <textarea
+                value={form.brief_text}
+                onChange={(e) => setForm({ ...form, brief_text: e.target.value })}
+                rows={5}
+                placeholder="Brief editable: objetivo, keywords, tono, productos a mencionar, estructura deseada…"
+              />
+              <p className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                Se guarda con la página y alimenta la generación de contenido.
+              </p>
+            </div>
           </>
         )}
 
@@ -846,18 +896,34 @@ Robot Aspirador Conga,/aspiradoras/conga,Aspiradoras,,TSA,Análisis Cecotec Cong
                     style={{ background: '#4f46e5', color: '#fff', border: 'none' }}
                     disabled={maquetando}
                     onClick={async () => {
+                      if (!editing) return
+                      const hasExisting = Boolean(form.content_html || editing.content_html)
+                      let replaceExisting = false
+                      if (hasExisting) {
+                        replaceExisting = window.confirm(
+                          'Esta página ya tiene contenido maquetado. ¿Sobreescribirlo? Se guardará un nuevo borrador de todos modos.',
+                        )
+                      }
                       setMaquetando(true)
                       try {
                         const res = await api.ai.maquetar({
                           page_id: editing.id,
                           save_to_page: true,
-                        })
-                        setForm((prev) => ({
-                          ...prev,
-                          content_html: res.content_html,
-                          content_status: 'revisado',
-                        }))
-                        toast('Maquetación generada con éxito y aplicada')
+                          replace_existing: replaceExisting,
+                        } as Parameters<typeof api.ai.maquetar>[0] & { replace_existing?: boolean })
+                        if (res.page_updated) {
+                          setForm((prev) => ({
+                            ...prev,
+                            content_html: res.content_html,
+                            content_status: 'revisado',
+                          }))
+                          toast('Maquetación generada con éxito y aplicada')
+                        } else {
+                          toast(
+                            (res as { message?: string }).message ||
+                              'Borrador maquetado guardado sin cambiar el HTML existente',
+                          )
+                        }
                       } catch (e) {
                         toast(e instanceof Error ? e.message : 'Error al maquetar')
                       } finally {

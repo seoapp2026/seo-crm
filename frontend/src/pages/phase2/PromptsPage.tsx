@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom'
 import { phase2Api } from '../../api/phase2-client'
 import { Modal } from '../../components/Modal'
 import { useApp } from '../../context/AppContext'
+import { useProjects } from '../../hooks/useProjects'
 import type { AiPrompt } from '../../types/phase2'
 
 export function PromptsPage() {
   const { setTopbarAction, toast } = useApp()
+  const { projects } = useProjects()
+  const [selectedProjectId, setSelectedProjectId] = useState<number | ''>('')
   const [prompts, setPrompts] = useState<AiPrompt[]>([])
   const [editing, setEditing] = useState<AiPrompt | null>(null)
   const [editOpen, setEditOpen] = useState(false)
@@ -23,12 +26,12 @@ export function PromptsPage() {
   })
 
   const reload = () =>
-    phase2Api.prompts.list().then(setPrompts).catch((e) => {
+    phase2Api.prompts.list(selectedProjectId || undefined).then(setPrompts).catch((e) => {
       setPrompts([])
       toast(e instanceof Error ? e.message : 'No se pudieron cargar los prompts')
     })
 
-  useEffect(() => { reload() }, [])
+  useEffect(() => { reload() }, [selectedProjectId])
 
   const openCreate = () => {
     setForm({
@@ -78,6 +81,7 @@ export function PromptsPage() {
         description: form.description.trim(),
         model_default: form.model_default,
         system_prompt: form.system_prompt,
+        project_id: selectedProjectId || null,
       })
       setCreateOpen(false)
       reload()
@@ -163,6 +167,26 @@ export function PromptsPage() {
         <strong>Biblioteca Dinámica de Prompts IA.</strong> Crea, duplica, reordena y personaliza libremente todos los prompts y roles del sistema. Los asistentes ejecutarán dinámicamente cualquier prompt de esta biblioteca.
       </div>
 
+      <div className="card card-pad" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <label className="muted" style={{ margin: 0 }} htmlFor="prompt-project-filter">Proyecto:</label>
+        <select
+          id="prompt-project-filter"
+          value={selectedProjectId}
+          onChange={(e) => setSelectedProjectId(e.target.value ? Number(e.target.value) : '')}
+          style={{ minWidth: 220 }}
+        >
+          <option value="">Global (todos los prompts)</option>
+          {projects.map((proj) => (
+            <option key={proj.id} value={proj.id}>{proj.name}</option>
+          ))}
+        </select>
+        {selectedProjectId !== '' && (
+          <span className="muted" style={{ fontSize: 12 }}>
+            Se muestran los prompts globales y los del proyecto seleccionado. Los nuevos prompts se guardarán en este proyecto.
+          </span>
+        )}
+      </div>
+
       <div className="grid grid-1 gap-16">
         {prompts.map((p, idx) => (
           <div key={p.id} className="card card-pad prompt-card">
@@ -175,6 +199,11 @@ export function PromptsPage() {
                   {p.is_system && (
                     <span className="badge" style={{ fontSize: 11, background: '#e0f2fe', color: '#0369a1' }}>
                       Sistema
+                    </span>
+                  )}
+                  {p.project_id !== null && (
+                    <span className="badge" style={{ fontSize: 11, background: '#fef3c7', color: '#92400e' }}>
+                      {projects.find((proj) => proj.id === p.project_id)?.name ?? `Proyecto #${p.project_id}`}
                     </span>
                   )}
                   <h2 style={{ margin: 0 }}>{p.name}</h2>

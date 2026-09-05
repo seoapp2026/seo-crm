@@ -13,6 +13,7 @@ from app.database import Base, engine
 from app.routers import (
     ads,
     ai,
+    audit,
     analytics,
     assistants,
     competitors,
@@ -67,6 +68,7 @@ phase2_routers = [
     performance.router,
     sync_jobs.router,
     wordpress.router,
+    audit.router,
     rank_math.router,
     products.router,
     research.router,

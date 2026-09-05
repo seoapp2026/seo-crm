@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.models import (
     AdsCompetition,
@@ -207,6 +207,7 @@ class AssistantRunResponse(BaseModel):
     model_used: str
     used_metrics: bool
     context_used: dict[str, Any] | None = None
+    draft_id: int | None = None
 
 
 class ContextPreviewRequest(BaseModel):
@@ -234,6 +235,23 @@ class ContextPreviewResponse(BaseModel):
     resolved_entities: dict[str, Any]
 
 
+class WpInternalLinkOut(BaseModel):
+    to_slug: str | None = None
+    anchor: str | None = None
+
+
+class WpProductOut(BaseModel):
+    name: str
+    affiliate_url: str | None = None
+    image_url: str | None = None
+
+
+class WpRankMathOut(BaseModel):
+    focus_keyword: str | None = None
+    title: str | None = None
+    description: str | None = None
+
+
 class WpExportItemOut(BaseModel):
     page_id: int
     title: str
@@ -254,6 +272,16 @@ class WpExportItemOut(BaseModel):
     parent_slug: str | None = None
     parent_title: str | None = None
     schema_json: str | None = None
+    # W6 completeness keys (PHASE25 plan, section W6) — additive only
+    seo_title: str | None = None
+    seo_description: str | None = None
+    primary_keyword: str | None = None
+    intent: str | None = None
+    outline: list[dict] = Field(default_factory=list)
+    internal_links: list[WpInternalLinkOut] = Field(default_factory=list)
+    breadcrumbs: list[str] = Field(default_factory=list)
+    products: list[WpProductOut] = Field(default_factory=list)
+    rank_math: WpRankMathOut | None = None
 
 
 class WpExportBundleOut(BaseModel):
@@ -314,6 +342,7 @@ class ProductCreate(BaseModel):
     price: float | None = None
     currency: str = "EUR"
     stock_notes: str | None = None
+    availability: str | None = None
     opinions: str | None = None
     source_url: str | None = None
     provider: str = "manual"
@@ -332,6 +361,7 @@ class ProductUpdate(BaseModel):
     price: float | None = None
     currency: str | None = None
     stock_notes: str | None = None
+    availability: str | None = None
     opinions: str | None = None
     source_url: str | None = None
     provider: str | None = None
@@ -352,6 +382,7 @@ class ProductOut(OrmBase):
     price: float | None = None
     currency: str = "EUR"
     stock_notes: str | None = None
+    availability: str | None = None
     opinions: str | None = None
     source_url: str | None = None
     provider: str = "manual"
@@ -668,6 +699,7 @@ class ProductImportRequest(BaseModel):
     features: str | None = None
     opinions: str | None = None
     stock_notes: str | None = None
+    availability: str | None = None
 
 
 class ProductImportResponse(BaseModel):
@@ -694,7 +726,22 @@ class StructureImportRequest(BaseModel):
     project_id: int | None = None
     project_name: str | None = None
     csv_content: str | None = None
+    json_content: str | None = None
     items: list[StructureImportItem] | None = None
+
+    @model_validator(mode="after")
+    def _validate_single_source(self):
+        has_csv = bool(self.csv_content and self.csv_content.strip())
+        has_json = bool(self.json_content and self.json_content.strip())
+        if has_csv and has_json:
+            raise ValueError(
+                "Proporciona solo uno de csv_content o json_content, no ambos."
+            )
+        if not has_csv and not has_json and not self.items:
+            raise ValueError(
+                "Debes proporcionar csv_content, json_content o items para importar."
+            )
+        return self
 
 
 class StructureImportResponse(BaseModel):

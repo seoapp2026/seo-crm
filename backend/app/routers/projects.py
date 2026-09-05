@@ -7,6 +7,7 @@ from app.models import GoogleAuth, GoogleServiceType, Project
 from app.schemas import ProjectCreate, ProjectOut, ProjectUpdate
 from app.schemas_phase2 import StructureImportRequest, StructureImportResponse
 from app.services.cascade_delete import purge_project
+from app.services.crypto_service import store_secret
 from app.services.project_targets import (
     apply_project_targets_to_auth,
     normalize_ga4_property_id,
@@ -34,6 +35,8 @@ def _apply_payload(project: Project, payload: ProjectCreate | ProjectUpdate):
         project.gsc_site_url = normalize_gsc_site_url(data.pop("gsc_site_url"))
     if "ga4_property_id" in data:
         project.ga4_property_id = normalize_ga4_property_id(data.pop("ga4_property_id"))
+    if "wp_app_password" in data:
+        project.wp_app_password = store_secret(data.pop("wp_app_password"))
     for field, value in data.items():
         setattr(project, field, value)
 

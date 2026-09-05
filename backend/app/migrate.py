@@ -107,3 +107,48 @@ def run_light_migrations():
                 conn.execute(text(sql))
         except Exception as e:
             print(f"[migrate] Skipped SQL '{sql}': {e}")
+
+
+# ── W8 (appended): products.availability ────────────────────────────────────
+# Additive column per plan section 2.4. main.py already calls
+# run_light_migrations(); this wrapper runs the original migrations plus the
+# appended ones, so no existing call sites need to change.
+
+
+def _run_appended_migrations():
+    insp = inspect(engine)
+    if "products" in insp.get_table_names():
+        prod_cols = {c["name"] for c in insp.get_columns("products")}
+        if "availability" not in prod_cols:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE products ADD COLUMN availability TEXT"))
+
+
+_original_run_light_migrations = run_light_migrations
+
+
+def run_light_migrations():  # noqa: F811
+    _original_run_light_migrations()
+    _run_appended_migrations()
+
+
+# ── W3/W4 (appended): pages.brief_text ──────────────────────────────────────
+# Editable per-page brief (docs/client_reply_journey Step 7 small PLANNED
+# addition). Same append-only wrapper pattern as above.
+
+
+def _run_appended_migrations_brief():
+    insp = inspect(engine)
+    if "pages" in insp.get_table_names():
+        page_cols = {c["name"] for c in insp.get_columns("pages")}
+        if "brief_text" not in page_cols:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE pages ADD COLUMN brief_text TEXT"))
+
+
+_previous_run_light_migrations = run_light_migrations
+
+
+def run_light_migrations():  # noqa: F811
+    _previous_run_light_migrations()
+    _run_appended_migrations_brief()

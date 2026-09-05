@@ -24,6 +24,15 @@ from app.schemas_phase2 import (
 log = logging.getLogger("seo_crm.product_providers")
 
 
+class ProviderError(Exception):
+    """A configured product provider API call failed.
+
+    Fail-closed per W8 rules: demo fixtures (is_stub=True) are only returned
+    when the provider is NOT configured; once credentials exist, any vendor
+    failure must surface as this error instead of silently stubbing data.
+    """
+
+
 class BaseProductProvider(ABC):
     @property
     @abstractmethod
@@ -133,73 +142,88 @@ class AmazonCreatorsProvider(BaseProductProvider):
     def search(self, query: str, limit: int = 10, affiliate_tag: str | None = None) -> list[ProductSearchItemOut]:
         tag = self.get_partner_tag(affiliate_tag)
 
-        if self.is_configured() and not settings.product_providers_force_stub:
+        if not self.is_configured() or settings.product_providers_force_stub:
+            # Documented demo mode: provider not configured -> realistic fixtures (is_stub).
+            return self._generate_fixture_results(query, limit, tag)
+
+        host = "webservices.amazon.es"
+        region = "eu-west-1"
+        service = "ProductAdvertisingAPI"
+        target_action = "com.amazon.paapi5.v1.ProductAdvertisingAPIv1.SearchItems"
+
+        payload = {
+            "Keywords": query,
+            "Resources": [
+                "ItemInfo.Title",
+                "ItemInfo.ByLineInfo",
+                "ItemInfo.Features",
+                "Images.Primary.Large",
+                "Offers.Listings.Price",
+                "Offers.Listings.Availability",
+                "Offers.Listings.Condition",
+                "Offers.Listings.DeliveryInfo",
+                "CustomerReviews.StarRating",
+            ],
+            "ItemCount": min(limit, 10),
+            "PartnerTag": tag,
+            "PartnerType": "Associates",
+            "Marketplace": self.get_marketplace(),
+        }
+        payload_bytes = json.dumps(payload).encode("utf-8")
+        headers = self._generate_aws4_headers(host, region, service, payload_bytes, target_action)
+
+        try:
+            with httpx.Client(timeout=8.0) as client:
+                resp = client.post(f"https://{host}/paapi5/searchitems", content=payload_bytes, headers=headers)
+        except Exception as e:
+            log.warning("Amazon PA-API live request failed: %s", e)
+            raise ProviderError(f"Error al consultar Amazon PA-API: {e}") from e
+
+        if resp.status_code != 200:
+            raise ProviderError(
+                f"Amazon PA-API respondió con estado {resp.status_code}: {resp.text[:300]}"
+            )
+
+        data = resp.json()
+        items_out: list[ProductSearchItemOut] = []
+        for it in data.get("SearchResult", {}).get("Items", []):
+            asin = it.get("ASIN", "")
+            title = it.get("ItemInfo", {}).get("Title", {}).get("DisplayValue", "Producto Amazon")
+            brand = it.get("ItemInfo", {}).get("ByLineInfo", {}).get("Brand", {}).get("DisplayValue")
+            features_list = it.get("ItemInfo", {}).get("Features", {}).get("DisplayValues", [])
+            image_url = it.get("Images", {}).get("Primary", {}).get("Large", {}).get("URL")
+            listing = (it.get("Offers", {}).get("Listings") or [{}])[0]
+            price_val = None
             try:
-                host = "webservices.amazon.es"
-                region = "eu-west-1"
-                service = "ProductAdvertisingAPI"
-                target_action = "com.amazon.paapi5.v1.ProductAdvertisingAPIv1.SearchItems"
+                amount = listing.get("Price", {}).get("Amount")
+                price_val = float(amount) if amount is not None else None
+            except Exception:
+                price_val = None
+            star = it.get("CustomerReviews", {}).get("StarRating", {}).get("Value")
+            rating_val = f"{star}/5" if star and "/5" not in str(star) else (str(star) if star else None)
+            availability = listing.get("Availability", {}).get("Message") or listing.get("Availability", {}).get("Type")
+            condition = listing.get("Condition", {}).get("Value") or listing.get("Condition", {}).get("DisplayValue")
+            delivery_info = listing.get("DeliveryInfo") or {}
+            is_prime = bool(delivery_info.get("IsPrime")) if delivery_info else False
 
-                payload = {
-                    "Keywords": query,
-                    "Resources": [
-                        "ItemInfo.Title",
-                        "ItemInfo.ByLineInfo",
-                        "ItemInfo.Features",
-                        "Images.Primary.Large",
-                        "Offers.Listings.Price",
-                        "CustomerReviews.StarRating",
-                    ],
-                    "ItemCount": min(limit, 10),
-                    "PartnerTag": tag,
-                    "PartnerType": "Associates",
-                    "Marketplace": self.get_marketplace(),
-                }
-                payload_bytes = json.dumps(payload).encode("utf-8")
-                headers = self._generate_aws4_headers(host, region, service, payload_bytes, target_action)
-
-                with httpx.Client(timeout=8.0) as client:
-                    resp = client.post(f"https://{host}/paapi5/searchitems", content=payload_bytes, headers=headers)
-                    if resp.status_code == 200:
-                        data = resp.json()
-                        items_out: list[ProductSearchItemOut] = []
-                        for it in data.get("SearchResult", {}).get("Items", []):
-                            asin = it.get("ASIN", "")
-                            title = it.get("ItemInfo", {}).get("Title", {}).get("DisplayValue", "Producto Amazon")
-                            brand = it.get("ItemInfo", {}).get("ByLineInfo", {}).get("Brand", {}).get("DisplayValue")
-                            features_list = it.get("ItemInfo", {}).get("Features", {}).get("DisplayValues", [])
-                            image_url = it.get("Images", {}).get("Primary", {}).get("Large", {}).get("URL")
-                            price_val = None
-                            try:
-                                price_val = float(it.get("Offers", {}).get("Listings", [{}])[0].get("Price", {}).get("Amount", 0.0))
-                            except Exception:
-                                price_val = None
-                            rating_val = str(it.get("CustomerReviews", {}).get("StarRating", {}).get("Value", "4.5"))
-
-                            items_out.append(
-                                ProductSearchItemOut(
-                                    provider="amazon",
-                                    external_id=asin,
-                                    name=title,
-                                    brand=brand,
-                                    price=price_val,
-                                    currency="EUR",
-                                    image_url=image_url,
-                                    rating=f"{rating_val}/5" if "/5" not in rating_val else rating_val,
-                                    affiliate_url=f"https://www.amazon.es/dp/{asin}?tag={tag}",
-                                    features=" | ".join(features_list[:3]) if features_list else None,
-                                    availability="En stock",
-                                    is_prime=True,
-                                    condition="Nuevo",
-                                )
-                            )
-                        if items_out:
-                            return items_out
-            except Exception as e:
-                log.warning("Amazon PA-API live request failed, falling back to realistic catalog fixture: %s", e)
-
-        # Realistic Fixture catalog generator for Amazon products
-        return self._generate_fixture_results(query, limit, tag)
+            items_out.append(
+                ProductSearchItemOut(
+                    provider="amazon",
+                    external_id=asin,
+                    name=title,
+                    brand=brand,
+                    price=price_val,
+                    currency="EUR",
+                    image_url=image_url,
+                    rating=rating_val,
+                    affiliate_url=f"https://www.amazon.es/dp/{asin}?tag={tag}",
+                    features=" | ".join(features_list[:3]) if features_list else None,
+                    availability=availability,
+                    is_prime=is_prime,
+                    condition=condition,
+                )
+            )
+        return items_out
 
     def _generate_fixture_results(self, query: str, limit: int = 10, tag: str = "seocrm-21") -> list[ProductSearchItemOut]:
         q = (query or "cafetera").lower().strip()
@@ -305,67 +329,78 @@ class EbayBrowseProvider(BaseProductProvider):
     def search(self, query: str, limit: int = 10, affiliate_tag: str | None = None) -> list[ProductSearchItemOut]:
         campaign_id = self.get_campaign_id(affiliate_tag)
 
-        if self.is_configured() and not settings.product_providers_force_stub:
+        if not self.is_configured() or settings.product_providers_force_stub:
+            # Documented demo mode: provider not configured -> realistic fixtures (is_stub).
+            return self._generate_fixture_results(query, limit, campaign_id)
+
+        try:
+            # 1. Fetch OAuth application token
+            auth_val = urllib.parse.quote(f"{settings.ebay_app_id}:{settings.ebay_cert_id}".encode("latin1"))
+            headers_token = {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": f"Basic {auth_val}",
+            }
+            data_token = {
+                "grant_type": "client_credentials",
+                "scope": "https://api.ebay.com/oauth/api_scope",
+            }
+            with httpx.Client(timeout=8.0) as client:
+                t_resp = client.post("https://api.ebay.com/identity/v1/oauth2/token", data=data_token, headers=headers_token)
+                if t_resp.status_code != 200:
+                    raise ProviderError(
+                        f"eBay OAuth respondió con estado {t_resp.status_code}: {t_resp.text[:300]}"
+                    )
+                access_token = t_resp.json().get("access_token")
+                browse_headers = {
+                    "Authorization": f"Bearer {access_token}",
+                    "X-EBAY-C-MARKETPLACE-ID": self.get_marketplace(),
+                    "X-EBAY-C-ENDUSERCTX": f"affiliateCampaignId={campaign_id}",
+                }
+                params = {"q": query, "limit": min(limit, 10)}
+                b_resp = client.get("https://api.ebay.com/buy/browse/v1/item_summary/search", params=params, headers=browse_headers)
+        except ProviderError:
+            raise
+        except Exception as e:
+            log.warning("eBay Browse API live request failed: %s", e)
+            raise ProviderError(f"Error al consultar la eBay Browse API: {e}") from e
+
+        if b_resp.status_code != 200:
+            raise ProviderError(
+                f"eBay Browse API respondió con estado {b_resp.status_code}: {b_resp.text[:300]}"
+            )
+
+        items_out: list[ProductSearchItemOut] = []
+        for it in b_resp.json().get("itemSummaries", []):
+            item_id = it.get("itemId", "")
+            title = it.get("title", "Artículo eBay")
+            price_val = None
             try:
-                # 1. Fetch OAuth application token
-                auth_val = urllib.parse.quote(f"{settings.ebay_app_id}:{settings.ebay_cert_id}".encode("latin1"))
-                headers_token = {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Authorization": f"Basic {auth_val}",
-                }
-                data_token = {
-                    "grant_type": "client_credentials",
-                    "scope": "https://api.ebay.com/oauth/api_scope",
-                }
-                with httpx.Client(timeout=8.0) as client:
-                    t_resp = client.post("https://api.ebay.com/identity/v1/oauth2/token", data=data_token, headers=headers_token)
-                    if t_resp.status_code == 200:
-                        access_token = t_resp.json().get("access_token")
-                        browse_headers = {
-                            "Authorization": f"Bearer {access_token}",
-                            "X-EBAY-C-MARKETPLACE-ID": self.get_marketplace(),
-                            "X-EBAY-C-ENDUSERCTX": f"affiliateCampaignId={campaign_id}",
-                        }
-                        params = {"q": query, "limit": min(limit, 10)}
-                        b_resp = client.get("https://api.ebay.com/buy/browse/v1/item_summary/search", params=params, headers=browse_headers)
-                        if b_resp.status_code == 200:
-                            items_out: list[ProductSearchItemOut] = []
-                            for it in b_resp.json().get("itemSummaries", []):
-                                item_id = it.get("itemId", "")
-                                title = it.get("title", "Artículo eBay")
-                                price_val = None
-                                try:
-                                    price_val = float(it.get("price", {}).get("value", 0.0))
-                                except Exception:
-                                    price_val = None
-                                img = it.get("image", {}).get("imageUrl")
-                                item_aff_url = it.get("itemAffiliateWebUrl") or it.get("itemWebUrl") or f"https://www.ebay.es/itm/{item_id}"
-                                condition_text = it.get("condition", "Nuevo")
+                value = it.get("price", {}).get("value")
+                price_val = float(value) if value is not None else None
+            except Exception:
+                price_val = None
+            img = it.get("image", {}).get("imageUrl")
+            item_aff_url = it.get("itemAffiliateWebUrl") or it.get("itemWebUrl") or f"https://www.ebay.es/itm/{item_id}"
+            condition_text = it.get("condition")
 
-                                items_out.append(
-                                    ProductSearchItemOut(
-                                        provider="ebay",
-                                        external_id=item_id,
-                                        name=title,
-                                        brand="eBay Store",
-                                        price=price_val,
-                                        currency="EUR",
-                                        image_url=img,
-                                        rating="4.7/5 (Vendedor Excelente)",
-                                        affiliate_url=item_aff_url,
-                                        features=f"Condición: {condition_text} | Envío rápido desde España",
-                                        availability="Disponible",
-                                        is_prime=False,
-                                        condition=condition_text,
-                                    )
-                                )
-                            if items_out:
-                                return items_out
-            except Exception as e:
-                log.warning("eBay Browse API live request failed, falling back to realistic catalog fixture: %s", e)
-
-        # Realistic Fixture catalog generator for eBay products
-        return self._generate_fixture_results(query, limit, campaign_id)
+            items_out.append(
+                ProductSearchItemOut(
+                    provider="ebay",
+                    external_id=item_id,
+                    name=title,
+                    brand="eBay Store",
+                    price=price_val,
+                    currency="EUR",
+                    image_url=img,
+                    rating=None,  # eBay Browse API does not return ratings here; never invent one.
+                    affiliate_url=item_aff_url,
+                    features=f"Condición: {condition_text}" if condition_text else None,
+                    availability=None,
+                    is_prime=False,
+                    condition=condition_text,
+                )
+            )
+        return items_out
 
     def _generate_fixture_results(self, query: str, limit: int = 10, campaign_id: str = "5338901234") -> list[ProductSearchItemOut]:
         q_title = query.title()
@@ -426,33 +461,44 @@ class EbayBrowseProvider(BaseProductProvider):
 
 
 class ProductProviderRegistry:
-    """Registry coordinating official Amazon, eBay, and future product providers."""
+    """Registry coordinating official Amazon, eBay, and future product providers.
+
+    Providers live in a dict and plug in via register(); get_status() and
+    search() iterate the dict so a third source only needs a new
+    BaseProductProvider subclass plus one register() call.
+    """
 
     def __init__(self):
-        self.amazon = AmazonCreatorsProvider()
-        self.ebay = EbayBrowseProvider()
+        self._providers: dict[str, BaseProductProvider] = {}
+        self.register(AmazonCreatorsProvider())
+        self.register(EbayBrowseProvider())
+
+    def register(self, provider: BaseProductProvider) -> None:
+        self._providers[provider.provider_id] = provider
+
+    @property
+    def providers(self) -> dict[str, BaseProductProvider]:
+        return dict(self._providers)
 
     def get_status(self) -> ProductProviderStatusOut:
-        return ProductProviderStatusOut(
-            providers=[
+        items = []
+        for prov in self._providers.values():
+            extras: dict[str, Any] = {}
+            if isinstance(prov, AmazonCreatorsProvider):
+                extras["partner_tag"] = settings.amazon_paapi_partner_tag or "seocrm-21"
+            elif isinstance(prov, EbayBrowseProvider):
+                extras["campaign_id"] = settings.ebay_campaign_id or "5338901234"
+            items.append(
                 ProviderStatusItem(
-                    provider=self.amazon.provider_id,
-                    name=self.amazon.display_name,
-                    configured=self.amazon.is_configured(),
-                    marketplace=self.amazon.get_marketplace(),
-                    using_stub=not self.amazon.is_configured() or settings.product_providers_force_stub,
-                    partner_tag=settings.amazon_paapi_partner_tag or "seocrm-21",
-                ),
-                ProviderStatusItem(
-                    provider=self.ebay.provider_id,
-                    name=self.ebay.display_name,
-                    configured=self.ebay.is_configured(),
-                    marketplace=self.ebay.get_marketplace(),
-                    using_stub=not self.ebay.is_configured() or settings.product_providers_force_stub,
-                    campaign_id=settings.ebay_campaign_id or "5338901234",
-                ),
-            ]
-        )
+                    provider=prov.provider_id,
+                    name=prov.display_name,
+                    configured=prov.is_configured(),
+                    marketplace=prov.get_marketplace(),
+                    using_stub=not prov.is_configured() or settings.product_providers_force_stub,
+                    **extras,
+                )
+            )
+        return ProductProviderStatusOut(providers=items)
 
     def search(
         self,
@@ -464,16 +510,10 @@ class ProductProviderRegistry:
         results: list[ProductSearchItemOut] = []
         is_stub = False
 
-        if provider in ("all", "amazon"):
-            amz_items = self.amazon.search(query, limit=limit, affiliate_tag=affiliate_tag)
-            results.extend(amz_items)
-            if not self.amazon.is_configured() or settings.product_providers_force_stub:
-                is_stub = True
-
-        if provider in ("all", "ebay"):
-            ebay_items = self.ebay.search(query, limit=limit, affiliate_tag=affiliate_tag)
-            results.extend(ebay_items)
-            if not self.ebay.is_configured() or settings.product_providers_force_stub:
+        selected = [p for pid, p in self._providers.items() if provider in ("all", pid)]
+        for prov in selected:
+            results.extend(prov.search(query, limit=limit, affiliate_tag=affiliate_tag))
+            if not prov.is_configured() or settings.product_providers_force_stub:
                 is_stub = True
 
         return ProductSearchResponse(
@@ -523,6 +563,7 @@ class ProductProviderRegistry:
             existing.features = req.features or existing.features
             existing.opinions = req.opinions or existing.opinions
             existing.stock_notes = req.stock_notes or existing.stock_notes
+            existing.availability = req.availability or existing.availability
             existing.last_synced_at = now
             db.commit()
             db.refresh(existing)
@@ -540,6 +581,7 @@ class ProductProviderRegistry:
                 features=req.features,
                 opinions=req.opinions,
                 stock_notes=req.stock_notes,
+                availability=req.availability,
                 provider=req.provider,
                 external_id=req.external_id,
                 last_synced_at=now,
@@ -551,3 +593,31 @@ class ProductProviderRegistry:
 
 
 product_registry = ProductProviderRegistry()
+
+
+# ── Third-source template (W8 acceptance) ────────────────────────────────────
+# To add another official product source, implement BaseProductProvider and
+# call product_registry.register(YourProvider()) once at startup. Example:
+#
+# class FutureProvider(BaseProductProvider):
+#     """Template for a third product source (e.g. AliExpress, Awin, Idealo)."""
+#
+#     @property
+#     def provider_id(self) -> str:
+#         return "future"
+#
+#     @property
+#     def display_name(self) -> str:
+#         return "Future Provider"
+#
+#     def is_configured(self) -> bool:
+#         return bool((settings.future_api_key or "").strip())
+#
+#     def get_marketplace(self) -> str:
+#         return "ES"
+#
+#     def search(self, query: str, limit: int = 10, affiliate_tag: str | None = None) -> list[ProductSearchItemOut]:
+#         # Unconfigured -> return demo fixtures (documented is_stub mode).
+#         # Configured + vendor failure -> raise ProviderError (fail-closed);
+#         # never silently fall back to fixtures once credentials exist.
+#         raise NotImplementedError

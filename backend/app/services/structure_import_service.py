@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 import logging
 import re
 from typing import Any
@@ -77,6 +78,63 @@ def parse_structure_csv(csv_content: str) -> list[StructureImportItem]:
     return items
 
 
+def parse_structure_json(json_content: str) -> list[StructureImportItem]:
+    if not json_content or not json_content.strip():
+        return []
+
+    text = json_content.lstrip("\ufeff").strip()
+    data = json.loads(text)
+    if isinstance(data, dict):
+        # Accept a single object or an object wrapping a list
+        data = data.get("items") or data.get("pages") or [data]
+    if not isinstance(data, list):
+        raise ValueError("El contenido JSON debe ser una lista de objetos.")
+
+    items: list[StructureImportItem] = []
+    for row in data:
+        if not isinstance(row, dict):
+            continue
+        norm = {str(k).strip().lower().replace(" ", "_"): (str(v).strip() if v is not None else "") for k, v in row.items()}
+
+        title = norm.get("title") or norm.get("titulo") or norm.get("pagina") or norm.get("page")
+        slug = norm.get("slug") or norm.get("url") or norm.get("path")
+        niche_name = norm.get("niche_name") or norm.get("niche") or norm.get("nicho") or "General"
+        parent_slug = norm.get("parent_slug") or norm.get("parent") or norm.get("padre") or None
+
+        pt_raw = (norm.get("page_type") or norm.get("type") or norm.get("tipo") or "TSG").upper()
+        if pt_raw in ("TSR", "TSA", "TSG"):
+            page_type = PageType(pt_raw)
+        else:
+            page_type = PageType.TSG
+
+        h1 = norm.get("h1") or None
+        seo_title = norm.get("seo_title") or norm.get("meta_title") or None
+        seo_desc = norm.get("seo_description") or norm.get("meta_description") or norm.get("description") or None
+        focus_kw = norm.get("focus_keyword") or norm.get("keyword") or norm.get("palabra_clave") or None
+
+        if title and slug:
+            if not slug.startswith("/"):
+                slug = "/" + slug
+            if parent_slug and not parent_slug.startswith("/"):
+                parent_slug = "/" + parent_slug
+
+            items.append(
+                StructureImportItem(
+                    title=title,
+                    slug=slug,
+                    niche_name=niche_name,
+                    parent_slug=parent_slug if parent_slug else None,
+                    page_type=page_type,
+                    h1=h1,
+                    seo_title=seo_title,
+                    seo_description=seo_desc,
+                    focus_keyword=focus_kw,
+                )
+            )
+
+    return items
+
+
 def import_site_structure(db: Session, request: StructureImportRequest) -> StructureImportResponse:
     # 1. Resolve or create Project
     project = None
@@ -101,10 +159,12 @@ def import_site_structure(db: Session, request: StructureImportRequest) -> Struc
             db.commit()
             db.refresh(project)
 
-    # 2. Extract items from CSV or raw list
+    # 2. Extract items from CSV, JSON or raw list
     items: list[StructureImportItem] = []
     if request.csv_content:
         items = parse_structure_csv(request.csv_content)
+    elif request.json_content:
+        items = parse_structure_json(request.json_content)
     elif request.items:
         items = request.items
 

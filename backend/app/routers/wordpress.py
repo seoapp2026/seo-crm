@@ -11,13 +11,17 @@ from fastapi.responses import Response, StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import ContentDraft, Keyword, Niche, Page, Project, Url
+from app.models import ContentDraft, InternalLink, Keyword, Niche, Page, Product, Project, Url
+from app.services.crypto_service import read_secret
 from app.schemas_phase2 import (
     WpExportBundleOut,
     WpExportItemOut,
+    WpInternalLinkOut,
+    WpProductOut,
     WpPushRequest,
     WpPushResponse,
     WpPushResultItem,
+    WpRankMathOut,
     WpTestConnectionRequest,
     WpTestConnectionResponse,
 )
@@ -40,6 +44,24 @@ def _build_export_items(project_id: int, db: Session) -> tuple[Project, list[WpE
     pages = db.query(Page).filter(Page.project_id == project_id).order_by(Page.created_at).all()
     items: list[WpExportItemOut] = []
 
+    # W6: project products are exported on every page (no page-product link table)
+    products = db.query(Product).filter(Product.project_id == project_id).all()
+    export_products = [
+        WpProductOut(
+            name=p.name,
+            affiliate_url=p.affiliate_url,
+            image_url=p.image_url,
+        )
+        for p in products
+    ]
+
+    def _slug_for(page_id: int, title: str) -> str:
+        url = db.query(Url).filter(Url.page_id == page_id).first()
+        slug = url.slug if url else f"/{title.lower().strip().replace(' ', '-')}"
+        if not slug.startswith("/"):
+            slug = f"/{slug}"
+        return slug
+
     for page in pages:
         url = db.query(Url).filter(Url.page_id == page.id).first()
         niche = db.get(Niche, page.niche_id)
@@ -49,7 +71,8 @@ def _build_export_items(project_id: int, db: Session) -> tuple[Project, list[WpE
 
         # Keywords
         kws = db.query(Keyword).filter(Keyword.page_id == page.id).all()
-        primary_kw = next((k.term for k in kws if k.is_primary), (kws[0].term if kws else None))
+        primary_kw_obj = next((k for k in kws if k.is_primary), (kws[0] if kws else None))
+        primary_kw = primary_kw_obj.term if primary_kw_obj else None
         secondary_kws = [k.term for k in kws if not k.is_primary]
 
         # Parent info
@@ -61,6 +84,15 @@ def _build_export_items(project_id: int, db: Session) -> tuple[Project, list[WpE
                 parent_title = parent.title
                 parent_url = db.query(Url).filter(Url.page_id == parent.id).first()
                 parent_slug = parent_url.slug if parent_url else f"/{parent.title.lower().strip().replace(' ', '-')}"
+
+        # W6: breadcrumbs from the parent chain (root first), current page last
+        breadcrumbs: list[str] = []
+        chain_page = page
+        seen_ids: set[int] = set()
+        while chain_page and chain_page.id not in seen_ids:
+            seen_ids.add(chain_page.id)
+            breadcrumbs.insert(0, chain_page.breadcrumb_label or chain_page.title)
+            chain_page = db.get(Page, chain_page.parent_page_id) if chain_page.parent_page_id else None
 
         # Tags
         tags_list: list[str] = []
@@ -74,6 +106,28 @@ def _build_export_items(project_id: int, db: Session) -> tuple[Project, list[WpE
             except Exception:
                 tags_list = [t.strip() for t in page.wp_tags_json.split(",") if t.strip()]
 
+        # W6: outline from outline_json
+        outline: list[dict] = []
+        if page.outline_json:
+            try:
+                parsed_outline = json.loads(page.outline_json)
+                if isinstance(parsed_outline, list):
+                    outline = [o for o in parsed_outline if isinstance(o, dict)]
+            except Exception:
+                outline = []
+
+        # W6: internal links from the InternalLink model
+        internal_links: list[WpInternalLinkOut] = []
+        links = db.query(InternalLink).filter(InternalLink.from_page_id == page.id).all()
+        for link in links:
+            to_page = db.get(Page, link.to_page_id)
+            internal_links.append(
+                WpInternalLinkOut(
+                    to_slug=_slug_for(link.to_page_id, to_page.title) if to_page else None,
+                    anchor=link.anchor,
+                )
+            )
+
         # HTML content
         content_html = page.content_html
         if not content_html:
@@ -86,14 +140,17 @@ def _build_export_items(project_id: int, db: Session) -> tuple[Project, list[WpE
             if latest_draft:
                 content_html = latest_draft.content_html or latest_draft.draft_body
 
+        meta_title = page.seo_title or page.title
+        meta_description = page.seo_description or page.objective or ""
+
         items.append(
             WpExportItemOut(
                 page_id=page.id,
                 title=page.title,
                 slug=slug,
                 h1=page.h1 or page.title,
-                meta_title=page.seo_title or page.title,
-                meta_description=page.seo_description or page.objective or "",
+                meta_title=meta_title,
+                meta_description=meta_description,
                 focus_keyword=primary_kw,
                 secondary_keywords=secondary_kws,
                 content_html=content_html,
@@ -107,6 +164,24 @@ def _build_export_items(project_id: int, db: Session) -> tuple[Project, list[WpE
                 parent_slug=parent_slug,
                 parent_title=parent_title,
                 schema_json=page.schema_json,
+                # W6 completeness keys (PHASE25 plan, section W6)
+                seo_title=page.seo_title,
+                seo_description=page.seo_description,
+                primary_keyword=primary_kw,
+                intent=(
+                    primary_kw_obj.intent.value
+                    if primary_kw_obj and hasattr(primary_kw_obj.intent, "value")
+                    else (str(primary_kw_obj.intent) if primary_kw_obj else None)
+                ),
+                outline=outline,
+                internal_links=internal_links,
+                breadcrumbs=breadcrumbs,
+                products=export_products,
+                rank_math=WpRankMathOut(
+                    focus_keyword=primary_kw,
+                    title=meta_title,
+                    description=meta_description,
+                ),
             )
         )
 
@@ -309,7 +384,7 @@ async def test_wp_connection(payload: WpTestConnectionRequest, db: Session = Dep
         if project:
             wp_url = wp_url or project.wp_url
             wp_username = wp_username or project.wp_username
-            wp_app_password = wp_app_password or project.wp_app_password
+            wp_app_password = wp_app_password or read_secret(project.wp_app_password)
 
     if not wp_url or not wp_username or not wp_app_password:
         raise HTTPException(
@@ -359,7 +434,7 @@ async def push_to_wordpress(payload: WpPushRequest, db: Session = Depends(get_db
 
     wp_url = payload.wp_url or project.wp_url
     wp_username = payload.wp_username or project.wp_username
-    wp_app_password = payload.wp_app_password or project.wp_app_password
+    wp_app_password = payload.wp_app_password or read_secret(project.wp_app_password)
 
     if not wp_url or not wp_username or not wp_app_password:
         raise HTTPException(

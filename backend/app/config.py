@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     app_auth_password: str = ""
     auth_allowed_emails: str = ""
 
+    # ── Credential encryption at rest ───────────────────────────────────────
+    # Fernet key for encrypting stored credentials (Google OAuth tokens,
+    # WordPress app passwords). Generate with:
+    #   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    # Empty/absent = encryption disabled (credentials stored as plaintext).
+    app_encryption_key: str = ""
+
     # ── Server (Railway sets PORT automatically) ────────────────────────────
     port: int = 8000
     static_dir: str = ""

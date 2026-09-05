@@ -117,17 +117,13 @@ def scrape_competitor_structure(request: CompetitorScrapeRequest) -> CompetitorS
             t_lower = h.text.lower()
             if any(num in h.text for num in ["1.", "2.", "3.", "4.", "5.", "#1", "#2", "#3", "top", "mejor"]) or any(b in t_lower for b in ["cecotec", "delonghi", "philips", "krups", "nespresso", "oster", "braun", "bosch", "rowenta", "xiaomi", "samsung", "apple", "lg"]):
                 clean_name = re.sub(r"^[0-9]+[.\-)]\s*", "", h.text).strip()
-                # Scan next lines for price or rating
+                # Keep only what is actually visible in the heading — never invent
+                # price, rating, pros/cons or specs that the page does not show.
                 detected_products.append(
                     ProductItemIn(
                         name=clean_name,
                         brand=clean_name.split()[0] if clean_name else None,
                         model=" ".join(clean_name.split()[1:]) if len(clean_name.split()) > 1 else None,
-                        price="Consultar",
-                        rating="4.5/5",
-                        pros=["Excelente rendimiento", "Buena relacion calidad-precio"],
-                        cons=["Precio algo elevado"],
-                        specs={"Garantia": "3 anos", "Tipo": "Gama Media-Alta"},
                     )
                 )
 

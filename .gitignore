@@ -11,6 +11,8 @@ backend/*.db
 frontend/node_modules/
 frontend/dist/
 
+/docs 
+
 # Env & secrets
 .env
 .env.local

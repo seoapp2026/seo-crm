@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.models import GoogleAuth, GoogleServiceType, Project
+from app.services.crypto_service import read_secret, store_secret
 from app.services.project_targets import apply_project_targets_to_auth
 
 _PROFILE_SCOPES = [
@@ -99,11 +100,12 @@ def exchange_code(code: str, service: GoogleServiceType) -> Credentials:
 
 
 def credentials_from_auth(auth: GoogleAuth, service: GoogleServiceType) -> Credentials:
-    if not auth.refresh_token:
+    refresh_token = read_secret(auth.refresh_token)
+    if not refresh_token:
         raise HTTPException(status_code=400, detail="Integración no conectada")
     creds = Credentials(
-        token=auth.access_token,
-        refresh_token=auth.refresh_token,
+        token=read_secret(auth.access_token),
+        refresh_token=refresh_token,
         token_uri="https://oauth2.googleapis.com/token",
         client_id=settings.google_client_id,
         client_secret=settings.google_client_secret,
@@ -111,15 +113,15 @@ def credentials_from_auth(auth: GoogleAuth, service: GoogleServiceType) -> Crede
     )
     if creds.expired and creds.refresh_token:
         creds.refresh(Request())
-        auth.access_token = creds.token
+        auth.access_token = store_secret(creds.token)
         if creds.expiry:
             auth.token_expires_at = creds.expiry.replace(tzinfo=timezone.utc)
     return creds
 
 
 def save_credentials(db: Session, auth: GoogleAuth, creds: Credentials, service: GoogleServiceType):
-    auth.access_token = creds.token
-    auth.refresh_token = creds.refresh_token or auth.refresh_token
+    auth.access_token = store_secret(creds.token)
+    auth.refresh_token = store_secret(creds.refresh_token) or auth.refresh_token
     if creds.expiry:
         auth.token_expires_at = creds.expiry.replace(tzinfo=timezone.utc)
     else:

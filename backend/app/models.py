@@ -113,6 +113,7 @@ class Page(Base):
     wp_tags_json: Mapped[str | None] = mapped_column(Text, default="[]")
     content_html: Mapped[str | None] = mapped_column(Text)
     content_status: Mapped[str] = mapped_column(Text, default="borrador", nullable=False)
+    brief_text: Mapped[str | None] = mapped_column(Text)
     schema_json: Mapped[str | None] = mapped_column(Text)
     export_ready: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -377,6 +378,7 @@ class Product(Base):
     price: Mapped[float | None] = mapped_column(Float)
     currency: Mapped[str] = mapped_column(Text, default="EUR")
     stock_notes: Mapped[str | None] = mapped_column(Text)
+    availability: Mapped[str | None] = mapped_column(Text)  # W8: vendor availability text when API provides it
     opinions: Mapped[str | None] = mapped_column(Text)
     source_url: Mapped[str | None] = mapped_column(Text)
     provider: Mapped[str] = mapped_column(Text, default="manual", nullable=False)

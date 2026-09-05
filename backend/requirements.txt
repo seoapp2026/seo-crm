@@ -13,3 +13,4 @@ google-auth-oauthlib==1.2.1
 google-analytics-data==0.18.12
 APScheduler==3.10.4
 PyJWT==2.10.1
+cryptography==49.0.0

@@ -6,6 +6,7 @@ from google.oauth2.credentials import Credentials
 from sqlalchemy.orm import Session
 
 from app.models import AnalyticsData, GoogleAuth, GoogleServiceType, SyncJob, SyncJobStatus, SyncJobType
+from app.services.crypto_service import read_secret
 from app.services.google_oauth import SCOPES, credentials_from_auth, save_credentials
 from app.services.project_targets import resolve_ga4_property
 
@@ -17,7 +18,7 @@ def sync_ga4_for_project(db: Session, project_id: int) -> int:
         .first()
     )
     property_id = resolve_ga4_property(db, project_id, auth)
-    if not auth or not auth.refresh_token or not property_id:
+    if not auth or not read_secret(auth.refresh_token) or not property_id:
         raise ValueError("GA4 no conectado — configura el Property ID en el proyecto")
 
     job = (

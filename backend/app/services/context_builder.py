@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.models import AiPrompt, Competitor, InternalLink, Keyword, Niche, Page, Project
+from app.models import AiPrompt, Competitor, InternalLink, Keyword, Niche, Page, Product, Project
 from app.schemas_phase2 import AssistantRunRequest, ContextPreviewRequest, ContextPreviewResponse
 from app.services.performance import build_performance_summary
 
@@ -36,12 +36,51 @@ def build_assistant_context(
     }
 
     context_blocks: list[str] = []
+    context_used: list[str] = []
 
     # 1. Project Context
     project = db.get(Project, payload.project_id)
     if project:
         resolved_entities["project_name"] = project.name
         context_blocks.append(f"PROYECTO: {project.name}" + (f" — {project.description}" if project.description else ""))
+        context_used.append("project")
+
+    # 1b. Products (W4): real commercial facts for the AI — omitted silently when none
+    if project:
+        products = (
+            db.query(Product)
+            .filter(Product.project_id == project.id)
+            .order_by(Product.updated_at.desc())
+            .limit(10)
+            .all()
+        )
+        if products:
+            product_lines = []
+            for prod in products:
+                line = f"- {prod.name}"
+                details = []
+                if prod.brand:
+                    details.append(f"Marca: {prod.brand}")
+                if prod.price is not None:
+                    details.append(f"Precio: {prod.price} {prod.currency or 'EUR'}")
+                if prod.rating:
+                    details.append(f"Valoración: {prod.rating}")
+                if prod.availability:
+                    details.append(f"Disponibilidad: {prod.availability}")
+                if prod.stock_notes:
+                    details.append(f"Stock: {prod.stock_notes}")
+                if details:
+                    line += f" ({', '.join(details)})"
+                if prod.features:
+                    line += f" | Características: {prod.features}"
+                if prod.affiliate_url:
+                    line += f" | URL afiliado: {prod.affiliate_url}"
+                product_lines.append(line)
+            context_blocks.append(
+                "PRODUCTS DEL PROYECTO (datos comerciales reales — úsalos tal cual, no los inventes):\n"
+                + "\n".join(product_lines)
+            )
+            context_used.append(f"products:{len(products)}")
 
     # 2. Niche Context
     niche_id = payload.niche_id
@@ -63,6 +102,7 @@ def build_assistant_context(
             if niche.layout_template_text:
                 resolved_entities["layout_template"] = niche.layout_template_text
                 context_blocks.append(f"REGLAS DE MAQUETACIÓN DEL NICHO:\n{niche.layout_template_text}")
+            context_used.append("niche")
 
     # 3. Page Context & Silo Hierarchy
     if page_obj:
@@ -102,6 +142,7 @@ def build_assistant_context(
             page_lines.append("JERARQUÍA SILO: Página Pilar (Raíz)")
 
         context_blocks.append("\n".join(page_lines))
+        context_used.append("page")
 
         # 4. Keywords
         kws = db.query(Keyword).filter(Keyword.page_id == page_obj.id).all()
@@ -116,6 +157,7 @@ def build_assistant_context(
                 resolved_entities["secondary_keywords"] = [k.term for k in secondary_kws]
                 kw_lines.append("KEYWORDS SECUNDARIAS: " + ", ".join(f"{k.term} ({k.intent.value})" for k in secondary_kws))
             context_blocks.append("\n".join(kw_lines))
+            context_used.append("keywords")
 
         # 5. Internal Links
         out_links = db.query(InternalLink).filter(InternalLink.from_page_id == page_obj.id).all()
@@ -125,6 +167,7 @@ def build_assistant_context(
             if link_titles:
                 resolved_entities["internal_links_out"] = link_titles
                 context_blocks.append("ENLACES INTERNOS A INCLUIR: " + ", ".join(link_titles))
+                context_used.append("internal_links")
 
     # 6. Competitor Context
     if payload.competitor_id:
@@ -132,6 +175,7 @@ def build_assistant_context(
         if comp:
             resolved_entities["competitor_domain"] = comp.domain
             context_blocks.append(f"COMPETIDOR DE REFERENCIA: {comp.domain}" + (f" — {comp.notes}" if comp.notes else ""))
+            context_used.append("competitor")
 
     # 7. Performance Metrics (GSC / GA4)
     slug_str = prompt.slug.lower()
@@ -156,11 +200,15 @@ def build_assistant_context(
                     f"MÉTRICAS REALES (28 DÍAS): clicks={perf.clicks_28d}, impresiones={perf.impressions_28d}, "
                     f"posición media={perf.position_28d:.1f}, sesiones={perf.sessions_28d}, tendencia={perf.trend_pct:+.1f}%"
                 )
+                context_used.append("metrics")
 
     # 8. Extra user instructions
     if payload.extra_context and payload.extra_context.strip():
         resolved_entities["extra_instructions"] = payload.extra_context.strip()
         context_blocks.append(f"INSTRUCCIONES EXTRA DEL USUARIO:\n{payload.extra_context.strip()}")
+        context_used.append("extra_instructions")
+
+    resolved_entities["context_used"] = context_used
 
     user_prompt = "\n\n".join(context_blocks) if context_blocks else "Analiza el proyecto según tu rol."
     system_prompt = prompt.system_prompt

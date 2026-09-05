@@ -1,11 +1,33 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../../api/client'
+import { API_BASE } from '../../api/base'
+import { apiFetch, parseApiError } from '../../api/http'
 import { phase2Api } from '../../api/phase2-client'
 import { ScopeBar } from '../../components/ScopeBar'
 import { useApp } from '../../context/AppContext'
 import { useProjects } from '../../hooks/useProjects'
 import type { Project } from '../../types'
 import type { WpExportBundle, WpExportItem, WpPushResponse } from '../../types/phase2'
+
+interface ExportAuditPage {
+  page_id: number
+  title: string
+  slug: string
+  ready: boolean
+  errors: string[]
+  warnings: string[]
+}
+
+interface ExportAuditReport {
+  project_id: number
+  project_name: string
+  total_pages: number
+  ready_pages: number
+  error_pages: number
+  total_errors: number
+  total_warnings: number
+  pages: ExportAuditPage[]
+}
 
 export function WordPressPage() {
   const { scopeProject, setScopeProject, setTopbarAction, toast } = useApp()
@@ -23,6 +45,11 @@ export function WordPressPage() {
   const [rankMathCsvText, setRankMathCsvText] = useState('')
   const [importingRankMath, setImportingRankMath] = useState(false)
   const [syncingMetas, setSyncingMetas] = useState(false)
+
+  // Pre-export audit state (W5)
+  const [auditReport, setAuditReport] = useState<ExportAuditReport | null>(null)
+  const [auditLoading, setAuditLoading] = useState(false)
+  const [auditExpanded, setAuditExpanded] = useState<number[]>([])
 
   // WP Credentials state
   const [wpUrl, setWpUrl] = useState('')
@@ -44,7 +71,8 @@ export function WordPressPage() {
     if (currentProjectObj) {
       setWpUrl(currentProjectObj.wp_url || '')
       setWpUsername(currentProjectObj.wp_username || '')
-      setWpAppPassword(currentProjectObj.wp_app_password || '')
+      // Password is write-only (stored encrypted server-side): never prefilled.
+      setWpAppPassword('')
       setConnResult(null)
     }
   }, [currentProjectObj])
@@ -126,7 +154,8 @@ export function WordPressPage() {
       await api.projects.update(effectiveProject, {
         wp_url: wpUrl,
         wp_username: wpUsername,
-        wp_app_password: wpAppPassword,
+        // Write-only: omit when empty so the stored (encrypted) password is kept.
+        ...(wpAppPassword ? { wp_app_password: wpAppPassword } : {}),
       })
       await reload()
       toast('Credenciales de WordPress guardadas en el proyecto')
@@ -200,6 +229,27 @@ export function WordPressPage() {
     }
   }
 
+  const runExportAudit = async () => {
+    if (!effectiveProject) return
+    setAuditLoading(true)
+    try {
+      const res = await apiFetch(`${API_BASE}/audit/export-audit?project_id=${effectiveProject}`)
+      if (!res.ok) throw new Error(await parseApiError(res))
+      setAuditReport((await res.json()) as ExportAuditReport)
+      setAuditExpanded([])
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Error al auditar el proyecto')
+    } finally {
+      setAuditLoading(false)
+    }
+  }
+
+  const toggleAuditExpand = (pageId: number) => {
+    setAuditExpanded((prev) =>
+      prev.includes(pageId) ? prev.filter((id) => id !== pageId) : [...prev, pageId],
+    )
+  }
+
   const displayedPages = bundle?.pages.filter((p) => (filterOnlyReady ? p.export_ready : true)) || []
 
   const toggleSelectAll = () => {
@@ -227,6 +277,149 @@ export function WordPressPage() {
         <strong>WP All Import</strong>, <strong>Rank Math SEO</strong>, archivos HTML maquetados para Divi o{' '}
         <strong>Push Directo por REST API</strong> sin salir del CRM.
       </div>
+
+      {/* PRE-EXPORT AUDIT PANEL (W5) */}
+      {effectiveProject && (
+        <div className="card" style={{ marginBottom: 20, padding: '16px 20px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 12,
+            }}
+          >
+            <div>
+              <h3 style={{ margin: 0, fontSize: 16 }}>🔍 Auditoría pre-exportación</h3>
+              <p className="t-sub" style={{ margin: '4px 0 0 0' }}>
+                Comprueba palabra clave principal, slug, SEO title/description, H1, contenido maquetado
+                y enlaces internos antes de descargar o enviar a WordPress.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="btn btn-sm"
+              style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#92400e' }}
+              onClick={runExportAudit}
+              disabled={auditLoading}
+            >
+              {auditLoading ? 'Auditando...' : '⚡ Auditar proyecto'}
+            </button>
+          </div>
+
+          {auditReport && (
+            <div style={{ marginTop: 14 }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+                <span className="badge" style={{ background: '#f1f5f9', color: '#475569' }}>
+                  Total: <strong>{auditReport.total_pages}</strong>
+                </span>
+                <span className="badge" style={{ background: '#dcfce7', color: '#166534' }}>
+                  ✓ Listas: <strong>{auditReport.ready_pages}</strong>
+                </span>
+                <span
+                  className="badge"
+                  style={{
+                    background: auditReport.error_pages > 0 ? '#fee2e2' : '#f1f5f9',
+                    color: auditReport.error_pages > 0 ? '#991b1b' : '#475569',
+                  }}
+                >
+                  ✕ Con errores: <strong>{auditReport.error_pages}</strong>
+                </span>
+                <span
+                  className="badge"
+                  style={{
+                    background: auditReport.total_warnings > 0 ? '#fef3c7' : '#f1f5f9',
+                    color: auditReport.total_warnings > 0 ? '#92400e' : '#475569',
+                  }}
+                >
+                  ⚠️ Advertencias: <strong>{auditReport.total_warnings}</strong>
+                </span>
+              </div>
+
+              <table style={{ width: '100%' }}>
+                <tbody>
+                  {auditReport.pages.map((p) => {
+                    const hasIssues = p.errors.length > 0 || p.warnings.length > 0
+                    const isOpen = auditExpanded.includes(p.page_id)
+                    return (
+                      <tr key={p.page_id}>
+                        <td style={{ padding: '8px 4px', borderTop: '1px solid #f1f5f9' }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 10,
+                              flexWrap: 'wrap',
+                            }}
+                          >
+                            <span
+                              className="badge"
+                              style={{
+                                background: p.ready ? '#dcfce7' : '#fee2e2',
+                                color: p.ready ? '#166534' : '#991b1b',
+                              }}
+                            >
+                              {p.ready ? '✓ Lista' : '✕ Errores'}
+                            </span>
+                            {p.warnings.length > 0 && (
+                              <span
+                                className="badge"
+                                style={{ background: '#fef3c7', color: '#92400e' }}
+                              >
+                                ⚠️ {p.warnings.length}
+                              </span>
+                            )}
+                            <strong style={{ fontSize: 13 }}>{p.title}</strong>
+                            <span className="mono muted" style={{ fontSize: 11 }}>{p.slug}</span>
+                            {hasIssues && (
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-ghost"
+                                onClick={() => toggleAuditExpand(p.page_id)}
+                              >
+                                {isOpen ? '▲ Ocultar' : `▼ Detalles (${p.errors.length + p.warnings.length})`}
+                              </button>
+                            )}
+                          </div>
+                          {isOpen && hasIssues && (
+                            <div
+                              style={{
+                                marginTop: 8,
+                                padding: '8px 12px',
+                                borderRadius: 6,
+                                background: '#f8fafc',
+                                border: '1px solid #e2e8f0',
+                                fontSize: 12,
+                              }}
+                            >
+                              {p.errors.map((err) => (
+                                <div key={err} style={{ color: '#991b1b' }}>
+                                  ✕ {err}
+                                </div>
+                              ))}
+                              {p.warnings.map((warn) => (
+                                <div key={warn} style={{ color: '#92400e' }}>
+                                  ⚠️ {warn}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+
+              <p className="muted" style={{ fontSize: 12, margin: '10px 0 0 0' }}>
+                Las advertencias no bloquean la exportación; corrige los errores o exporta solo las
+                páginas listas.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {effectiveProject && (
         <div
@@ -555,7 +748,7 @@ export function WordPressPage() {
                 <label>Contraseña de Aplicación (Application Password)</label>
                 <input
                   type="password"
-                  placeholder="xxxx yyyy zzzz wwww"
+                  placeholder="Guardada — escribe una nueva solo para cambiarla"
                   value={wpAppPassword}
                   onChange={(e) => setWpAppPassword(e.target.value)}
                 />

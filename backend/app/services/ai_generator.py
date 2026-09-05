@@ -26,6 +26,12 @@ PROMPTS: dict[PageType, str] = {
     ),
 }
 
+# W4: commercial facts may only come from the product data present in context.
+COMMERCIAL_FACTS_RULE = (
+    " Los datos comerciales (precio, valoración, disponibilidad) deben tomarse "
+    "únicamente de los datos de producto incluidos en el contexto; nunca los inventes."
+)
+
 
 def _build_user_prompt(page: Page, niche: Niche, keywords: list[Keyword]) -> str:
     kw_lines = "\n".join(f"- {k.term} ({k.intent.value})" for k in keywords) or "- (sin keywords asignadas)"
@@ -54,7 +60,7 @@ async def generate_draft(db: Session, page_id: int, model: str) -> tuple[Content
     from sqlalchemy import select
 
     keywords = list(db.scalars(select(Keyword).where(Keyword.page_id == page_id)))
-    system_prompt = PROMPTS[page.type]
+    system_prompt = PROMPTS[page.type] + COMMERCIAL_FACTS_RULE
     user_prompt = _build_user_prompt(page, niche, keywords)
 
     payload = {

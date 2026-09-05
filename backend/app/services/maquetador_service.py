@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.models import ContentDraft, DraftStatus, Keyword, Niche, Page
+from app.models import AiPrompt, ContentDraft, DraftStatus, Keyword, Niche, Page, Product
 
 
 DEFAULT_DIVI_LAYOUT = """
@@ -29,7 +29,9 @@ MAQUETADOR_SYSTEM_PROMPT = (
     "2. Incluye clases CSS limpias y estilizadas para cajas de pros/contras, tablas comparativas y llamadas a la acción (CTA).\n"
     "3. Sigue al pie de la letra la plantilla de maquetación del nicho.\n"
     "4. Respeta el H1, las palabras clave principales y secundarias, y la estructura de encabezados.\n"
-    "5. Devuelve ÚNICAMENTE el bloque de código HTML limpio sin explicaciones ni markdown envolvente."
+    "5. Devuelve ÚNICAMENTE el bloque de código HTML limpio sin explicaciones ni markdown envolvente.\n"
+    "6. Los datos comerciales de productos (precio, características, valoraciones) deben tomarse "
+    "ÚNICAMENTE de los datos de producto aportados en el contexto; nunca los inventes."
 )
 
 
@@ -74,7 +76,8 @@ async def run_maquetador(
     custom_layout_template: str | None = None,
     model: str = "gpt-4o",
     save_to_page: bool = True,
-) -> tuple[ContentDraft, str, bool]:
+    replace_existing: bool = False,
+) -> tuple[ContentDraft, str, bool, str | None]:
     page = db.get(Page, page_id)
     if not page:
         raise HTTPException(status_code=404, detail="Página no encontrada")
@@ -106,6 +109,18 @@ async def run_maquetador(
     primary_kw = next((k.term for k in keywords if k.is_primary), None)
     secondary_kws = [k.term for k in keywords if not k.is_primary]
 
+    # Linked product facts for this project (W4): commercial data comes only from here.
+    products = list(db.query(Product).filter(Product.project_id == page.project_id).all())
+    product_lines = [
+        f"- {p.name}"
+        + (f" | Marca: {p.brand}" if p.brand else "")
+        + (f" | Precio: {p.price} {p.currency}" if p.price is not None else "")
+        + (f" | Características: {p.features}" if p.features else "")
+        + (f" | Valoración: {p.rating}" if p.rating else "")
+        for p in products
+    ]
+    products_block = "DATOS DE PRODUCTOS (fuente única de datos comerciales):\n" + "\n".join(product_lines)
+
     context_snapshot = {
         "page_id": page.id,
         "page_title": page.title,
@@ -117,6 +132,7 @@ async def run_maquetador(
         "focus_keyword": primary_kw,
         "secondary_keywords": secondary_kws,
         "layout_template": layout_template,
+        "products": [p.name for p in products] if products else None,
     }
 
     user_prompt = (
@@ -130,7 +146,8 @@ async def run_maquetador(
         f"- Keywords Secundarias: {', '.join(secondary_kws) if secondary_kws else 'Ninguna'}\n"
         f"- Outline / Esquema: {page.outline_json or '[]'}\n\n"
         f"PLANTILLA / REGLAS DE MAQUETACIÓN APLICABLES:\n{layout_template}\n\n"
-        f"TEXTO / BORRADOR FUENTE:\n{draft_text or 'Crea la estructura completa maquetada según la temática y keywords.'}\n\n"
+        + (products_block + "\n\n" if product_lines else "")
+        + f"TEXTO / BORRADOR FUENTE:\n{draft_text or 'Crea la estructura completa maquetada según la temática y keywords.'}\n\n"
         "Genera el código HTML maquetado final para WordPress/Divi."
     )
 
@@ -172,11 +189,14 @@ async def run_maquetador(
     else:
         content_html = _render_fallback_html(page, niche, keywords, draft_text, layout_template)
 
+    maquetador_prompt = db.query(AiPrompt).filter(AiPrompt.slug == "maquetador").first()
+
     draft = ContentDraft(
         page_id=page.id,
         draft_body=draft_text,
         content_html=content_html,
         draft_kind="maquetado",
+        source_prompt_id=maquetador_prompt.id if maquetador_prompt else None,
         context_used_json=json.dumps(context_snapshot, ensure_ascii=False),
         model_used=model,
         status=DraftStatus.borrador,
@@ -184,15 +204,22 @@ async def run_maquetador(
     db.add(draft)
 
     page_updated = False
+    message: str | None = None
     if save_to_page:
-        page.content_html = content_html
-        if page.content_status == "borrador":
-            page.content_status = "revisado"
-        page_updated = True
+        if page.content_html and not replace_existing:
+            message = (
+                "La página ya tenía contenido maquetado: se guardó el borrador "
+                "pero NO se sobrescribió el HTML existente."
+            )
+        else:
+            page.content_html = content_html
+            if page.content_status == "borrador":
+                page.content_status = "revisado"
+            page_updated = True
 
     db.commit()
     db.refresh(draft)
     if save_to_page:
         db.refresh(page)
 
-    return draft, content_html, page_updated
+    return draft, content_html, page_updated, message

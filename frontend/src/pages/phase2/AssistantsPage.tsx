@@ -96,10 +96,13 @@ export function AssistantsPage() {
         model,
       })
       setResult(res.rendered)
+      const draftId = (res as { draft_id?: number | null }).draft_id
       toast(
-        res.used_metrics
-          ? 'Análisis generado con métricas GSC/Analytics'
-          : 'Borrador generado — revisa antes de publicar',
+        draftId
+          ? `Guardado como borrador #${draftId}`
+          : res.used_metrics
+            ? 'Análisis generado con métricas GSC/Analytics'
+            : 'Borrador generado — revisa antes de publicar',
       )
     } catch (e) {
       toast(e instanceof Error ? e.message : 'Error al ejecutar el asistente')
