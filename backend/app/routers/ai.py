@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -12,6 +12,7 @@ from app.schemas import (
 )
 from app.services.ai_generator import generate_draft
 from app.services.maquetador_service import run_maquetador
+from app.services.pagination import DEFAULT_LIMIT, DEFAULT_SKIP, MAX_LIMIT, fetch_page, set_page_headers
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
@@ -46,8 +47,11 @@ async def maquetar_content(payload: MaquetarRequest, db: Session = Depends(get_d
 
 @router.get("/drafts", response_model=list[ContentDraftOut])
 def list_drafts(
+    response: Response,
     page_id: int | None = Query(None),
     draft_kind: str | None = Query(None),
+    skip: int = Query(DEFAULT_SKIP, ge=0),
+    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
     db: Session = Depends(get_db),
 ):
     q = db.query(ContentDraft)
@@ -55,5 +59,7 @@ def list_drafts(
         q = q.filter(ContentDraft.page_id == page_id)
     if draft_kind is not None:
         q = q.filter(ContentDraft.draft_kind == draft_kind)
-    drafts = q.order_by(ContentDraft.created_at.desc()).all()
+    q = q.order_by(ContentDraft.created_at.desc())
+    drafts, total = fetch_page(q, skip, limit)
+    set_page_headers(response, total, skip, limit)
     return [ContentDraftOut.model_validate(d) for d in drafts]

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -13,6 +13,7 @@ from app.schemas_phase2 import (
     ProductSearchResponse,
     ProductUpdate,
 )
+from app.services.pagination import DEFAULT_LIMIT, DEFAULT_SKIP, MAX_LIMIT, fetch_page, set_page_headers
 from app.services.product_providers import ProviderError, product_registry
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -54,11 +55,20 @@ def import_product_to_catalog(payload: ProductImportRequest, db: Session = Depen
 
 
 @router.get("", response_model=list[ProductOut])
-def list_products(project_id: int | None = Query(None), db: Session = Depends(get_db)):
+def list_products(
+    response: Response,
+    project_id: int | None = Query(None),
+    skip: int = Query(DEFAULT_SKIP, ge=0),
+    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
+    db: Session = Depends(get_db),
+):
     q = db.query(Product)
     if project_id is not None:
         q = q.filter(Product.project_id == project_id)
-    return q.order_by(Product.updated_at.desc()).all()
+    q = q.order_by(Product.updated_at.desc())
+    items, total = fetch_page(q, skip, limit)
+    set_page_headers(response, total, skip, limit)
+    return items
 
 
 @router.post("", response_model=ProductOut, status_code=201)

@@ -116,7 +116,18 @@ class Page(Base):
     brief_text: Mapped[str | None] = mapped_column(Text)
     schema_json: Mapped[str | None] = mapped_column(Text)
     export_ready: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    wordpress_post_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    wordpress_url: Mapped[str | None] = mapped_column(Text)
+    canonical_url: Mapped[str | None] = mapped_column(Text)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    priority: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    approval_status: Mapped[str | None] = mapped_column(Text)
+    approved_action: Mapped[str | None] = mapped_column(Text)
+    execution_notes: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
 
     niche: Mapped["Niche"] = relationship(back_populates="pages")
     project: Mapped["Project"] = relationship(back_populates="pages")
@@ -519,3 +530,34 @@ class ResearchOpportunity(Base):
     priority: Mapped[int] = mapped_column(Integer, default=3)
 
     job: Mapped["ResearchJob"] = relationship(back_populates="opportunities")
+
+
+# ── WP5/WP6: API keys + external action audit ───────────────────────────────
+
+
+class ApiKey(Base):
+    """External tool credentials (n8n/ERP). Only the SHA-256 hash is stored."""
+
+    __tablename__ = "api_keys"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    key_hash: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
+    prefix: Mapped[str] = mapped_column(Text, nullable=False)  # first 8 chars, for display
+    can_write: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    issued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class ActionLog(Base):
+    """Audit trail for actions received from external tools (n8n/Notion)."""
+
+    __tablename__ = "action_logs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    action: Mapped[str] = mapped_column(Text, nullable=False)
+    entity: Mapped[str] = mapped_column(Text, nullable=False)
+    entity_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    payload_json: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

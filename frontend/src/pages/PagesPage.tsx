@@ -7,7 +7,7 @@ import { ScopeBar } from '../components/ScopeBar'
 import { PAGE_STATES, PAGE_TYPES } from '../constants'
 import { useApp } from '../context/AppContext'
 import { useProjects } from '../hooks/useProjects'
-import type { Niche, Page, PageBulkUpdateItem, PageState, PageType } from '../types'
+import type { Niche, Page, PageBulkUpdateItem, PageState, PageType, Url } from '../types'
 import type { StructureImportResponse } from '../types/phase2'
 
 const CONTENT_STATUS_LABELS: Record<string, { label: string; cls: string }> = {
@@ -21,12 +21,13 @@ export function PagesPage() {
   const { projects } = useProjects()
   const [items, setItems] = useState<Page[]>([])
   const [niches, setNiches] = useState<Niche[]>([])
+  const [urls, setUrls] = useState<Url[]>([])
   const [viewMode, setViewMode] = useState<'normal' | 'grid'>('normal')
 
   // Normal Modal State
   const [editing, setEditing] = useState<Page | null>(null)
   const [open, setOpen] = useState(false)
-  const [modalTab, setModalTab] = useState<'basic' | 'seo' | 'wp' | 'content'>('basic')
+  const [modalTab, setModalTab] = useState<'basic' | 'seo' | 'wp' | 'content' | 'identity'>('basic')
   const [htmlViewMode, setHtmlViewMode] = useState<'code' | 'preview'>('code')
   const [maquetando, setMaquetando] = useState(false)
   const [briefLoading, setBriefLoading] = useState(false)
@@ -74,12 +75,14 @@ Robot Aspirador Conga,/aspiradoras/conga,Aspiradoras,,TSA,Análisis Cecotec Cong
   })
 
   const reload = useCallback(async () => {
-    const [pages, nicheList] = await Promise.all([
+    const [pages, nicheList, urlList] = await Promise.all([
       api.pages.list(scopeProject),
       api.niches.list(scopeProject),
+      api.urls.list(scopeProject),
     ])
     setItems(pages)
     setNiches(nicheList)
+    setUrls(urlList)
     setGridEdits({})
     setSelectedIds([])
   }, [scopeProject])
@@ -307,6 +310,7 @@ Robot Aspirador Conga,/aspiradoras/conga,Aspiradoras,,TSA,Análisis Cecotec Cong
   }
 
   const nicheName = (id: number) => niches.find((n) => n.id === id)?.name || '—'
+  const pageSlug = (id: number) => urls.find((u) => u.page_id === id)?.slug
   const parentCandidates = items.filter((p) => !editing || p.id !== editing.id)
 
   const renderTitleCounter = (text?: string | null) => {
@@ -664,6 +668,15 @@ Robot Aspirador Conga,/aspiradoras/conga,Aspiradoras,,TSA,Análisis Cecotec Cong
           >
             4. HTML & Outline
           </button>
+          {editing && (
+            <button
+              type="button"
+              className={`assistant-tab${modalTab === 'identity' ? ' active' : ''}`}
+              onClick={() => setModalTab('identity')}
+            >
+              5. Identidad
+            </button>
+          )}
         </div>
 
         {modalTab === 'basic' && (
@@ -985,6 +998,81 @@ Robot Aspirador Conga,/aspiradoras/conga,Aspiradoras,,TSA,Análisis Cecotec Cong
                 />
               )}
             </div>
+          </>
+        )}
+
+        {modalTab === 'identity' && editing && (
+          <>
+            {!editing.wordpress_post_id && (
+              <div
+                className="badge"
+                style={{
+                  display: 'inline-block',
+                  background: '#fef3c7',
+                  color: '#92400e',
+                  marginBottom: 14,
+                  fontSize: 12,
+                }}
+              >
+                ⚠️ Esta página aún no está vinculada a WordPress. Haz «Push a WordPress» para crear
+                el post y guardar su identidad.
+              </div>
+            )}
+            {[
+              { label: 'ID de página CRM', value: String(editing.id) },
+              { label: 'Slug', value: pageSlug(editing.id) || '—' },
+              { label: 'URL canónica', value: editing.canonical_url || '—' },
+              {
+                label: 'ID post WordPress',
+                value: editing.wordpress_post_id ? String(editing.wordpress_post_id) : '—',
+              },
+              { label: 'URL WordPress', value: editing.wordpress_url || '—' },
+            ].map((row) => (
+              <div className="field" key={row.label}>
+                <label>{row.label}</label>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <code
+                    className="mono"
+                    style={{
+                      flex: 1,
+                      fontSize: 12,
+                      background: '#f8fafc',
+                      padding: '8px 10px',
+                      borderRadius: 6,
+                      border: '1px solid #e2e8f0',
+                      wordBreak: 'break-all',
+                    }}
+                  >
+                    {row.value}
+                  </code>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-ghost"
+                    onClick={() => {
+                      navigator.clipboard.writeText(row.value)
+                      toast(`${row.label} copiado al portapapeles`)
+                    }}
+                  >
+                    Copiar
+                  </button>
+                </div>
+              </div>
+            ))}
+            {editing.wordpress_post_id &&
+              editing.wordpress_url &&
+              editing.canonical_url &&
+              editing.canonical_url !== editing.wordpress_url && (
+                <div
+                  className="badge"
+                  style={{ display: 'inline-block', background: '#fef3c7', color: '#92400e', fontSize: 12 }}
+                >
+                  ⚠️ La URL canónica no coincide con la URL de WordPress
+                </div>
+              )}
+            <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+              Estos valores se guardan automáticamente al hacer push a WordPress y son los mismos
+              que devuelve la API (GET /pages).
+            </p>
           </>
         )}
       </Modal>

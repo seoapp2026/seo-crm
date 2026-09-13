@@ -1,5 +1,5 @@
 import re
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -10,6 +10,7 @@ from app.schemas_phase2 import (
     AiPromptReorderItem,
     AiPromptUpdate,
 )
+from app.services.pagination import DEFAULT_LIMIT, DEFAULT_SKIP, MAX_LIMIT, fetch_page, set_page_headers
 
 router = APIRouter(prefix="/ai/prompts", tags=["ai-prompts"])
 
@@ -28,13 +29,19 @@ def _generate_unique_slug(db: Session, base_slug: str) -> str:
 
 @router.get("", response_model=list[AiPromptOut])
 def list_prompts(
+    response: Response,
     project_id: int | None = Query(default=None),
+    skip: int = Query(DEFAULT_SKIP, ge=0),
+    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
     db: Session = Depends(get_db),
 ):
     query = db.query(AiPrompt)
     if project_id is not None:
         query = query.filter((AiPrompt.project_id == project_id) | (AiPrompt.project_id.is_(None)))
-    return query.order_by(AiPrompt.sort_order.asc(), AiPrompt.id.asc()).all()
+    query = query.order_by(AiPrompt.sort_order.asc(), AiPrompt.id.asc())
+    items, total = fetch_page(query, skip, limit)
+    set_page_headers(response, total, skip, limit)
+    return items
 
 
 @router.post("", response_model=AiPromptOut, status_code=201)

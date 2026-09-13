@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -8,6 +8,7 @@ from app.schemas import ProjectCreate, ProjectOut, ProjectUpdate
 from app.schemas_phase2 import StructureImportRequest, StructureImportResponse
 from app.services.cascade_delete import purge_project
 from app.services.crypto_service import store_secret
+from app.services.pagination import DEFAULT_LIMIT, DEFAULT_SKIP, MAX_LIMIT, fetch_page, set_page_headers
 from app.services.project_targets import (
     apply_project_targets_to_auth,
     normalize_ga4_property_id,
@@ -53,8 +54,16 @@ def _sync_auth_targets(db, project: Project):
 
 
 @router.get("", response_model=list[ProjectOut])
-def list_projects(db: Session = Depends(get_db)):
-    return db.query(Project).order_by(Project.created_at.desc()).all()
+def list_projects(
+    response: Response,
+    skip: int = Query(DEFAULT_SKIP, ge=0),
+    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
+    db: Session = Depends(get_db),
+):
+    q = db.query(Project).order_by(Project.created_at.desc())
+    items, total = fetch_page(q, skip, limit)
+    set_page_headers(response, total, skip, limit)
+    return items
 
 
 @router.post("", response_model=ProjectOut, status_code=201)

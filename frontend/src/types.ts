@@ -50,6 +50,10 @@ export interface Page {
   content_status?: string
   schema_json?: string | null
   export_ready?: boolean
+  wordpress_post_id?: number | null
+  wordpress_url?: string | null
+  canonical_url?: string | null
+  published_at?: string | null
   created_at: string
 }
 

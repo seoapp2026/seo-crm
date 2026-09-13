@@ -59,6 +59,35 @@ def run_light_migrations():
             statements.append("ALTER TABLE pages ADD COLUMN schema_json TEXT")
         if "export_ready" not in page_cols:
             statements.append("ALTER TABLE pages ADD COLUMN export_ready BOOLEAN NOT NULL DEFAULT FALSE")
+        if "wordpress_post_id" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN wordpress_post_id INTEGER")
+            statements.append("CREATE INDEX IF NOT EXISTS ix_pages_wordpress_post_id ON pages (wordpress_post_id)")
+        if "wordpress_url" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN wordpress_url TEXT")
+        if "canonical_url" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN canonical_url TEXT")
+        if "published_at" not in page_cols:
+            statements.append(
+                "ALTER TABLE pages ADD COLUMN published_at TIMESTAMP WITH TIME ZONE"
+                if is_pg
+                else "ALTER TABLE pages ADD COLUMN published_at DATETIME"
+            )
+        if "priority" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN priority INTEGER")
+        if "approval_status" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN approval_status TEXT")
+        if "approved_action" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN approved_action TEXT")
+        if "execution_notes" not in page_cols:
+            statements.append("ALTER TABLE pages ADD COLUMN execution_notes TEXT")
+        if "updated_at" not in page_cols:
+            # SQLite no admite DEFAULT no constante en ADD COLUMN: se añade y se rellena después
+            statements.append(
+                "ALTER TABLE pages ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE"
+                if is_pg
+                else "ALTER TABLE pages ADD COLUMN updated_at DATETIME"
+            )
+            statements.append("UPDATE pages SET updated_at = CURRENT_TIMESTAMP WHERE updated_at IS NULL")
 
     if "keywords" in insp.get_table_names():
         kw_cols = {c["name"] for c in insp.get_columns("keywords")}

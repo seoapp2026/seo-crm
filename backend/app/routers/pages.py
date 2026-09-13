@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+import datetime as dt
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -7,6 +9,7 @@ from app.models import Page
 from app.schemas import PageCreate, PageOut, PageUpdate
 from app.schemas_phase2 import PageBulkUpdateRequest, PageBulkUpdateResponse
 from app.services.cascade_delete import purge_page
+from app.services.pagination import DEFAULT_LIMIT, DEFAULT_SKIP, MAX_LIMIT, fetch_page, set_page_headers
 
 router = APIRouter(prefix="/pages", tags=["pages"])
 
@@ -21,11 +24,20 @@ def _to_page_out(page: Page, db: Session) -> PageOut:
 
 
 @router.get("", response_model=list[PageOut])
-def list_pages(project_id: int | None = Query(None), db: Session = Depends(get_db)):
+def list_pages(
+    response: Response,
+    project_id: int | None = Query(None),
+    skip: int = Query(DEFAULT_SKIP, ge=0),
+    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
+    db: Session = Depends(get_db),
+):
     q = db.query(Page)
     if project_id is not None:
         q = q.filter(Page.project_id == project_id)
-    pages = q.order_by(Page.created_at.desc()).all()
+    q = q.order_by(Page.created_at.desc())
+    total = q.count()
+    pages = q.offset(skip).limit(limit).all()
+    set_page_headers(response, total, skip, limit)
     return [_to_page_out(p, db) for p in pages]
 
 
@@ -38,6 +50,14 @@ def create_page(payload: PageCreate, db: Session = Depends(get_db)):
     return _to_page_out(page, db)
 
 
+@router.get("/{page_id}", response_model=PageOut)
+def get_page(page_id: int, db: Session = Depends(get_db)):
+    page = db.get(Page, page_id)
+    if not page:
+        raise HTTPException(status_code=404, detail="Página no encontrada")
+    return _to_page_out(page, db)
+
+
 @router.patch("/{page_id}", response_model=PageOut)
 def update_page(page_id: int, payload: PageUpdate, db: Session = Depends(get_db)):
     page = db.get(Page, page_id)
@@ -45,6 +65,7 @@ def update_page(page_id: int, payload: PageUpdate, db: Session = Depends(get_db)
         raise HTTPException(status_code=404, detail="Página no encontrada")
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(page, field, value)
+    page.updated_at = dt.datetime.now(dt.timezone.utc)
     db.commit()
     db.refresh(page)
     return _to_page_out(page, db)

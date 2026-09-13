@@ -13,11 +13,13 @@ from app.database import Base, engine
 from app.routers import (
     ads,
     ai,
+    api_keys,
     audit,
     analytics,
     assistants,
     competitors,
     dashboard,
+    external_actions,
     gsc,
     integrations,
     keywords,
@@ -72,11 +74,13 @@ phase2_routers = [
     rank_math.router,
     products.router,
     research.router,
+    api_keys.router,
+    external_actions.router,
 ]
 
 app.include_router(auth_router.router, prefix=API_PREFIX)
 
-for r in [
+crm_routers = [
     projects.router,
     niches.router,
     pages.router,
@@ -87,8 +91,15 @@ for r in [
     dashboard.router,
     ai.router,
     *phase2_routers,
-]:
+]
+
+for r in crm_routers:
     app.include_router(r, prefix=API_PREFIX)
+
+# WP8: alias versionado — mismos handlers también bajo /api/seo-crm/v1
+app.include_router(auth_router.router, prefix=API_PREFIX + "/v1")
+for r in crm_routers:
+    app.include_router(r, prefix=API_PREFIX + "/v1")
 
 
 @app.on_event("startup")
@@ -113,6 +124,7 @@ def on_startup():
 
 
 @app.get(f"{API_PREFIX}/health")
+@app.get(f"{API_PREFIX}/v1/health")
 def health():
     from app.services.ads_config import ads_config_status
     from app.services.research_runner import credentials_configured, should_use_stub

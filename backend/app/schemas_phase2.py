@@ -305,6 +305,7 @@ class WpPushResultItem(BaseModel):
     title: str
     wp_post_id: int | None = None
     wp_url: str | None = None
+    canonical_url: str | None = None
     status: str  # "success", "error", "skipped"
     message: str | None = None
 

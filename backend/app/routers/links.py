@@ -1,19 +1,29 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import InternalLink
 from app.schemas import InternalLinkCreate, InternalLinkOut, InternalLinkUpdate
+from app.services.pagination import DEFAULT_LIMIT, DEFAULT_SKIP, MAX_LIMIT, fetch_page, set_page_headers
 
 router = APIRouter(prefix="/links", tags=["links"])
 
 
 @router.get("", response_model=list[InternalLinkOut])
-def list_links(project_id: int | None = Query(None), db: Session = Depends(get_db)):
+def list_links(
+    response: Response,
+    project_id: int | None = Query(None),
+    skip: int = Query(DEFAULT_SKIP, ge=0),
+    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
+    db: Session = Depends(get_db),
+):
     q = db.query(InternalLink)
     if project_id is not None:
         q = q.filter(InternalLink.project_id == project_id)
-    return q.order_by(InternalLink.created_at.desc()).all()
+    q = q.order_by(InternalLink.created_at.desc())
+    items, total = fetch_page(q, skip, limit)
+    set_page_headers(response, total, skip, limit)
+    return items
 
 
 @router.post("", response_model=InternalLinkOut, status_code=201)

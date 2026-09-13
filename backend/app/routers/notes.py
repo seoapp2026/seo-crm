@@ -1,19 +1,29 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Note
 from app.schemas import NoteCreate, NoteOut, NoteUpdate
+from app.services.pagination import DEFAULT_LIMIT, DEFAULT_SKIP, MAX_LIMIT, fetch_page, set_page_headers
 
 router = APIRouter(prefix="/notes", tags=["notes"])
 
 
 @router.get("", response_model=list[NoteOut])
-def list_notes(project_id: int | None = Query(None), db: Session = Depends(get_db)):
+def list_notes(
+    response: Response,
+    project_id: int | None = Query(None),
+    skip: int = Query(DEFAULT_SKIP, ge=0),
+    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
+    db: Session = Depends(get_db),
+):
     q = db.query(Note)
     if project_id is not None:
         q = q.filter(Note.project_id == project_id)
-    return q.order_by(Note.created_at.desc()).all()
+    q = q.order_by(Note.created_at.desc())
+    items, total = fetch_page(q, skip, limit)
+    set_page_headers(response, total, skip, limit)
+    return items
 
 
 @router.post("", response_model=NoteOut, status_code=201)

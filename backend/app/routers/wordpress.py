@@ -426,6 +426,19 @@ async def test_wp_connection(payload: WpTestConnectionRequest, db: Session = Dep
         )
 
 
+def _parse_wp_datetime(value: str | None) -> datetime | None:
+    """Parse a WP REST date ('2026-09-12T10:00:00' or with 'Z') to an aware datetime."""
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
 @router.post("/push", response_model=WpPushResponse)
 async def push_to_wordpress(payload: WpPushRequest, db: Session = Depends(get_db)):
     project = db.get(Project, payload.project_id)
@@ -486,21 +499,45 @@ async def push_to_wordpress(payload: WpPushRequest, db: Session = Depends(get_db
             }
 
             try:
-                res = await client.post(
-                    endpoint,
-                    json=post_data,
-                    auth=(wp_username, wp_app_password),
-                )
+                if page.wordpress_post_id:
+                    res = await client.put(
+                        f"{endpoint}/{page.wordpress_post_id}",
+                        json=post_data,
+                        auth=(wp_username, wp_app_password),
+                    )
+                    action = "updated"
+                else:
+                    res = await client.post(
+                        endpoint,
+                        json=post_data,
+                        auth=(wp_username, wp_app_password),
+                    )
+                    action = "created"
                 if res.status_code in (200, 201):
                     res_json = res.json()
+                    link = res_json.get("link")
+                    published_at = _parse_wp_datetime(res_json.get("date_gmt") or res_json.get("date"))
+                    if action == "created":
+                        # Persistir el bloque de identidad en la página del CRM
+                        page.wordpress_post_id = res_json.get("id")
+                        page.wordpress_url = link
+                        page.canonical_url = link
+                        page.published_at = published_at
+                    else:
+                        # Refrescar URL/canonical; published_at conserva la fecha de creación original
+                        page.wordpress_url = link or page.wordpress_url
+                        page.canonical_url = link or page.canonical_url
+                    db.commit()
+                    verb = "creada" if action == "created" else "actualizada"
                     results.append(
                         WpPushResultItem(
                             page_id=page.id,
                             title=page.title,
-                            wp_post_id=res_json.get("id"),
-                            wp_url=res_json.get("link"),
+                            wp_post_id=page.wordpress_post_id,
+                            wp_url=page.wordpress_url,
+                            canonical_url=page.canonical_url,
                             status="success",
-                            message=f"Página creada en WP (ID: {res_json.get('id')}) con estado {payload.post_status}",
+                            message=f"Página {verb} en WP (ID: {page.wordpress_post_id}) con estado {payload.post_status}",
                         )
                     )
                     success_count += 1
@@ -509,6 +546,9 @@ async def push_to_wordpress(payload: WpPushRequest, db: Session = Depends(get_db
                         WpPushResultItem(
                             page_id=page.id,
                             title=page.title,
+                            wp_post_id=page.wordpress_post_id,
+                            wp_url=page.wordpress_url,
+                            canonical_url=page.canonical_url,
                             status="error",
                             message=f"Error WP (HTTP {res.status_code}): {res.text[:120]}",
                         )
@@ -519,6 +559,9 @@ async def push_to_wordpress(payload: WpPushRequest, db: Session = Depends(get_db
                     WpPushResultItem(
                         page_id=page.id,
                         title=page.title,
+                        wp_post_id=page.wordpress_post_id,
+                        wp_url=page.wordpress_url,
+                        canonical_url=page.canonical_url,
                         status="error",
                         message=f"Fallo de conexión: {str(e)}",
                     )

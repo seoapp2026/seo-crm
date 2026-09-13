@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -14,16 +14,26 @@ from app.schemas_phase2 import (
 )
 from app.services.comparison_table_service import generate_comparison_table_html
 from app.services.competitor_scraper_service import scrape_competitor_structure
+from app.services.pagination import DEFAULT_LIMIT, DEFAULT_SKIP, MAX_LIMIT, fetch_page, set_page_headers
 
 router = APIRouter(prefix="/competitors", tags=["competitors"])
 
 
 @router.get("", response_model=list[CompetitorOut])
-def list_competitors(project_id: int | None = Query(None), db: Session = Depends(get_db)):
+def list_competitors(
+    response: Response,
+    project_id: int | None = Query(None),
+    skip: int = Query(DEFAULT_SKIP, ge=0),
+    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
+    db: Session = Depends(get_db),
+):
     q = db.query(Competitor)
     if project_id is not None:
         q = q.filter(Competitor.project_id == project_id)
-    return q.order_by(Competitor.created_at.desc()).all()
+    q = q.order_by(Competitor.created_at.desc())
+    items, total = fetch_page(q, skip, limit)
+    set_page_headers(response, total, skip, limit)
+    return items
 
 
 @router.post("", response_model=CompetitorOut, status_code=201)

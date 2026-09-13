@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -19,6 +19,7 @@ from app.services.clustering_service import (
     apply_keyword_clusters,
     suggest_keyword_clusters,
 )
+from app.services.pagination import DEFAULT_LIMIT, DEFAULT_SKIP, MAX_LIMIT, fetch_page, set_page_headers
 from app.services.seo_insights import cannibalized_page_titles, keyword_cannibalized
 
 router = APIRouter(prefix="/keywords", tags=["keywords"])
@@ -33,11 +34,20 @@ def _to_out(kw: Keyword, db: Session) -> KeywordOut:
 
 
 @router.get("", response_model=list[KeywordOut])
-def list_keywords(project_id: int | None = Query(None), db: Session = Depends(get_db)):
+def list_keywords(
+    response: Response,
+    project_id: int | None = Query(None),
+    skip: int = Query(DEFAULT_SKIP, ge=0),
+    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
+    db: Session = Depends(get_db),
+):
     q = db.query(Keyword)
     if project_id is not None:
         q = q.filter(Keyword.project_id == project_id)
-    keywords = q.order_by(Keyword.created_at.desc()).all()
+    q = q.order_by(Keyword.created_at.desc())
+    total = q.count()
+    keywords = q.offset(skip).limit(limit).all()
+    set_page_headers(response, total, skip, limit)
     return [_to_out(kw, db) for kw in keywords]
 
 

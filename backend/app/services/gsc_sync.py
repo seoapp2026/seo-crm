@@ -3,7 +3,8 @@ from datetime import date, datetime, timedelta, timezone
 from googleapiclient.discovery import build
 from sqlalchemy.orm import Session
 
-from app.models import GoogleAuth, GoogleServiceType, GscData, SyncJob, SyncJobStatus, SyncJobType, Url
+from app.models import GoogleAuth, GoogleServiceType, GscData, SyncJob, SyncJobStatus, SyncJobType
+from app.services.canonical_matching import build_project_page_url_map
 from app.services.crypto_service import read_secret
 from app.services.google_oauth import credentials_from_auth, save_credentials
 from app.services.gsc_sites import validate_gsc_site_access
@@ -52,7 +53,8 @@ def sync_gsc_for_project(db: Session, project_id: int) -> int:
         .execute()
     )
 
-    url_map = {u.slug: u.id for u in db.query(Url).filter(Url.project_id == project_id).all()}
+    # WP4: url_id se rellena con el match canonical (page_url ↔ canonical_url del proyecto + slug)
+    page_url_map = build_project_page_url_map(db, project_id)
     count = 0
 
     for row in response.get("rows", []):
@@ -75,7 +77,7 @@ def sync_gsc_for_project(db: Session, project_id: int) -> int:
             existing.clicks = clicks
             existing.ctr = ctr
             existing.position = position
-            existing.url_id = url_map.get(page_url)
+            existing.url_id = page_url_map.get(page_url)
         else:
             db.add(
                 GscData(
@@ -86,7 +88,7 @@ def sync_gsc_for_project(db: Session, project_id: int) -> int:
                     clicks=clicks,
                     ctr=ctr,
                     position=position,
-                    url_id=url_map.get(page_url),
+                    url_id=page_url_map.get(page_url),
                 )
             )
         count += 1

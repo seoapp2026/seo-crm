@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -6,16 +6,26 @@ from app.database import get_db
 from app.models import Niche
 from app.schemas import NicheCreate, NicheOut, NicheUpdate
 from app.services.cascade_delete import purge_niche
+from app.services.pagination import DEFAULT_LIMIT, DEFAULT_SKIP, MAX_LIMIT, fetch_page, set_page_headers
 
 router = APIRouter(prefix="/niches", tags=["niches"])
 
 
 @router.get("", response_model=list[NicheOut])
-def list_niches(project_id: int | None = Query(None), db: Session = Depends(get_db)):
+def list_niches(
+    response: Response,
+    project_id: int | None = Query(None),
+    skip: int = Query(DEFAULT_SKIP, ge=0),
+    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
+    db: Session = Depends(get_db),
+):
     q = db.query(Niche)
     if project_id is not None:
         q = q.filter(Niche.project_id == project_id)
-    return q.order_by(Niche.created_at.desc()).all()
+    q = q.order_by(Niche.created_at.desc())
+    items, total = fetch_page(q, skip, limit)
+    set_page_headers(response, total, skip, limit)
+    return items
 
 
 @router.post("", response_model=NicheOut, status_code=201)

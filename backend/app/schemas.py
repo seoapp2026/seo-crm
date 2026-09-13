@@ -106,6 +106,10 @@ class PageCreate(BaseModel):
     brief_text: str | None = None
     schema_json: str | None = None
     export_ready: bool = False
+    wordpress_post_id: int | None = None
+    wordpress_url: str | None = None
+    canonical_url: str | None = None
+    published_at: datetime | None = None
 
 
 class PageUpdate(BaseModel):
@@ -127,6 +131,14 @@ class PageUpdate(BaseModel):
     brief_text: str | None = None
     schema_json: str | None = None
     export_ready: bool | None = None
+    wordpress_post_id: int | None = None
+    wordpress_url: str | None = None
+    canonical_url: str | None = None
+    published_at: datetime | None = None
+    priority: int | None = None
+    approval_status: str | None = None
+    approved_action: str | None = None
+    execution_notes: str | None = None
 
 
 class PageOut(OrmBase):
@@ -151,7 +163,16 @@ class PageOut(OrmBase):
     brief_text: str | None = None
     schema_json: str | None = None
     export_ready: bool = False
+    wordpress_post_id: int | None = None
+    wordpress_url: str | None = None
+    canonical_url: str | None = None
+    published_at: datetime | None = None
+    priority: int | None = None
+    approval_status: str | None = None
+    approved_action: str | None = None
+    execution_notes: str | None = None
     created_at: datetime
+    updated_at: datetime
 
 
 # --- Keywords ---
@@ -390,3 +411,19 @@ class DashboardStats(BaseModel):
     recent_pages: list[PageOut]
     orphan_pages: list[PageOut]
     cannibalized_terms: list[str]
+
+# --- API keys (WP5) ---
+
+class ApiKeyCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    can_write: bool = True
+
+
+class ApiKeyOut(OrmBase):
+    id: int
+    name: str
+    prefix: str
+    can_write: bool
+    issued_at: datetime
+    last_used_at: datetime | None = None
+    revoked_at: datetime | None = None
