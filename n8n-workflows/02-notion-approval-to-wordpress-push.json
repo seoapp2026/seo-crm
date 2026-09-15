@@ -1,0 +1,196 @@
+{
+  "name": "02 · Notion → CRM → WordPress · Approval Push",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [ { "field": "minutes", "minutesInterval": 5 } ] } },
+      "id": "w1a2b3",
+      "name": "Schedule (5 min)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [ 240, 300 ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "cfg1", "name": "base_url", "value": "http://localhost:8000/api/seo-crm", "type": "string" },
+            { "id": "cfg2", "name": "project_id", "value": "1", "type": "string" },
+            { "id": "cfg3", "name": "notion_database_id", "value": "REPLACE_WITH_DATABASE_ID", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "x2b3c4",
+      "name": "CONFIG",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [ 460, 300 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.notion.com/v1/databases/{{ $('CONFIG').item.json.notion_database_id }}/query",
+        "authentication": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [ { "name": "Notion-Version", "value": "2022-06-28" } ] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { filter: { and: [ { property: 'approval_status', select: { equals: 'Approved' } }, { property: 'wp_pushed', checkbox: { equals: false } } ] }, page_size: 100 } }}",
+        "options": {}
+      },
+      "credentials": { "httpHeaderAuth": { "id": "FILL_IN", "name": "Notion Integration (Authorization)" } },
+      "id": "y3c4d5",
+      "name": "Notion: Find Approvals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 680, 300 ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [ { "id": "if1", "leftValue": "={{ $json.results.length }}", "rightValue": 0, "operator": { "type": "number", "operation": "gt" } } ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "z4d5e6",
+      "name": "Any Approvals?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [ 900, 300 ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = $input.first().json.results || [];\nreturn results.map(r => ({ json: r }));"
+      },
+      "id": "a5e6f7",
+      "name": "Unroll Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [ 1120, 300 ]
+    },
+    {
+      "parameters": { "batchSize": 1, "options": {} },
+      "id": "b6f7a8",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3.1,
+      "position": [ 1340, 300 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('CONFIG').item.json.base_url }}/v1/wordpress/push",
+        "authentication": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { project_id: Number($('CONFIG').item.json.project_id), page_ids: [ Number($('Split In Batches').item.json.properties.crm_page_id.number) ] } }}",
+        "options": {}
+      },
+      "credentials": { "httpHeaderAuth": { "id": "FILL_IN", "name": "CRM API Key (X-API-Key)" } },
+      "id": "c7a8b9",
+      "name": "CRM: Push to WordPress",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 1560, 300 ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const resp = $input.first().json;\nconst it = (resp.items || [])[0] || {};\nreturn [{ json: { notion_page_id: $('Split In Batches').item.json.id, crm_page_id: it.page_id ?? null, wp_post_id: it.wp_post_id ?? null, wp_url: it.wp_url ?? null, canonical_url: it.canonical_url ?? null, message: it.message || (resp.message || ''), ok: (resp.success_count || 0) > 0 } }];"
+      },
+      "id": "d8b9c0",
+      "name": "Map Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [ 1780, 300 ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [ { "id": "if2", "leftValue": "={{ $json.ok }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true", "name": "filter" } } ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e9c0d1",
+      "name": "Push OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [ 2000, 300 ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.notion.com/v1/pages/{{ $json.notion_page_id }}",
+        "authentication": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [ { "name": "Notion-Version", "value": "2022-06-28" } ] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { properties: { wp_post_id: { number: $json.wp_post_id }, wp_url: { url: $json.wp_url }, canonical_url: { url: $json.canonical_url }, wp_pushed: { checkbox: true }, push_status: { rich_text: [ { text: { content: $json.message || 'pushed' } } ] }, last_push: { date: { start: $now.toISO() } } } } }}",
+        "options": {}
+      },
+      "credentials": { "httpHeaderAuth": { "id": "FILL_IN", "name": "Notion Integration (Authorization)" } },
+      "id": "f0d1e2",
+      "name": "Notion: Mark Pushed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 2220, 200 ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.notion.com/v1/pages/{{ $json.notion_page_id }}",
+        "authentication": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [ { "name": "Notion-Version", "value": "2022-06-28" } ] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { properties: { push_status: { rich_text: [ { text: { content: ('ERROR: ' + ($json.message || 'push failed')) .slice(0, 1900) } } ] }, last_push: { date: { start: $now.toISO() } } } } }}",
+        "options": {}
+      },
+      "credentials": { "httpHeaderAuth": { "id": "FILL_IN", "name": "Notion Integration (Authorization)" } },
+      "id": "a1e2f3",
+      "name": "Notion: Log Failure",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 2220, 400 ]
+    },
+    {
+      "parameters": {},
+      "id": "b2f3a4",
+      "name": "Nothing to do",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [ 1120, 480 ]
+    }
+  ],
+  "connections": {
+    "Schedule (5 min)": { "main": [ [ { "node": "CONFIG", "type": "main", "index": 0 } ] ] },
+    "CONFIG": { "main": [ [ { "node": "Notion: Find Approvals", "type": "main", "index": 0 } ] ] },
+    "Notion: Find Approvals": { "main": [ [ { "node": "Any Approvals?", "type": "main", "index": 0 } ] ] },
+    "Any Approvals?": {
+      "main": [
+        [ { "node": "Unroll Results", "type": "main", "index": 0 } ],
+        [ { "node": "Nothing to do", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Unroll Results": { "main": [ [ { "node": "Split In Batches", "type": "main", "index": 0 } ] ] },
+    "Split In Batches": { "main": [ [ { "node": "CRM: Push to WordPress", "type": "main", "index": 0 } ] ] },
+    "CRM: Push to WordPress": { "main": [ [ { "node": "Map Result", "type": "main", "index": 0 } ] ] },
+    "Map Result": { "main": [ [ { "node": "Push OK?", "type": "main", "index": 0 } ] ] },
+    "Push OK?": {
+      "main": [
+        [ { "node": "Notion: Mark Pushed", "type": "main", "index": 0 } ],
+        [ { "node": "Notion: Log Failure", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Notion: Mark Pushed": { "main": [ [ { "node": "Split In Batches", "type": "main", "index": 0 } ] ] },
+    "Notion: Log Failure": { "main": [ [ { "node": "Split In Batches", "type": "main", "index": 0 } ] ] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "pinData": {}
+}

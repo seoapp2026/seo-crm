@@ -1,0 +1,142 @@
+{
+  "name": "01 · CRM → Notion · Sync Pages",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [ { "field": "minutes", "minutesInterval": 15 } ] } },
+      "id": "a1f0c1",
+      "name": "Schedule (15 min)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [ 240, 300 ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "cfg1", "name": "base_url", "value": "http://localhost:8000/api/seo-crm", "type": "string" },
+            { "id": "cfg2", "name": "project_id", "value": "1", "type": "string" },
+            { "id": "cfg3", "name": "notion_database_id", "value": "REPLACE_WITH_DATABASE_ID", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b2c1d2",
+      "name": "CONFIG",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [ 460, 300 ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('CONFIG').item.json.base_url }}/v1/pages?project_id={{ Number($('CONFIG').item.json.project_id) }}&limit=1000",
+        "authentication": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": { "httpHeaderAuth": { "id": "FILL_IN", "name": "CRM API Key (X-API-Key)" } },
+      "id": "c3d2e3",
+      "name": "CRM: Get Pages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 680, 300 ]
+    },
+    {
+      "parameters": { "batchSize": 1, "options": {} },
+      "id": "d4e3f4",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3.1,
+      "position": [ 900, 300 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.notion.com/v1/databases/{{ $('CONFIG').item.json.notion_database_id }}/query",
+        "authentication": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [ { "name": "Notion-Version", "value": "2022-06-28" } ] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { filter: { property: 'crm_page_id', number: { equals: $json.id } } } }}",
+        "options": {}
+      },
+      "credentials": { "httpHeaderAuth": { "id": "FILL_IN", "name": "Notion Integration (Authorization)" } },
+      "id": "e5f4a5",
+      "name": "Notion: Find Row",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 1120, 300 ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [ { "id": "if1", "leftValue": "={{ $json.results.length }}", "rightValue": 0, "operator": { "type": "number", "operation": "gt" } } ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f6a5b6",
+      "name": "Row Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [ 1340, 300 ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.notion.com/v1/pages/{{ $json.results[0].id }}",
+        "authentication": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [ { "name": "Notion-Version", "value": "2022-06-28" } ] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { properties: { Name: { title: [ { text: { content: $('Split In Batches').item.json.title || '' } } ] }, status: { select: { name: $('Split In Batches').item.json.state || 'borrador' } }, canonical_url: { url: $('Split In Batches').item.json.canonical_url || null }, wp_post_id: { number: $('Split In Batches').item.json.wordpress_post_id || null }, wp_url: { url: $('Split In Batches').item.json.wordpress_url || null }, last_sync: { date: { start: $now.toISO() } } } } }}",
+        "options": {}
+      },
+      "credentials": { "httpHeaderAuth": { "id": "FILL_IN", "name": "Notion Integration (Authorization)" } },
+      "id": "a7b6c7",
+      "name": "Notion: Update Row",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 1560, 200 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.notion.com/v1/pages",
+        "authentication": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [ { "name": "Notion-Version", "value": "2022-06-28" } ] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { parent: { database_id: $('CONFIG').item.json.notion_database_id }, properties: { Name: { title: [ { text: { content: $('Split In Batches').item.json.title || '' } } ] }, crm_page_id: { number: $('Split In Batches').item.json.id }, project_id: { number: $('Split In Batches').item.json.project_id }, status: { select: { name: $('Split In Batches').item.json.state || 'borrador' } }, canonical_url: { url: $('Split In Batches').item.json.canonical_url || null }, wp_post_id: { number: $('Split In Batches').item.json.wordpress_post_id || null }, wp_url: { url: $('Split In Batches').item.json.wordpress_url || null }, priority: { number: $('Split In Batches').item.json.priority || null }, last_sync: { date: { start: $now.toISO() } } } } }}",
+        "options": {}
+      },
+      "credentials": { "httpHeaderAuth": { "id": "FILL_IN", "name": "Notion Integration (Authorization)" } },
+      "id": "b8c7d8",
+      "name": "Notion: Create Row",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 1560, 400 ]
+    }
+  ],
+  "connections": {
+    "Schedule (15 min)": { "main": [ [ { "node": "CONFIG", "type": "main", "index": 0 } ] ] },
+    "CONFIG": { "main": [ [ { "node": "CRM: Get Pages", "type": "main", "index": 0 } ] ] },
+    "CRM: Get Pages": { "main": [ [ { "node": "Split In Batches", "type": "main", "index": 0 } ] ] },
+    "Split In Batches": { "main": [ [ { "node": "Notion: Find Row", "type": "main", "index": 0 } ] ] },
+    "Notion: Find Row": { "main": [ [ { "node": "Row Exists?", "type": "main", "index": 0 } ] ] },
+    "Row Exists?": {
+      "main": [
+        [ { "node": "Notion: Update Row", "type": "main", "index": 0 } ],
+        [ { "node": "Notion: Create Row", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Notion: Update Row": { "main": [ [ { "node": "Split In Batches", "type": "main", "index": 0 } ] ] },
+    "Notion: Create Row": { "main": [ [ { "node": "Split In Batches", "type": "main", "index": 0 } ] ] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "pinData": {}
+}
