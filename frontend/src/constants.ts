@@ -70,7 +70,7 @@ export const ROUTES = [
   { id: 'research', label: 'Análisis SEO', crumb: 'Análisis SEO (Option 2)', sub: 'DataForSEO · keywords, SERP, backlinks · caps de coste' },
   { id: 'products', label: 'Productos', crumb: 'Catálogo de productos', sub: 'Hechos reales para IA · sin inventar precios' },
   { group: 'Integraciones' },
-  { id: 'integrations', label: 'Google OAuth', crumb: 'Integraciones Google', sub: 'Search Console, Analytics y Ads' },
+  { id: 'integrations', label: 'Google y clave API', crumb: 'Integraciones', sub: 'n8n, Search Console, Analytics y Ads' },
   { id: 'sync', label: 'Sincronización', crumb: 'Sincronización en segundo plano', sub: 'Trabajos programados e histórico' },
   { id: 'competitors', label: 'Competidores', crumb: 'Competidores', sub: 'Dominios rivales por nicho' },
   { group: 'IA avanzada' },

@@ -71,6 +71,15 @@ function projectQuery(projectId: number | 'all') {
 }
 
 export const phase2Api = {
+  apiKeys: {
+    create: async (name: string, canWrite: boolean) => {
+      return apiRequest<{ id: number; api_key: string; can_write: boolean }>(
+        `${API_BASE}/v1/api-keys`,
+        { method: 'POST', body: JSON.stringify({ name, can_write: canWrite }) },
+      )
+    },
+  },
+
   integrations: {
     list: async (projectId: number | 'all') => {
       return apiRequest<GoogleAuth[]>(`${API_BASE}/integrations/google${projectQuery(projectId)}`)

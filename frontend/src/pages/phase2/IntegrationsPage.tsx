@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { phase2Api } from '../../api/phase2-client'
 import { ScopeBar } from '../../components/ScopeBar'
 import { ConnectionCard } from '../../components/phase2/ConnectionCard'
+import { ApiKeyCard } from '../../components/phase2/ApiKeyCard'
 import { useApp } from '../../context/AppContext'
 import { useProjects } from '../../hooks/useProjects'
 import type { GoogleAuth, GscSite } from '../../types/phase2'
@@ -106,6 +107,8 @@ export function IntegrationsPage() {
   return (
     <>
       <ScopeBar projects={projects} value={scopeProject} onChange={setScopeProject} />
+
+      <ApiKeyCard />
 
       <div className="banner">
         <strong>Integraciones Google (OAuth2).</strong> Los tokens se guardan en <code className="mono">google_auth</code> y alimentan los trabajos de sincronización en segundo plano. Prioridad: Search Console → Analytics → Ads.
